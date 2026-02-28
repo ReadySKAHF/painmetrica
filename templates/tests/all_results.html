@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Результаты тестов{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">Результаты тестов пациентов</h1>
+
+<div style="background: var(--white); padding: 2rem; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    {% if results %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--light-gray);">
+                    <th style="text-align: left; padding: 1rem;">Пациент</th>
+                    <th style="text-align: left; padding: 1rem;">Тест</th>
+                    <th style="text-align: center; padding: 1rem;">Балл</th>
+                    <th style="text-align: center; padding: 1rem;">Статус</th>
+                    <th style="text-align: center; padding: 1rem;">Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr style="border-bottom: 1px solid var(--light-gray);">
+                    <td style="padding: 1rem;">{{ result.patient.user.get_full_name }}</td>
+                    <td style="padding: 1rem;">{{ result.test.title }}</td>
+                    <td style="padding: 1rem; text-align: center;">{{ result.total_score }}</td>
+                    <td style="padding: 1rem; text-align: center;">
+                        {% if result.status == 'completed' %}
+                            <span style="color: #28a745;">Завершен</span>
+                        {% elif result.status == 'reviewed' %}
+                            <span style="color: var(--primary-blue);">Проверен</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem; text-align: center;">{{ result.completed_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align: center; color: var(--medium-gray); padding: 2rem;">Нет завершенных тестов</p>
+    {% endif %}
+</div>
+{% endblock %}

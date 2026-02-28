@@ -1,0 +1,861 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ patient.user.get_full_name }} — Painmetrica</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --white: #FEFEFE;
+    --gray-200: #F9F9F9;
+    --gray-250: #F5F5F5;
+    --gray-300: #EAEAEA;
+    --gray-550: #919191;
+    --gray-950: #262626;
+    --blue-400: #2E7CF6;
+    --blue-500: #2E67F6;
+  }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--gray-200);
+    min-height: 100vh;
+    color: var(--gray-950);
+  }
+
+  /* ── HEADER (identical to dashboard) ── */
+  .header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1320px;
+    max-width: calc(100vw - 24px);
+    height: 104px;
+    background: var(--white);
+    border-radius: 63px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 52px;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 42px;
+  }
+
+  .nav-link {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .nav-link .nav-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .nav-link .nav-label {
+    font-size: 18px;
+    line-height: 18px;
+    font-weight: 400;
+    color: var(--gray-950);
+  }
+
+  .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    flex-shrink: 0;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .user-name {
+    font-size: 18px;
+    color: var(--gray-950);
+    white-space: nowrap;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding-top: 148px;
+    padding-bottom: 40px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* ── BACK LINK ── */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--blue-500);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 20px;
+  }
+
+  /* ── PAGE BODY ── */
+  .page-body {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--white);
+    border-radius: 20px;
+    padding: 28px 16px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    position: sticky;
+    top: 128px;
+  }
+
+  .sidebar-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-550);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+
+  .sidebar-elements {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 10px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-950);
+    background: var(--gray-200);
+    cursor: default;
+    border: 1.5px solid transparent;
+  }
+
+  .sidebar-item.active {
+    background: var(--white);
+    border-color: var(--blue-400);
+    color: var(--blue-400);
+  }
+
+  .sidebar-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 10px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    background: var(--blue-500);
+    border: none;
+    font-family: inherit;
+    cursor: not-allowed;
+    opacity: 0.5;
+    width: 100%;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── PATIENT CARD ── */
+  .patient-card {
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 20px;
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .patient-info { display: flex; flex-direction: column; gap: 20px; }
+
+  .patient-name {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gray-950);
+  }
+
+  .patient-data { display: flex; flex-direction: column; gap: 12px; }
+
+  .patient-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 15px;
+  }
+
+  .patient-row .label {
+    font-weight: 700;
+    color: var(--gray-950);
+    white-space: nowrap;
+  }
+
+  .patient-row .value {
+    font-weight: 400;
+    color: var(--gray-950);
+  }
+
+  .patient-row .value.empty { color: var(--gray-550); }
+
+  .patient-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .btn-primary {
+    padding: 12px 22px;
+    background: var(--blue-500);
+    color: var(--white);
+    border: none;
+    border-radius: 13px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:disabled { cursor: not-allowed; opacity: 0.65; }
+
+  .btn-outline {
+    padding: 10px 18px;
+    background: var(--white);
+    color: var(--gray-950);
+    border: 1px solid var(--gray-950);
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-outline:hover { background: var(--gray-250); }
+  .btn-outline:disabled { cursor: not-allowed; opacity: 0.65; }
+
+  /* ── EDIT CARD ── */
+  .edit-card {
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 20px;
+    padding: 28px 40px 32px;
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .edit-card.active { display: flex; }
+
+  .edit-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .edit-title { font-size: 20px; font-weight: 700; color: var(--gray-950); }
+
+  .edit-cols { display: flex; gap: 32px; }
+  .edit-col { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+
+  .form-field { display: flex; flex-direction: column; gap: 7px; }
+  .field-label { font-size: 12px; font-weight: 600; color: var(--gray-950); }
+
+  .field-input {
+    width: 100%; height: 44px;
+    background: var(--gray-200);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 13px; font-family: inherit; color: var(--gray-950);
+    outline: none; transition: border-color 0.15s;
+  }
+  .field-input:focus { border-color: var(--blue-400); background: var(--white); }
+  .field-input.error { border-color: #E43D3D; }
+
+  .field-select {
+    width: 100%; height: 44px;
+    background: var(--gray-200);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 13px; font-family: inherit; color: var(--gray-950);
+    outline: none; appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23919191' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    transition: border-color 0.15s;
+  }
+  .field-select:focus { border-color: var(--blue-400); background-color: var(--white); }
+
+  .edit-error { font-size: 13px; color: #E43D3D; display: none; }
+  .edit-error.show { display: block; }
+
+  .btn-cancel {
+    font-size: 13px; font-weight: 600; color: var(--gray-550);
+    background: none; border: none; font-family: inherit;
+    cursor: pointer; transition: color 0.15s;
+  }
+  .btn-cancel:hover { color: var(--gray-950); }
+
+  .btn-save {
+    padding: 12px 32px;
+    background: var(--blue-500); color: var(--white);
+    border: none; border-radius: 13px;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: opacity 0.15s; min-width: 130px;
+  }
+  .btn-save:hover { opacity: 0.88; }
+  .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* ── TEST RESULTS ── */
+  .results-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 32px 40px;
+    min-height: 300px;
+  }
+
+  .results-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-950);
+    margin-bottom: 24px;
+  }
+
+  .results-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .test-card {
+    width: 155px;
+    height: 110px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  .test-card.blue { background: var(--blue-500); }
+  .test-card.red  { background: #F62E2E; }
+
+  .test-card::before {
+    content: '';
+    position: absolute;
+    width: 170px; height: 170px;
+    border: 36px solid rgba(255,255,255,0.10);
+    border-radius: 50%;
+    top: -60px; right: -55px;
+  }
+  .test-card::after {
+    content: '';
+    position: absolute;
+    width: 110px; height: 110px;
+    border: 28px solid rgba(255,255,255,0.07);
+    border-radius: 50%;
+    bottom: -38px; left: -28px;
+  }
+
+  .test-card-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    padding: 0 6px;
+  }
+
+  .test-card-result {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .test-card-score { font-size: 16px; font-weight: 700; color: var(--white); }
+  .test-card-unit  { font-size: 12px; font-weight: 400; color: var(--white); }
+
+  .empty-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    gap: 14px;
+  }
+
+  .empty-results-text {
+    font-size: 15px;
+    color: var(--gray-550);
+  }
+
+  /* ── FOOTER (identical to dashboard) ── */
+  .footer {
+    width: 1320px;
+    max-width: calc(100vw - 24px);
+    margin: 40px auto 0;
+    background: var(--white);
+    border-radius: 28px 28px 0 0;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer-logo { display: flex; align-items: center; }
+
+  .footer-tagline {
+    font-size: 14px;
+    color: var(--gray-950);
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  .footer-copy {
+    font-size: 14px;
+    color: var(--gray-950);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a href="{% url 'core:dashboard' %}" class="logo" title="Painmetrica">
+    <svg width="133" height="25" viewBox="0 0 171 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0.0382283 30.6746L0.0389146 20.4191C0.0370787 17.3225 -0.199069 14.0151 0.514193 10.9885C1.06337 8.65874 2.16654 6.42119 3.78056 4.64355C6.65357 1.47931 10.3546 0.178774 14.5444 0C16.952 0.0878955 19.247 0.632709 21.3714 1.79027C24.4287 3.45592 26.5544 6.068 27.5406 9.39541L19.2857 9.42158C17.4099 9.43076 15.3438 9.25726 13.5142 9.69376C12.2736 9.9898 11.0552 10.6188 10.1547 11.5308C9.32715 12.3689 8.78142 13.3792 8.48148 14.5154C7.87952 16.7947 8.23179 23.0165 8.25519 25.7123L8.26782 30.6572L0.0382283 30.6746Z" fill="#262626"/><path d="M35.9722 9.04503C33.6259 9.535 31.3239 8.03939 30.8178 5.69651C30.312 3.35339 31.7918 1.04126 34.1315 0.519628C36.4934 -0.00728649 38.8326 1.49015 39.3435 3.85552C39.8543 6.22113 38.3413 8.55025 35.9722 9.04503Z" fill="#262626"/><path d="M132.811 30.6847L132.799 0.65332L139.374 0.655617C139.168 6.03078 139.349 11.4401 139.27 16.8215C141.157 14.9883 142.764 12.9105 144.639 11.0782L151.977 11.0794C149.672 13.5606 147.359 16.0254 144.911 18.3674C146.733 21.3921 148.72 24.3463 150.622 27.3238L152.811 30.6888L145.08 30.69C143.61 28.3188 142.127 25.9562 140.63 23.6014C140.123 24.0797 139.674 24.5457 139.312 25.1461C139.298 26.9896 139.321 28.8345 139.326 30.678C137.157 30.7154 134.981 30.6838 132.811 30.6847Z" fill="#262626"/><path d="M128.142 8.84588C125.958 9.34181 123.784 7.97955 123.278 5.79822C122.772 3.61667 124.124 1.43649 126.303 0.920136C128.496 0.400336 130.695 1.76329 131.204 3.9593C131.713 6.15531 130.34 8.34696 128.142 8.84588Z" fill="#262626"/><path d="M102.115 30.7033L102.117 20.8331C102.122 19.4219 102.351 17.2906 102.024 15.9623C101.773 15.6734 101.652 15.7083 101.284 15.6452C101.079 15.4021 101.081 15.0473 101.07 14.7412C101.04 13.9409 100.772 11.6467 101.293 11.0858C101.522 11.0647 101.747 11.0381 101.974 11.0012C102.499 10.1959 102.017 6.81132 102.156 5.62622C102.42 5.37929 102.543 5.42656 102.895 5.40361C104.851 5.37791 106.806 5.37308 108.762 5.38915L108.76 11.0783L110.297 11.0741L110.292 15.7762L108.654 15.781C108.669 17.4494 108.878 30.152 108.438 30.7021L102.115 30.7033Z" fill="#262626"/><path d="M164.038 29.6347C162.99 30.446 161.876 30.9591 160.547 31.0874C158.306 31.3038 156.02 30.6791 154.289 29.2237C152.092 27.3754 150.978 24.3957 150.751 21.5942C150.51 18.6287 151.247 15.4372 153.216 13.1434C154.688 11.4284 156.558 10.625 158.779 10.4402C158.825 10.4377 158.871 10.4333 158.917 10.4324C161.157 10.3943 162.78 10.972 164.458 12.4836L164.493 11.0807L170.8 11.0794L170.791 30.6791C169.745 30.6798 165.301 30.8731 164.681 30.5908C164.382 30.2371 164.418 29.956 164.275 29.5374L164.038 29.6347ZM160.294 16.9452C159.193 17.2408 158.319 17.7025 157.72 18.7157C157.115 19.739 157.022 21.0474 157.342 22.1794C157.619 23.1591 158.248 24.0078 159.146 24.5001C159.933 24.9313 160.694 24.9962 161.569 24.8918C162.766 24.4516 163.704 23.882 164.251 22.6627C164.709 21.641 164.681 20.4465 164.281 19.4102C163.909 18.4488 163.218 17.6718 162.269 17.2543C161.637 16.9759 160.978 16.9101 160.294 16.9452Z" fill="#262626"/><path d="M82.6773 19.1248C83.1675 17.0477 83.8254 15.1397 85.2639 13.513C87.0681 11.4724 89.2724 10.7332 91.9221 10.5576C94.4179 10.6345 96.8379 11.3712 98.6295 13.1816C101.339 15.9195 101.585 19.2515 101.547 22.8914C97.3664 22.8598 93.116 22.6734 88.9401 22.8756C89.1373 23.5423 89.3225 24.1564 89.8145 24.6725C90.4337 25.3215 91.2532 25.6674 92.1503 25.6727C93.3631 25.68 94.2641 25.1194 95.0877 24.2806L101.041 24.3083C100.861 25.056 100.673 25.7603 100.321 26.4509C99.2886 28.4754 97.4203 29.9577 95.2704 30.652C92.8197 31.4432 89.982 31.3037 87.6924 30.0927C84.846 28.587 83.7215 26.2854 82.8069 23.3295C82.6816 25.7562 82.7879 28.2512 82.8005 30.6822L76.1225 30.6602C76.1166 28.9129 76.4489 19.122 75.8471 18.2651C75.5926 17.9027 75.1215 17.6207 74.6746 17.5964C74.2602 17.5736 73.9761 17.6875 73.6805 17.9778C73.3631 18.2894 73.205 18.7966 73.129 19.2219C72.9585 20.177 73.0698 21.282 73.076 22.2525V27.3186L73.0485 30.6738L66.7239 30.6705C66.7067 28.8339 67.0892 19.0121 66.3654 18.1221C66.0864 17.7793 65.6563 17.6143 65.223 17.5973C64.7684 17.5794 64.3241 17.7136 64.0005 18.0437C63.7807 18.2676 63.6707 18.5198 63.6131 18.8235C63.3605 20.1497 63.4945 21.6341 63.5032 22.986C63.5197 25.5494 63.576 28.1172 63.5094 30.6797L57.1543 30.6618L57.1623 11.1419C59.2317 11.1102 61.3015 11.1017 63.371 11.1162L63.3761 12.6302C63.5525 12.486 63.7309 12.3442 63.9112 12.2049C65.3788 11.0685 67.0943 10.4247 68.9807 10.7006C70.5307 10.9273 71.5637 11.7149 72.4506 12.9515C73.7702 11.6236 75.2449 10.6749 77.1809 10.6088C78.6265 10.5595 80.0214 10.9845 81.0598 12.0195C83.0087 13.9614 82.6284 16.6181 82.6773 19.1248ZM91.129 16.1591C90.0642 16.5701 89.5513 17.1034 89.0845 18.1455C89.0255 18.2775 88.9764 18.4092 88.9282 18.5455H93.0187L95.2147 18.5382C94.8174 17.6143 94.3878 16.7684 93.4047 16.3509C92.6767 16.0416 91.898 16.0709 91.129 16.1591Z" fill="#262626"/><path d="M45.0579 12.5339C46.5478 11.4273 47.7754 10.8469 49.6517 10.6672C49.7338 10.664 49.816 10.662 49.8982 10.6613C51.5411 10.6521 53.2276 11.0946 54.4104 12.293C55.2648 13.1584 55.8078 14.3111 56.0717 15.49C56.5342 17.5557 56.335 19.894 56.3283 22.0032L56.3086 30.6728L49.8456 30.6661C49.8201 28.1768 49.8126 25.6873 49.8227 23.1977C49.8222 21.8518 49.9654 20.3188 49.6753 19.0056C49.5695 18.5271 49.3825 18.1487 48.9462 17.8972C48.2991 17.524 47.3953 17.4726 46.6892 17.6897C46.1226 17.8641 45.8612 18.2129 45.5828 18.7119C45.4497 20.268 45.5174 21.8433 45.5181 23.4045L45.4997 30.6776L39.0273 30.6656L39.0276 11.0806C41.0258 11.0553 43.0262 11.0755 45.0247 11.0764L45.0579 12.5339Z" fill="#262626"/><path d="M117.289 12.8589C118.496 11.5911 119.637 10.9414 121.373 10.6534L122.668 10.6055L122.668 16.8846C122.148 16.7538 121.602 16.6785 121.065 16.684C120.079 16.6939 119.1 16.9514 118.4 17.6832C117.912 18.1936 117.625 18.8374 117.488 19.5249C117.208 20.9404 117.379 22.5742 117.387 24.0243L117.383 30.6484C115.17 30.6787 112.952 30.6535 110.738 30.6553C110.777 24.1304 110.777 17.6054 110.738 11.0805L117.374 11.0438L117.289 12.8589Z" fill="#262626"/><path d="M23.5828 29.5441C22.4994 30.3308 21.3827 30.8591 20.0434 31.033C17.7891 31.3261 15.395 30.5974 13.6199 29.1982C11.5225 27.5454 10.3299 25.0079 10.0465 22.3844C9.73274 19.4792 10.3501 16.2275 12.2432 13.9285C13.8691 11.9539 15.9208 11.0162 18.4275 10.7851C20.5058 10.5963 22.2038 11.5287 23.7997 12.7278L23.8247 11.1663C25.9909 11.1571 28.1573 11.1638 30.3232 11.1861L30.3469 30.6844L23.8504 30.6683C23.8394 30.2773 23.8401 29.8993 23.7481 29.5177L23.5828 29.5441ZM19.7216 17.0762C18.6136 17.3376 17.7064 17.7952 17.1043 18.8036C16.5305 19.7645 16.4197 20.9659 16.6981 22.0404C16.9526 23.0226 17.5564 23.8779 18.4381 24.3917C19.1506 24.8069 19.8614 24.9092 20.6715 24.8672C21.7909 24.5675 22.6541 24.1134 23.2629 23.074C23.8626 22.05 23.9695 20.7667 23.6262 19.6376C23.3272 18.6533 22.6912 17.8317 21.7547 17.3856C21.1282 17.0872 20.4069 17.0223 19.7216 17.0762Z" fill="#262626"/><path d="M31.4144 30.6618L31.3844 17.7887C31.3789 15.6363 31.2632 13.4157 31.402 11.2705L31.609 11.1364C33.736 11.122 35.8631 11.1185 37.9903 11.1256C37.9802 13.3565 38.0318 30.2956 37.8886 30.5285C37.8528 30.5868 37.7934 30.6267 37.7457 30.6759L31.4144 30.6618Z" fill="#262626"/><path d="M124.272 30.6933L124.268 11.1973L130.744 11.2035L130.725 30.6906L124.272 30.6933Z" fill="#262626"/>
+    </svg>
+  </a>
+
+  {% if is_doctor %}
+  <nav class="nav-links">
+    <a class="nav-link active" href="{% url 'core:dashboard' %}">
+      <span class="nav-icon">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.9814 17.3938C18.208 17.3938 17.5489 17.1233 17.0039 16.5825C16.4597 16.0408 16.1876 15.3838 16.1876 14.6113C16.1876 13.8388 16.458 13.18 16.9989 12.635C17.5405 12.09 18.1976 11.8175 18.9701 11.8175C19.7426 11.8175 20.4014 12.0883 20.9464 12.63C21.4914 13.17 21.7639 13.8267 21.7639 14.6C21.7639 15.3733 21.493 16.0325 20.9514 16.5775C20.4114 17.1217 19.7547 17.3938 18.9814 17.3938ZM13.4464 23.9325C13.1605 23.9325 12.921 23.8358 12.7276 23.6425C12.5343 23.4492 12.4376 23.2092 12.4376 22.9225V22.5188C12.4376 22.2471 12.5055 21.9879 12.6414 21.7413C12.778 21.4954 12.9614 21.2979 13.1914 21.1488C14.0655 20.6504 14.9822 20.2688 15.9414 20.0038C16.8997 19.7388 17.911 19.6063 18.9751 19.6063C20.0393 19.6063 21.051 19.7388 22.0101 20.0038C22.9693 20.2688 23.886 20.6504 24.7601 21.1488C24.9901 21.2988 25.1735 21.4963 25.3101 21.7413C25.446 21.9879 25.5139 22.2471 25.5139 22.5188V22.9225C25.5139 23.2092 25.4172 23.4492 25.2239 23.6425C25.0305 23.8358 24.7905 23.9325 24.5039 23.9325H13.4464ZM12.1251 17.25H4.62512C4.44762 17.25 4.29887 17.19 4.17887 17.07C4.05971 16.95 4.00012 16.8013 4.00012 16.6238C4.00012 16.4463 4.05971 16.2979 4.17887 16.1788C4.29887 16.0596 4.44762 16 4.62512 16H12.1251C12.3018 16 12.4501 16.06 12.5701 16.18C12.6901 16.3 12.7501 16.4488 12.7501 16.6263C12.7501 16.8038 12.6901 16.9521 12.5701 17.0713C12.4501 17.1904 12.3018 17.25 12.1251 17.25ZM17.1251 7.25H4.62512C4.44762 7.25 4.29887 7.19 4.17887 7.07C4.05971 6.95 4.00012 6.80125 4.00012 6.62375C4.00012 6.44625 4.05971 6.29792 4.17887 6.17875C4.29887 6.05958 4.44762 6 4.62512 6H17.1251C17.3018 6 17.4501 6.06 17.5701 6.18C17.6901 6.3 17.7501 6.44875 17.7501 6.62625C17.7501 6.80375 17.6901 6.95208 17.5701 7.07125C17.4501 7.19042 17.3018 7.25 17.1251 7.25ZM13.7639 12.25H4.62512C4.44762 12.25 4.29887 12.19 4.17887 12.07C4.05971 11.95 4.00012 11.8012 4.00012 11.6238C4.00012 11.4462 4.05971 11.2979 4.17887 11.1788C4.29887 11.0596 4.44762 11 4.62512 11H14.4801C14.3326 11.1942 14.1985 11.3913 14.0776 11.5912C13.9568 11.7913 13.8514 12.0108 13.7639 12.25Z" fill="#2E7CF6"/>
+        </svg>
+      </span>
+      <span class="nav-label">Мои пациенты</span>
+    </a>
+    <a class="nav-link" href="{% url 'medications:list' %}">
+      <span class="nav-icon">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#262626"/>
+        </svg>
+      </span>
+      <span class="nav-label">Лекарства</span>
+    </a>
+  </nav>
+  {% else %}
+  <!-- Пустой nav для выравнивания (пациентам не нужна навигация) -->
+  <div></div>
+  {% endif %}
+
+  <div class="header-right">
+    <div class="user-avatar">
+      <svg width="36" height="36" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
+        <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="user-name">{{ user.last_name }} {{ user.middle_name }}</span>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- Back link -->
+  <a href="{% url 'core:dashboard' %}" class="back-link">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18l-6-6 6-6" stroke="#2E67F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Вернуться назад
+  </a>
+
+  <!-- Page body -->
+  <div class="page-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-section-title">Основные</div>
+        <div class="sidebar-elements">
+
+          <div class="sidebar-item active">
+            <svg viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="5" r="3" stroke="#2E7CF6" stroke-width="1.3"/>
+              <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#2E7CF6" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Профиль пациента
+          </div>
+
+          <div class="sidebar-item" title="Скоро">
+            <svg viewBox="0 0 16 16" fill="none">
+              <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" stroke="#262626" stroke-width="1.3"/>
+              <path d="M8 5v4l3 2" stroke="#262626" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            История тестирования
+          </div>
+
+          <div class="sidebar-item" title="Скоро">
+            <svg viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="1" width="10" height="14" rx="1.5" stroke="#262626" stroke-width="1.3"/>
+              <line x1="4.5" y1="5" x2="9.5" y2="5" stroke="#262626" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="4.5" y1="8" x2="9.5" y2="8" stroke="#262626" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="4.5" y1="11" x2="7.5" y2="11" stroke="#262626" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Рекомендованное лечение
+          </div>
+
+          <div class="sidebar-item" title="Скоро">
+            <svg viewBox="0 0 16 16" fill="none">
+              <rect x="2.5" y="1.5" width="9" height="13" rx="1.5" stroke="#262626" stroke-width="1.3"/>
+              <line x1="5" y1="6" x2="9" y2="6" stroke="#262626" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="5" y1="9" x2="9" y2="9" stroke="#262626" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Заключение
+          </div>
+
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">Тестирование</div>
+        <div class="sidebar-elements">
+          <button class="sidebar-btn" disabled title="Скоро">Начать тестирование</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- Patient info card — VIEW MODE -->
+      <div class="patient-card" id="view-card">
+        <div class="patient-info">
+          <div class="patient-name" id="view-name">{{ patient.user.get_full_name }}</div>
+          <div class="patient-data">
+
+            <div class="patient-row">
+              <span class="label">Дата рождения</span>
+              {% if date_of_birth %}
+              <span class="value" id="view-dob">{{ date_of_birth|date:"d.m.Y" }}</span>
+              {% else %}
+              <span class="value empty" id="view-dob">—</span>
+              {% endif %}
+            </div>
+
+            <div class="patient-row">
+              <span class="label">Диагноз</span>
+              {% if patient.medical_history %}
+              <span class="value">{{ patient.medical_history }}</span>
+              {% else %}
+              <span class="value empty">—</span>
+              {% endif %}
+            </div>
+
+            <div class="patient-row">
+              <span class="label">Локализация боли</span>
+              {% if patient.pain_location %}
+              <span class="value" id="view-pain-location">{{ patient.pain_location }}</span>
+              {% else %}
+              <span class="value empty" id="view-pain-location">—</span>
+              {% endif %}
+            </div>
+
+            <div class="patient-row">
+              <span class="label">Длительность боли</span>
+              <span class="value {% if pain_duration_label == '—' %}empty{% endif %}" id="view-pain-duration">{{ pain_duration_label }}</span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="patient-actions">
+          <button class="btn-primary" disabled title="Скоро" style="cursor:not-allowed; opacity:0.65;">Скачать карточку</button>
+          <button class="btn-outline" type="button" onclick="switchToEdit()">Редактировать</button>
+        </div>
+      </div>
+
+      <!-- Patient info card — EDIT MODE -->
+      <div class="edit-card" id="edit-card">
+        <div class="edit-title-row">
+          <span class="edit-title">Карточка пациента</span>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <button class="btn-cancel" type="button" onclick="switchToView()">Отмена</button>
+            <button class="btn-save" type="button" id="save-btn" onclick="savePatient()">Сохранить</button>
+          </div>
+        </div>
+        <p class="edit-error" id="edit-error"></p>
+        <div class="edit-cols">
+
+          <!-- Левая колонка: ФИО + дата рождения (для всех) -->
+          <div class="edit-col">
+            <div class="form-field">
+              <label class="field-label">Имя</label>
+              <input class="field-input" id="edit-first-name" type="text" value="{{ patient.user.first_name }}" placeholder="Имя">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Отчество</label>
+              <input class="field-input" id="edit-middle-name" type="text" value="{{ patient.user.middle_name }}" placeholder="Отчество">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Фамилия</label>
+              <input class="field-input" id="edit-last-name" type="text" value="{{ patient.user.last_name }}" placeholder="Фамилия">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Дата рождения</label>
+              <input class="field-input" id="edit-dob" type="date" value="{{ date_of_birth|date:'Y-m-d'|default:'' }}">
+            </div>
+          </div>
+
+          <!-- Правая колонка: медицинские поля (только для доктора) -->
+          {% if is_doctor %}
+          <div class="edit-col">
+            <div class="form-field">
+              <label class="field-label">Локализация боли</label>
+              <input class="field-input" id="edit-pain-location" type="text" value="{{ patient.pain_location }}" placeholder="Локализация боли">
+            </div>
+            <div class="form-field">
+              <label class="field-label">Длительность боли</label>
+              <select class="field-select" id="edit-pain-duration">
+                <option value="" {% if not patient.pain_duration %}selected{% endif %}>Не указана</option>
+                <option value="1w" {% if patient.pain_duration == '1w' %}selected{% endif %}>Менее 1 недели</option>
+                <option value="1m" {% if patient.pain_duration == '1m' %}selected{% endif %}>1–4 недели</option>
+                <option value="3m" {% if patient.pain_duration == '3m' %}selected{% endif %}>1–3 месяца</option>
+                <option value="6m" {% if patient.pain_duration == '6m' %}selected{% endif %}>3–6 месяцев</option>
+                <option value="1y" {% if patient.pain_duration == '1y' %}selected{% endif %}>6–12 месяцев</option>
+                <option value="1y+" {% if patient.pain_duration == '1y+' %}selected{% endif %}>Более 1 года</option>
+              </select>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- Test results -->
+      <div class="results-card">
+        <div class="results-title">Результаты тестирований</div>
+
+        {% if test_results %}
+        <div class="results-grid">
+          {% for result in test_results %}
+          <div class="test-card blue">
+            <div class="test-card-name">{{ result.test.title }}</div>
+            <div class="test-card-result">
+              <span class="test-card-score">{{ result.total_score }}</span>
+              <span class="test-card-unit">балла(ов)</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-results">
+          <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="30" stroke="#EAEAEA" stroke-width="3"/>
+            <path d="M22 32h20M32 22v20" stroke="#EAEAEA" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <span class="empty-results-text">Тестирований пока нет</span>
+        </div>
+        {% endif %}
+
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /page-body -->
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">
+    <svg width="133" height="25" viewBox="0 0 171 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0.0382283 30.6746L0.0389146 20.4191C0.0370787 17.3225 -0.199069 14.0151 0.514193 10.9885C1.06337 8.65874 2.16654 6.42119 3.78056 4.64355C6.65357 1.47931 10.3546 0.178774 14.5444 0C16.952 0.0878955 19.247 0.632709 21.3714 1.79027C24.4287 3.45592 26.5544 6.068 27.5406 9.39541L19.2857 9.42158C17.4099 9.43076 15.3438 9.25726 13.5142 9.69376C12.2736 9.9898 11.0552 10.6188 10.1547 11.5308C9.32715 12.3689 8.78142 13.3792 8.48148 14.5154C7.87952 16.7947 8.23179 23.0165 8.25519 25.7123L8.26782 30.6572L0.0382283 30.6746Z" fill="#262626"/><path d="M35.9722 9.04503C33.6259 9.535 31.3239 8.03939 30.8178 5.69651C30.312 3.35339 31.7918 1.04126 34.1315 0.519628C36.4934 -0.00728649 38.8326 1.49015 39.3435 3.85552C39.8543 6.22113 38.3413 8.55025 35.9722 9.04503Z" fill="#262626"/><path d="M132.811 30.6847L132.799 0.65332L139.374 0.655617C139.168 6.03078 139.349 11.4401 139.27 16.8215C141.157 14.9883 142.764 12.9105 144.639 11.0782L151.977 11.0794C149.672 13.5606 147.359 16.0254 144.911 18.3674C146.733 21.3921 148.72 24.3463 150.622 27.3238L152.811 30.6888L145.08 30.69C143.61 28.3188 142.127 25.9562 140.63 23.6014C140.123 24.0797 139.674 24.5457 139.312 25.1461C139.298 26.9896 139.321 28.8345 139.326 30.678C137.157 30.7154 134.981 30.6838 132.811 30.6847Z" fill="#262626"/><path d="M128.142 8.84588C125.958 9.34181 123.784 7.97955 123.278 5.79822C122.772 3.61667 124.124 1.43649 126.303 0.920136C128.496 0.400336 130.695 1.76329 131.204 3.9593C131.713 6.15531 130.34 8.34696 128.142 8.84588Z" fill="#262626"/><path d="M102.115 30.7033L102.117 20.8331C102.122 19.4219 102.351 17.2906 102.024 15.9623C101.773 15.6734 101.652 15.7083 101.284 15.6452C101.079 15.4021 101.081 15.0473 101.07 14.7412C101.04 13.9409 100.772 11.6467 101.293 11.0858C101.522 11.0647 101.747 11.0381 101.974 11.0012C102.499 10.1959 102.017 6.81132 102.156 5.62622C102.42 5.37929 102.543 5.42656 102.895 5.40361C104.851 5.37791 106.806 5.37308 108.762 5.38915L108.76 11.0783L110.297 11.0741L110.292 15.7762L108.654 15.781C108.669 17.4494 108.878 30.152 108.438 30.7021L102.115 30.7033Z" fill="#262626"/><path d="M164.038 29.6347C162.99 30.446 161.876 30.9591 160.547 31.0874C158.306 31.3038 156.02 30.6791 154.289 29.2237C152.092 27.3754 150.978 24.3957 150.751 21.5942C150.51 18.6287 151.247 15.4372 153.216 13.1434C154.688 11.4284 156.558 10.625 158.779 10.4402C158.825 10.4377 158.871 10.4333 158.917 10.4324C161.157 10.3943 162.78 10.972 164.458 12.4836L164.493 11.0807L170.8 11.0794L170.791 30.6791C169.745 30.6798 165.301 30.8731 164.681 30.5908C164.382 30.2371 164.418 29.956 164.275 29.5374L164.038 29.6347ZM160.294 16.9452C159.193 17.2408 158.319 17.7025 157.72 18.7157C157.115 19.739 157.022 21.0474 157.342 22.1794C157.619 23.1591 158.248 24.0078 159.146 24.5001C159.933 24.9313 160.694 24.9962 161.569 24.8918C162.766 24.4516 163.704 23.882 164.251 22.6627C164.709 21.641 164.681 20.4465 164.281 19.4102C163.909 18.4488 163.218 17.6718 162.269 17.2543C161.637 16.9759 160.978 16.9101 160.294 16.9452Z" fill="#262626"/><path d="M82.6773 19.1248C83.1675 17.0477 83.8254 15.1397 85.2639 13.513C87.0681 11.4724 89.2724 10.7332 91.9221 10.5576C94.4179 10.6345 96.8379 11.3712 98.6295 13.1816C101.339 15.9195 101.585 19.2515 101.547 22.8914C97.3664 22.8598 93.116 22.6734 88.9401 22.8756C89.1373 23.5423 89.3225 24.1564 89.8145 24.6725C90.4337 25.3215 91.2532 25.6674 92.1503 25.6727C93.3631 25.68 94.2641 25.1194 95.0877 24.2806L101.041 24.3083C100.861 25.056 100.673 25.7603 100.321 26.4509C99.2886 28.4754 97.4203 29.9577 95.2704 30.652C92.8197 31.4432 89.982 31.3037 87.6924 30.0927C84.846 28.587 83.7215 26.2854 82.8069 23.3295C82.6816 25.7562 82.7879 28.2512 82.8005 30.6822L76.1225 30.6602C76.1166 28.9129 76.4489 19.122 75.8471 18.2651C75.5926 17.9027 75.1215 17.6207 74.6746 17.5964C74.2602 17.5736 73.9761 17.6875 73.6805 17.9778C73.3631 18.2894 73.205 18.7966 73.129 19.2219C72.9585 20.177 73.0698 21.282 73.076 22.2525V27.3186L73.0485 30.6738L66.7239 30.6705C66.7067 28.8339 67.0892 19.0121 66.3654 18.1221C66.0864 17.7793 65.6563 17.6143 65.223 17.5973C64.7684 17.5794 64.3241 17.7136 64.0005 18.0437C63.7807 18.2676 63.6707 18.5198 63.6131 18.8235C63.3605 20.1497 63.4945 21.6341 63.5032 22.986C63.5197 25.5494 63.576 28.1172 63.5094 30.6797L57.1543 30.6618L57.1623 11.1419C59.2317 11.1102 61.3015 11.1017 63.371 11.1162L63.3761 12.6302C63.5525 12.486 63.7309 12.3442 63.9112 12.2049C65.3788 11.0685 67.0943 10.4247 68.9807 10.7006C70.5307 10.9273 71.5637 11.7149 72.4506 12.9515C73.7702 11.6236 75.2449 10.6749 77.1809 10.6088C78.6265 10.5595 80.0214 10.9845 81.0598 12.0195C83.0087 13.9614 82.6284 16.6181 82.6773 19.1248ZM91.129 16.1591C90.0642 16.5701 89.5513 17.1034 89.0845 18.1455C89.0255 18.2775 88.9764 18.4092 88.9282 18.5455H93.0187L95.2147 18.5382C94.8174 17.6143 94.3878 16.7684 93.4047 16.3509C92.6767 16.0416 91.898 16.0709 91.129 16.1591Z" fill="#262626"/><path d="M45.0579 12.5339C46.5478 11.4273 47.7754 10.8469 49.6517 10.6672C49.7338 10.664 49.816 10.662 49.8982 10.6613C51.5411 10.6521 53.2276 11.0946 54.4104 12.293C55.2648 13.1584 55.8078 14.3111 56.0717 15.49C56.5342 17.5557 56.335 19.894 56.3283 22.0032L56.3086 30.6728L49.8456 30.6661C49.8201 28.1768 49.8126 25.6873 49.8227 23.1977C49.8222 21.8518 49.9654 20.3188 49.6753 19.0056C49.5695 18.5271 49.3825 18.1487 48.9462 17.8972C48.2991 17.524 47.3953 17.4726 46.6892 17.6897C46.1226 17.8641 45.8612 18.2129 45.5828 18.7119C45.4497 20.268 45.5174 21.8433 45.5181 23.4045L45.4997 30.6776L39.0273 30.6656L39.0276 11.0806C41.0258 11.0553 43.0262 11.0755 45.0247 11.0764L45.0579 12.5339Z" fill="#262626"/><path d="M117.289 12.8589C118.496 11.5911 119.637 10.9414 121.373 10.6534L122.668 10.6055L122.668 16.8846C122.148 16.7538 121.602 16.6785 121.065 16.684C120.079 16.6939 119.1 16.9514 118.4 17.6832C117.912 18.1936 117.625 18.8374 117.488 19.5249C117.208 20.9404 117.379 22.5742 117.387 24.0243L117.383 30.6484C115.17 30.6787 112.952 30.6535 110.738 30.6553C110.777 24.1304 110.777 17.6054 110.738 11.0805L117.374 11.0438L117.289 12.8589Z" fill="#262626"/><path d="M23.5828 29.5441C22.4994 30.3308 21.3827 30.8591 20.0434 31.033C17.7891 31.3261 15.395 30.5974 13.6199 29.1982C11.5225 27.5454 10.3299 25.0079 10.0465 22.3844C9.73274 19.4792 10.3501 16.2275 12.2432 13.9285C13.8691 11.9539 15.9208 11.0162 18.4275 10.7851C20.5058 10.5963 22.2038 11.5287 23.7997 12.7278L23.8247 11.1663C25.9909 11.1571 28.1573 11.1638 30.3232 11.1861L30.3469 30.6844L23.8504 30.6683C23.8394 30.2773 23.8401 29.8993 23.7481 29.5177L23.5828 29.5441ZM19.7216 17.0762C18.6136 17.3376 17.7064 17.7952 17.1043 18.8036C16.5305 19.7645 16.4197 20.9659 16.6981 22.0404C16.9526 23.0226 17.5564 23.8779 18.4381 24.3917C19.1506 24.8069 19.8614 24.9092 20.6715 24.8672C21.7909 24.5675 22.6541 24.1134 23.2629 23.074C23.8626 22.05 23.9695 20.7667 23.6262 19.6376C23.3272 18.6533 22.6912 17.8317 21.7547 17.3856C21.1282 17.0872 20.4069 17.0223 19.7216 17.0762Z" fill="#262626"/><path d="M31.4144 30.6618L31.3844 17.7887C31.3789 15.6363 31.2632 13.4157 31.402 11.2705L31.609 11.1364C33.736 11.122 35.8631 11.1185 37.9903 11.1256C37.9802 13.3565 38.0318 30.2956 37.8886 30.5285C37.8528 30.5868 37.7934 30.6267 37.7457 30.6759L31.4144 30.6618Z" fill="#262626"/><path d="M124.272 30.6933L124.268 11.1973L130.744 11.2035L130.725 30.6906L124.272 30.6933Z" fill="#262626"/>
+    </svg>
+  </div>
+  <span class="footer-tagline">Система управления пациентами для врачей и специалистов</span>
+  <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
+</footer>
+
+<script>
+  function getCsrfToken() {
+    const name = 'csrftoken';
+    for (const c of document.cookie.split(';')) {
+      const t = c.trim();
+      if (t.startsWith(name + '=')) return decodeURIComponent(t.slice(name.length + 1));
+    }
+    return '';
+  }
+
+  function switchToEdit() {
+    document.getElementById('view-card').style.display = 'none';
+    document.getElementById('edit-card').classList.add('active');
+  }
+
+  function switchToView() {
+    document.getElementById('edit-card').classList.remove('active');
+    document.getElementById('view-card').style.display = '';
+    const errEl = document.getElementById('edit-error');
+    errEl.classList.remove('show');
+    errEl.textContent = '';
+  }
+
+  async function savePatient() {
+    const btn = document.getElementById('save-btn');
+    const errEl = document.getElementById('edit-error');
+
+    const firstName = document.getElementById('edit-first-name').value.trim();
+    const lastName  = document.getElementById('edit-last-name').value.trim();
+
+    if (!firstName || !lastName) {
+      errEl.textContent = 'Имя и фамилия обязательны';
+      errEl.classList.add('show');
+      return;
+    }
+
+    const payload = {
+      first_name:    firstName,
+      middle_name:   document.getElementById('edit-middle-name').value.trim(),
+      last_name:     lastName,
+      date_of_birth: document.getElementById('edit-dob').value,
+    };
+
+    {% if is_doctor %}
+    payload.pain_location = document.getElementById('edit-pain-location').value.trim();
+    payload.pain_duration  = document.getElementById('edit-pain-duration').value;
+    {% endif %}
+
+    btn.disabled = true;
+    btn.textContent = 'Сохранение...';
+    errEl.classList.remove('show');
+
+    try {
+      const resp = await fetch('{% url "patients:update" patient.pk %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+
+      if (data.success) {
+        // Обновляем view-карточку без перезагрузки
+        document.getElementById('view-name').textContent = data.full_name;
+
+        const dobEl = document.getElementById('view-dob');
+        dobEl.textContent  = data.date_of_birth || '—';
+        dobEl.className    = 'value' + (data.date_of_birth ? '' : ' empty');
+
+        {% if is_doctor %}
+        const locEl = document.getElementById('view-pain-location');
+        locEl.textContent = data.pain_location || '—';
+        locEl.className   = 'value' + (data.pain_location ? '' : ' empty');
+
+        const durEl = document.getElementById('view-pain-duration');
+        durEl.textContent = data.pain_duration_label;
+        durEl.className   = 'value' + (data.pain_duration_label !== '—' ? '' : ' empty');
+
+        // Обновляем select в форме на случай повторного редактирования
+        document.getElementById('edit-pain-duration').value = data.pain_duration || '';
+        {% endif %}
+
+        // Обновляем input дату
+        document.getElementById('edit-dob').value = data.date_of_birth_iso || '';
+
+        switchToView();
+      } else {
+        errEl.textContent = data.error || 'Ошибка сохранения';
+        errEl.classList.add('show');
+      }
+    } catch {
+      errEl.textContent = 'Ошибка соединения с сервером';
+      errEl.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Сохранить';
+    }
+  }
+</script>
+
+</body>
+</html>

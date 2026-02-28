@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Доступные тесты{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem;">Доступные тесты</h1>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+    {% for test in tests %}
+    <div style="background: var(--white); padding: 1.5rem; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="margin-bottom: 1rem; color: var(--primary-blue);">{{ test.title }}</h3>
+        <p style="color: var(--medium-gray); margin-bottom: 1.5rem;">{{ test.description|truncatewords:20 }}</p>
+
+        <form method="post" action="{% url 'tests:start' test.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Начать тест</button>
+        </form>
+    </div>
+    {% empty %}
+    <p style="grid-column: 1/-1; text-align: center; color: var(--medium-gray); padding: 2rem;">Нет доступных тестов</p>
+    {% endfor %}
+</div>
+{% endblock %}

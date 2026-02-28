@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление теста{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 0 auto; background: var(--white); padding: 2rem; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h1 style="margin-bottom: 2rem;">Подтверждение удаления</h1>
+    <p style="margin-bottom: 2rem;">Вы уверены, что хотите удалить тест <strong>{{ test.title }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-danger">Удалить</button>
+            <a href="{% url 'tests:manage' %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

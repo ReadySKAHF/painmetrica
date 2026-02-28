@@ -1,0 +1,362 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Регистрация — Шаг 2 — Painmetrica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-500: #2E67F6; --blue-400: #2E7CF6; --blue-350: #5391F2; --blue-200: #D4E6FF; --blue-100: #EEF5FF;
+    --gray-950: #262626; --gray-550: #919191; --gray-500: #C8C8C8; --gray-300: #EAEAEA; --gray-250: #F5F5F5; --gray-200: #F9F9F9;
+    --white: #FEFEFE; --red-400: #E43D3D; --red-bg: #FFEBEB; --font: 'Nunito Sans', sans-serif;
+  }
+  body { font-family: var(--font); background: var(--white); color: var(--gray-950); min-height: 100vh; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 28px 52px; max-width: 1320px; margin: 0 auto; }
+  .logo { font-size: 24px; font-weight: 700; color: var(--blue-500); text-decoration: none; }
+  main { max-width: 1320px; margin: 0 auto; padding: 40px 52px 60px; display: flex; gap: 100px; align-items: flex-start; }
+  .stepper-panel { width: 466px; flex-shrink: 0; background: var(--gray-200); border-radius: 25px; padding: 32px 20px; }
+  .steps-list { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 0 16px; }
+  .steps-list::before { content: ''; position: absolute; left: 35px; top: 50px; width: 2px; height: calc(33% - 20px);
+    background: var(--blue-350); border-radius: 2px; }
+  .steps-list::after { content: ''; position: absolute; left: 35px; top: calc(33% + 50px); width: 2px; height: calc(33% - 20px);
+    background: var(--gray-300); border-radius: 2px; }
+  .step-item { display: flex; gap: 12px; z-index: 1; }
+  .step-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; }
+  .step-circle.active { background: var(--blue-400); border: 2px solid var(--blue-200); }
+  .step-circle.done { background: var(--blue-400); }
+  .step-circle .check-icon { display: none; }
+  .step-circle.done .check-icon { display: block; }
+  .step-text { padding: 6px 0; }
+  .step-label { font-size: 18px; font-weight: 600; color: var(--gray-500); margin-bottom: 10px; }
+  .step-label.active { color: var(--blue-400); }
+  .step-label.done { color: var(--gray-950); }
+  .step-desc { font-size: 20px; color: var(--gray-500); line-height: 1.4; }
+  .step-desc.active, .step-desc.done { color: #000; }
+  .form-section { flex: 1; max-width: 424px; }
+  .form-title { font-size: 30px; font-weight: 700; margin-bottom: 8px; }
+  .form-subtitle { font-size: 18px; margin-bottom: 42px; }
+  .field-group { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+  .field-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { font-size: 12px; font-weight: 600; }
+  .field-label.error { color: var(--red-400); }
+  .field-input { width: 100%; height: 48px; padding: 0 16px; background: var(--gray-200); border: 1px solid transparent;
+    border-radius: 12px; font-family: var(--font); font-size: 12px; color: var(--gray-950); outline: none; }
+  .field-input::placeholder { color: var(--gray-550); }
+  .field-input:focus { border-color: var(--blue-400); }
+  .field-input.error-state { border-color: var(--red-400); }
+  .field-select-wrap { position: relative; }
+  .field-select { width: 100%; height: 48px; padding: 0 40px 0 16px; background: var(--gray-200); border: 1px solid transparent;
+    border-radius: 12px; font-family: var(--font); font-size: 12px; color: var(--gray-950); outline: none;
+    appearance: none; cursor: pointer; transition: border .15s; }
+  .field-select:focus { border-color: var(--blue-400); }
+  .field-select.error-state { border-color: var(--red-400); color: var(--red-400); }
+  .select-arrow { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--gray-550); }
+  .error-block { display: none; align-items: center; gap: 10px; padding: 13px 14px; background: var(--red-bg);
+    border-radius: 8px; margin-top: 4px; }
+  .error-block.visible { display: flex; }
+  .error-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--red-400); }
+  .error-text { font-size: 10px; color: var(--red-400); }
+  .cb-wrap { display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 26px; }
+  .cb-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gray-950); cursor: pointer; flex-shrink: 0; }
+  .cb-label { font-size: 12px; color: var(--gray-950); line-height: 1.5; }
+  .cb-label a { color: var(--gray-950); text-decoration: underline; }
+  .btns-row { display: flex; align-items: center; gap: 24px; }
+  .btn-primary { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px; background: var(--blue-500);
+    border-radius: 13px; border: none; font-size: 18px; font-weight: 600; color: var(--gray-250); cursor: pointer;
+    transition: opacity .15s; flex: 1; max-width: 200px; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-primary:disabled { background: var(--gray-300); color: var(--gray-550); cursor: not-allowed; opacity: 1; }
+  .btn-secondary { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px;
+    background: var(--white); border: 1px solid var(--gray-950); border-radius: 13px; font-size: 18px; font-weight: 600;
+    color: var(--gray-950); cursor: pointer; transition: background .15s; width: 100px; }
+  .btn-secondary:hover { background: var(--gray-250); }
+  footer { text-align: center; padding: 16px; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="{% url 'core:home' %}" class="logo">Painmetrica</a>
+</header>
+
+<main>
+  <aside class="stepper-panel">
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-circle done">
+          <svg class="check-icon" width="18" height="18" fill="none">
+            <path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-text">
+          <div class="step-label done">ШАГ 1</div>
+          <div class="step-desc done">Введите данные для вашей учетной записи</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle active"></div>
+        <div class="step-text">
+          <div class="step-label active">ШАГ 2</div>
+          <div class="step-desc active">Введите данные о вашей профессиональной деятельности</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle"></div>
+        <div class="step-text">
+          <div class="step-label">ШАГ 3</div>
+          <div class="step-desc">Подтвердите адрес электронной почты</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="form-section">
+    <h1 class="form-title">Профессиональные данные</h1>
+    <p class="form-subtitle">Расскажите о вашей работе</p>
+
+    <form method="post" id="step2-form">
+      {% csrf_token %}
+
+      <div class="field-group">
+
+        <!-- Специальность -->
+        <div class="field-wrap">
+          <label class="field-label" id="label-specialty" for="id_specialty">Специальность</label>
+          <div class="field-select-wrap">
+            <select class="field-select" id="id_specialty" name="specialty" required>
+              <option value="">Выберите специальность</option>
+              <option value="Терапевт">Терапевт</option>
+              <option value="Кардиолог">Кардиолог</option>
+              <option value="Невролог">Невролог</option>
+              <option value="Хирург">Хирург</option>
+              <option value="Педиатр">Педиатр</option>
+              <option value="Гастроэнтеролог">Гастроэнтеролог</option>
+              <option value="Эндокринолог">Эндокринолог</option>
+              <option value="Офтальмолог">Офтальмолог</option>
+              <option value="Дерматолог">Дерматолог</option>
+              <option value="Ортопед">Ортопед</option>
+            </select>
+            <svg class="select-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="error-block" id="error-specialty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не выбрали специальность</span>
+          </div>
+        </div>
+
+        <!-- Должность -->
+        <div class="field-wrap">
+          <label class="field-label" for="id_position">Должность</label>
+          <input class="field-input" type="text" id="id_position" name="position" placeholder="Введите должность" required>
+        </div>
+
+        <!-- Место работы -->
+        <div class="field-wrap">
+          <label class="field-label" for="id_workplace">Место работы</label>
+          <input class="field-input" type="text" id="id_workplace" name="workplace" placeholder="Введите место работы" required>
+        </div>
+
+        <!-- Город -->
+        <div class="field-wrap">
+          <label class="field-label" id="label-city" for="id_city">Город</label>
+          <div class="field-select-wrap">
+            <select class="field-select" id="id_city" name="city" required>
+              <option value="">Выберите город</option>
+              <option value="Москва">Москва</option>
+              <option value="Санкт-Петербург">Санкт-Петербург</option>
+              <option value="Минск">Минск</option>
+              <option value="Гомель">Гомель</option>
+              <option value="Брест">Брест</option>
+              <option value="Витебск">Витебск</option>
+              <option value="Гродно">Гродно</option>
+              <option value="Казань">Казань</option>
+              <option value="Екатеринбург">Екатеринбург</option>
+              <option value="Новосибирск">Новосибирск</option>
+            </select>
+            <svg class="select-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="error-block" id="error-city">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не выбрали город</span>
+          </div>
+        </div>
+
+        <!-- Сфера интересов -->
+        <div class="field-wrap">
+          <label class="field-label" id="label-interests" for="id_area_of_interest">Сфера интересов</label>
+          <div class="field-select-wrap">
+            <select class="field-select" id="id_area_of_interest" name="area_of_interest" required>
+              <option value="">Выберите сферу</option>
+              <option value="Кардиология">Кардиология</option>
+              <option value="Неврология">Неврология</option>
+              <option value="Педиатрия">Педиатрия</option>
+              <option value="Хирургия">Хирургия</option>
+              <option value="Гастроэнтерология">Гастроэнтерология</option>
+              <option value="Эндокринология">Эндокринология</option>
+              <option value="Офтальмология">Офтальмология</option>
+              <option value="Дерматология">Дерматология</option>
+              <option value="Ортопедия">Ортопедия</option>
+              <option value="Онкология">Онкология</option>
+            </select>
+            <svg class="select-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="error-block" id="error-interests">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не выбрали сферу интересов</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Checkbox -->
+      <label class="cb-wrap">
+        <input type="checkbox" id="cb-terms">
+        <span class="cb-label">Нажимая зарегистрироваться, вы соглашаетесь на <a href="#">обработку личных данных</a></span>
+      </label>
+
+      <!-- Buttons -->
+      <div class="btns-row">
+        <a href="{% url 'accounts:register_step_one' %}" class="btn-secondary">Назад</a>
+        <button type="submit" class="btn-primary" id="btn-submit" disabled>Получить код</button>
+      </div>
+
+    </form>
+
+  </section>
+</main>
+
+<footer>© 2026 Painmetrica</footer>
+
+<script>
+// Elements
+const selSpecialty = document.getElementById('id_specialty');
+const selCity = document.getElementById('id_city');
+const selInterests = document.getElementById('id_area_of_interest');
+const inpPosition = document.getElementById('id_position');
+const inpWorkplace = document.getElementById('id_workplace');
+const cbTerms = document.getElementById('cb-terms');
+const btnSubmit = document.getElementById('btn-submit');
+
+const errorSpecialty = document.getElementById('error-specialty');
+const errorCity = document.getElementById('error-city');
+const errorInterests = document.getElementById('error-interests');
+
+const labelSpecialty = document.getElementById('label-specialty');
+const labelCity = document.getElementById('label-city');
+const labelInterests = document.getElementById('label-interests');
+
+// Validation function
+function checkForm() {
+  const specialtyOk = selSpecialty.value !== '';
+  const cityOk = selCity.value !== '';
+  const interestsOk = selInterests.value !== '';
+  const positionOk = inpPosition.value.trim() !== '';
+  const workplaceOk = inpWorkplace.value.trim() !== '';
+  const termsOk = cbTerms.checked;
+
+  const allValid = specialtyOk && cityOk && interestsOk && positionOk && workplaceOk && termsOk;
+  btnSubmit.disabled = !allValid;
+}
+
+// Specialty validation
+selSpecialty.addEventListener('change', () => {
+  if (selSpecialty.value !== '') {
+    selSpecialty.classList.remove('error-state');
+    errorSpecialty.classList.remove('visible');
+    labelSpecialty.classList.remove('error');
+  } else {
+    selSpecialty.classList.add('error-state');
+    errorSpecialty.classList.add('visible');
+    labelSpecialty.classList.add('error');
+  }
+  checkForm();
+});
+
+// City validation
+selCity.addEventListener('change', () => {
+  if (selCity.value !== '') {
+    selCity.classList.remove('error-state');
+    errorCity.classList.remove('visible');
+    labelCity.classList.remove('error');
+  } else {
+    selCity.classList.add('error-state');
+    errorCity.classList.add('visible');
+    labelCity.classList.add('error');
+  }
+  checkForm();
+});
+
+// Interests validation
+selInterests.addEventListener('change', () => {
+  if (selInterests.value !== '') {
+    selInterests.classList.remove('error-state');
+    errorInterests.classList.remove('visible');
+    labelInterests.classList.remove('error');
+  } else {
+    selInterests.classList.add('error-state');
+    errorInterests.classList.add('visible');
+    labelInterests.classList.add('error');
+  }
+  checkForm();
+});
+
+// Input fields validation
+inpPosition.addEventListener('input', checkForm);
+inpWorkplace.addEventListener('input', checkForm);
+
+// Checkbox validation
+cbTerms.addEventListener('change', checkForm);
+
+// Form submit - show errors for empty selects
+document.getElementById('step2-form').addEventListener('submit', (e) => {
+  let hasError = false;
+
+  if (selSpecialty.value === '') {
+    selSpecialty.classList.add('error-state');
+    errorSpecialty.classList.add('visible');
+    labelSpecialty.classList.add('error');
+    hasError = true;
+  }
+
+  if (selCity.value === '') {
+    selCity.classList.add('error-state');
+    errorCity.classList.add('visible');
+    labelCity.classList.add('error');
+    hasError = true;
+  }
+
+  if (selInterests.value === '') {
+    selInterests.classList.add('error-state');
+    errorInterests.classList.add('visible');
+    labelInterests.classList.add('error');
+    hasError = true;
+  }
+
+  if (hasError) {
+    e.preventDefault();
+  }
+});
+</script>
+
+</body>
+</html>

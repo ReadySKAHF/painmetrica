@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Список пациентов{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>Мои пациенты</h1>
+    <a href="{% url 'patients:create' %}" class="btn btn-primary">Добавить пациента</a>
+</div>
+
+<div style="background: var(--white); padding: 2rem; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    {% if patients %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--light-gray);">
+                    <th style="text-align: left; padding: 1rem;">ФИО</th>
+                    <th style="text-align: left; padding: 1rem;">Email</th>
+                    <th style="text-align: left; padding: 1rem;">Дата добавления</th>
+                    <th style="text-align: center; padding: 1rem;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr style="border-bottom: 1px solid var(--light-gray);">
+                    <td style="padding: 1rem;">{{ patient.user.get_full_name }}</td>
+                    <td style="padding: 1rem;">{{ patient.user.email }}</td>
+                    <td style="padding: 1rem;">{{ patient.created_at|date:"d.m.Y" }}</td>
+                    <td style="padding: 1rem; text-align: center;">
+                        <a href="{% url 'patients:detail' patient.pk %}" style="color: var(--primary-blue); margin-right: 1rem;">Подробнее</a>
+                        <a href="{% url 'patients:edit' patient.pk %}" style="color: var(--medium-gray); margin-right: 1rem;">Редактировать</a>
+                        <a href="{% url 'patients:delete' patient.pk %}" style="color: var(--error-red);">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align: center; color: var(--medium-gray); padding: 2rem;">У вас пока нет пациентов</p>
+    {% endif %}
+</div>
+{% endblock %}

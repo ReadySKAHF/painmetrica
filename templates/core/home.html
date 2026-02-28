@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Painmetrica{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 4rem 0;">
+    <h1 style="font-size: 3rem; color: var(--primary-blue); margin-bottom: 1rem;">
+        Добро пожаловать в Painmetrica
+    </h1>
+    <p style="font-size: 1.25rem; color: var(--medium-gray); margin-bottom: 2rem;">
+        Система управления медицинскими данными для докторов и пациентов
+    </p>
+
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="{% url 'accounts:register_step_one' %}" class="btn btn-primary" style="font-size: 1.1rem;">
+            Зарегистрироваться
+        </a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-secondary" style="font-size: 1.1rem;">
+            Войти
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 4rem;">
+    <div style="background: var(--white); padding: 2rem; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Для докторов</h3>
+        <ul style="list-style: none; color: var(--dark-gray);">
+            <li style="margin-bottom: 0.5rem;">✓ Управление пациентами</li>
+            <li style="margin-bottom: 0.5rem;">✓ Назначение лекарств</li>
+            <li style="margin-bottom: 0.5rem;">✓ Создание тестов</li>
+            <li style="margin-bottom: 0.5rem;">✓ Анализ результатов</li>
+        </ul>
+    </div>
+
+    <div style="background: var(--white); padding: 2rem; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Для пациентов</h3>
+        <ul style="list-style: none; color: var(--dark-gray);">
+            <li style="margin-bottom: 0.5rem;">✓ Прохождение тестов</li>
+            <li style="margin-bottom: 0.5rem;">✓ Просмотр результатов</li>
+            <li style="margin-bottom: 0.5rem;">✓ Связь с лечащим врачом</li>
+            <li style="margin-bottom: 0.5rem;">✓ История обследований</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

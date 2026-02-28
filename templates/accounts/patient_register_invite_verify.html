@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подтверждение почты — Painmetrica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-500: #2E67F6; --blue-400: #2E7CF6; --blue-350: #5391F2;
+    --blue-200: #D4E6FF; --gray-950: #262626; --gray-550: #919191;
+    --gray-500: #C8C8C8; --gray-300: #EAEAEA; --gray-250: #F5F5F5;
+    --gray-200: #F9F9F9; --white: #FEFEFE; --red-400: #E43D3D; --red-bg: #FFEBEB;
+    --font: 'Nunito Sans', sans-serif;
+  }
+  body { font-family: var(--font); background: var(--white); color: var(--gray-950); min-height: 100vh; display: flex; flex-direction: column; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 28px 52px; max-width: 1320px; width: 100%; margin: 0 auto; }
+  .logo { display: flex; align-items: center; text-decoration: none; }
+  main { max-width: 1320px; margin: 0 auto; padding: 40px 52px 60px; display: flex; gap: 100px; align-items: flex-start; }
+
+  .stepper-panel { width: 466px; flex-shrink: 0; background: var(--gray-200); border-radius: 25px; padding: 32px 20px; }
+  .steps-list { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 0 16px; }
+  .steps-list::before { content: ''; position: absolute; left: 35px; top: 50px; width: 2px; height: calc(50% - 30px); background: var(--blue-350); border-radius: 2px; }
+  .step-item { display: flex; gap: 12px; z-index: 1; }
+  .step-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .step-circle.active { background: var(--blue-400); border: 2px solid var(--blue-200); }
+  .step-circle.done { background: var(--blue-400); }
+  .step-circle .check-icon { display: none; }
+  .step-circle.done .check-icon { display: block; }
+  .step-text { padding: 6px 0; }
+  .step-label { font-size: 18px; font-weight: 600; color: var(--gray-500); margin-bottom: 10px; }
+  .step-label.active { color: var(--blue-400); }
+  .step-label.done { color: var(--gray-950); }
+  .step-desc { font-size: 20px; color: var(--gray-500); line-height: 1.4; }
+  .step-desc.active, .step-desc.done { color: #000; }
+
+  .content-section { flex: 1; max-width: 425px; display: flex; flex-direction: column; gap: 52px; }
+  .page-title { font-size: 30px; font-weight: 700; color: var(--gray-950); }
+  .verify-text { font-size: 18px; color: var(--gray-950); line-height: 1.55; margin-bottom: 24px; }
+  .verify-text strong { font-weight: 700; }
+
+  .otp-row { display: flex; justify-content: center; gap: 20px; margin-bottom: 42px; }
+  .otp-input { width: 57px; height: 52px; border: 1px solid var(--gray-300); border-radius: 7px; background: var(--white); text-align: center; font-family: var(--font); font-size: 20px; font-weight: 700; color: var(--gray-950); outline: none; transition: border .15s; }
+  .otp-input:focus { border-color: var(--blue-400); }
+  .otp-input.filled { border-color: var(--gray-950); }
+  .otp-input.error { border-color: var(--red-400); color: var(--red-400); }
+
+  .btns-col { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+  .btn-primary { display: flex; justify-content: center; align-items: center; height: 46px; padding: 0 24px; background: var(--blue-500); border: none; border-radius: 13px; font-family: var(--font); font-size: 18px; font-weight: 600; color: var(--gray-250); cursor: pointer; transition: opacity .15s; min-width: 200px; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-primary:disabled { background: var(--gray-300); color: var(--gray-550); cursor: not-allowed; opacity: 1; }
+  .btn-secondary { display: flex; align-items: center; justify-content: center; height: 46px; padding: 0 24px; background: var(--white); border: 1px solid var(--gray-950); border-radius: 13px; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--gray-950); cursor: pointer; transition: background .15s; max-width: 324px; width: 100%; }
+  .btn-secondary:hover { background: var(--gray-250); }
+  .btn-secondary.muted { border-color: var(--gray-550); color: var(--gray-550); }
+  .btn-secondary:disabled { border-color: var(--gray-550); color: var(--gray-550); cursor: not-allowed; }
+
+  .error-banner { display: none; align-items: center; gap: 10px; padding: 13px 14px; background: var(--red-bg); border: 1px solid var(--red-400); border-radius: 8px; margin-top: 26px; }
+  .error-banner.visible { display: flex; }
+  .error-banner-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--red-400); }
+  .error-banner-text { flex: 1; font-size: 12px; color: var(--red-400); line-height: 1.4; }
+  .error-banner-close { width: 20px; height: 20px; background: var(--white); border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0; }
+  .error-banner-close:hover { background: var(--gray-250); }
+
+  footer { text-align: center; padding: 16px; font-size: 10px; color: var(--gray-950); }
+  @media (max-width: 900px) { main { flex-direction: column; gap: 40px; } .stepper-panel { width: 100%; } }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="{% url 'core:home' %}" class="logo" title="Painmetrica">
+    <svg width="133" height="25" viewBox="0 0 171 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0.0382283 30.6746L0.0389146 20.4191C0.0370787 17.3225 -0.199069 14.0151 0.514193 10.9885C1.06337 8.65874 2.16654 6.42119 3.78056 4.64355C6.65357 1.47931 10.3546 0.178774 14.5444 0C16.952 0.0878955 19.247 0.632709 21.3714 1.79027C24.4287 3.45592 26.5544 6.068 27.5406 9.39541L19.2857 9.42158C17.4099 9.43076 15.3438 9.25726 13.5142 9.69376C12.2736 9.9898 11.0552 10.6188 10.1547 11.5308C9.32715 12.3689 8.78142 13.3792 8.48148 14.5154C7.87952 16.7947 8.23179 23.0165 8.25519 25.7123L8.26782 30.6572L0.0382283 30.6746Z" fill="#262626"/><path d="M35.9722 9.04503C33.6259 9.535 31.3239 8.03939 30.8178 5.69651C30.312 3.35339 31.7918 1.04126 34.1315 0.519628C36.4934 -0.00728649 38.8326 1.49015 39.3435 3.85552C39.8543 6.22113 38.3413 8.55025 35.9722 9.04503Z" fill="#262626"/><path d="M132.811 30.6847L132.799 0.65332L139.374 0.655617C139.168 6.03078 139.349 11.4401 139.27 16.8215C141.157 14.9883 142.764 12.9105 144.639 11.0782L151.977 11.0794C149.672 13.5606 147.359 16.0254 144.911 18.3674C146.733 21.3921 148.72 24.3463 150.622 27.3238L152.811 30.6888L145.08 30.69C143.61 28.3188 142.127 25.9562 140.63 23.6014C140.123 24.0797 139.674 24.5457 139.312 25.1461C139.298 26.9896 139.321 28.8345 139.326 30.678C137.157 30.7154 134.981 30.6838 132.811 30.6847Z" fill="#262626"/><path d="M128.142 8.84588C125.958 9.34181 123.784 7.97955 123.278 5.79822C122.772 3.61667 124.124 1.43649 126.303 0.920136C128.496 0.400336 130.695 1.76329 131.204 3.9593C131.713 6.15531 130.34 8.34696 128.142 8.84588Z" fill="#262626"/><path d="M45.0579 12.5339C46.5478 11.4273 47.7754 10.8469 49.6517 10.6672C49.7338 10.664 49.816 10.662 49.8982 10.6613C51.5411 10.6521 53.2276 11.0946 54.4104 12.293C55.2648 13.1584 55.8078 14.3111 56.0717 15.49C56.5342 17.5557 56.335 19.894 56.3283 22.0032L56.3086 30.6728L49.8456 30.6661C49.8201 28.1768 49.8126 25.6873 49.8227 23.1977C49.8222 21.8518 49.9654 20.3188 49.6753 19.0056C49.5695 18.5271 49.3825 18.1487 48.9462 17.8972C48.2991 17.524 47.3953 17.4726 46.6892 17.6897C46.1226 17.8641 45.8612 18.2129 45.5828 18.7119C45.4497 20.268 45.5174 21.8433 45.5181 23.4045L45.4997 30.6776L39.0273 30.6656L39.0276 11.0806C41.0258 11.0553 43.0262 11.0755 45.0247 11.0764L45.0579 12.5339Z" fill="#262626"/><path d="M31.4144 30.6618L31.3844 17.7887C31.3789 15.6363 31.2632 13.4157 31.402 11.2705L31.609 11.1364C33.736 11.122 35.8631 11.1185 37.9903 11.1256C37.9802 13.3565 38.0318 30.2956 37.8886 30.5285C37.8528 30.5868 37.7934 30.6267 37.7457 30.6759L31.4144 30.6618Z" fill="#262626"/><path d="M124.272 30.6933L124.268 11.1973L130.744 11.2035L130.725 30.6906L124.272 30.6933Z" fill="#262626"/>
+    </svg>
+  </a>
+</header>
+
+<main>
+  <aside class="stepper-panel">
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-circle done">
+          <svg class="check-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-text">
+          <div class="step-label done">ШАГ 1</div>
+          <div class="step-desc done">Введите данные для вашей учётной записи</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle active"></div>
+        <div class="step-text">
+          <div class="step-label active">ШАГ 2</div>
+          <div class="step-desc active">Подтвердите адрес электронной почты</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="content-section">
+    <h1 class="page-title">Подтверждение почты</h1>
+    <div>
+      <p class="verify-text">
+        На почту <strong>{{ user.email }}</strong> был отправлен код подтверждения.
+      </p>
+
+      <form method="post" id="otp-form">
+        {% csrf_token %}
+        <div class="otp-row">
+          <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp1" autocomplete="off">
+          <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp2" autocomplete="off">
+          <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp3" autocomplete="off">
+          <input class="otp-input" type="text" maxlength="1" inputmode="numeric" id="otp4" autocomplete="off">
+        </div>
+        <input type="hidden" name="otp_code" id="otp_code_hidden">
+
+        <div class="btns-col">
+          <button type="submit" class="btn-primary" id="btn-verify" disabled>Завершить регистрацию</button>
+          <button type="button" class="btn-secondary muted" id="btn-resend" disabled>
+            <span id="resend-label">Получить новый код через <span id="timer-val">05:00</span></span>
+          </button>
+        </div>
+
+        <div class="error-banner" id="error-banner">
+          <svg class="error-banner-icon" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+            <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="error-banner-text" id="error-text">Введён неверный код!</span>
+          <button type="button" class="error-banner-close" id="btn-close-error">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1 1L9 9M9 1L1 9" stroke="#262626" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>© 2026 Painmetrica. All rights reserved</footer>
+
+<script>
+const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+const btnVerify = document.getElementById('btn-verify');
+const btnResend = document.getElementById('btn-resend');
+const resendLabel = document.getElementById('resend-label');
+const errBanner = document.getElementById('error-banner');
+const errText = document.getElementById('error-text');
+const otpCodeHidden = document.getElementById('otp_code_hidden');
+
+{% if messages %}{% for message in messages %}{% if message.tags == 'error' %}
+  errText.textContent = '{{ message }}';
+  errBanner.classList.add('visible');
+{% endif %}{% endfor %}{% endif %}
+
+otpInputs.forEach((inp, idx) => {
+  inp.addEventListener('input', (e) => {
+    inp.value = inp.value.replace(/\D/g, '');
+    inp.classList.toggle('filled', inp.value !== '');
+    inp.classList.remove('error');
+    if (inp.value && idx < 3) otpInputs[idx + 1].focus();
+    checkOTP();
+  });
+  inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !inp.value && idx > 0) {
+      otpInputs[idx - 1].focus();
+      otpInputs[idx - 1].value = '';
+      otpInputs[idx - 1].classList.remove('filled', 'error');
+      checkOTP();
+    }
+  });
+  inp.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+    otpInputs.forEach((o, i) => { o.value = text[i] || ''; o.classList.toggle('filled', o.value !== ''); o.classList.remove('error'); });
+    checkOTP();
+    otpInputs[Math.min(text.length, 3)].focus();
+  });
+});
+
+function checkOTP() {
+  const allFilled = otpInputs.every(o => o.value !== '');
+  btnVerify.disabled = !allFilled;
+  errBanner.classList.remove('visible');
+  otpCodeHidden.value = allFilled ? otpInputs.map(o => o.value).join('') : '';
+}
+
+document.getElementById('btn-close-error').addEventListener('click', () => {
+  errBanner.classList.remove('visible');
+  otpInputs.forEach(o => o.classList.remove('error'));
+});
+
+let timerInterval;
+function startTimer(seconds) {
+  let left = seconds;
+  btnResend.disabled = true;
+  btnResend.classList.add('muted');
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    left--;
+    const m = String(Math.floor(left / 60)).padStart(2, '0');
+    const s = String(left % 60).padStart(2, '0');
+    const el = document.getElementById('timer-val');
+    if (el) el.textContent = m + ':' + s;
+    if (left <= 0) {
+      clearInterval(timerInterval);
+      btnResend.disabled = false;
+      btnResend.classList.remove('muted');
+      resendLabel.innerHTML = 'Получить новый код';
+    }
+  }, 1000);
+}
+
+btnResend.addEventListener('click', () => {
+  fetch("{% url 'accounts:resend_otp' %}", {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      otpInputs.forEach(o => { o.value = ''; o.classList.remove('filled', 'error'); });
+      btnVerify.disabled = true;
+      otpCodeHidden.value = '';
+      errBanner.classList.remove('visible');
+      resendLabel.innerHTML = 'Получить новый код через <span id="timer-val">05:00</span>';
+      startTimer(300);
+      otpInputs[0].focus();
+    } else {
+      errText.textContent = data.message || 'Ошибка при отправке кода';
+      errBanner.classList.add('visible');
+    }
+  });
+});
+
+startTimer(300);
+otpInputs[0].focus();
+</script>
+</body>
+</html>

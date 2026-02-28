@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ test_result.test.title }}{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 1rem;">{{ test_result.test.title }}</h1>
+<p style="color: var(--medium-gray); margin-bottom: 2rem;">{{ test_result.test.description }}</p>
+
+{% if test_result.test.instructions %}
+<div style="background: #e3f2fd; padding: 1rem; border-radius: 7px; margin-bottom: 2rem;">
+    <strong>Инструкции:</strong> {{ test_result.test.instructions }}
+</div>
+{% endif %}
+
+<form method="post" action="{% url 'tests:submit' test_result.pk %}">
+    {% csrf_token %}
+
+    {% for question in questions %}
+    <div style="background: var(--white); padding: 1.5rem; border-radius: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">{{ forloop.counter }}. {{ question.question_text }}</h3>
+
+        {% if question.question_type == 'text' %}
+            <textarea name="question_{{ question.id }}" class="form-control" rows="3" {% if question.is_required %}required{% endif %}></textarea>
+
+        {% elif question.question_type == 'single' %}
+            {% for option in question.options.all %}
+            <div style="margin-bottom: 0.5rem;">
+                <label>
+                    <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}" {% if question.is_required %}required{% endif %}>
+                    {{ option.option_text }}
+                </label>
+            </div>
+            {% endfor %}
+
+        {% elif question.question_type == 'multiple' %}
+            {% for option in question.options.all %}
+            <div style="margin-bottom: 0.5rem;">
+                <label>
+                    <input type="checkbox" name="question_{{ question.id }}" value="{{ option.id }}">
+                    {{ option.option_text }}
+                </label>
+            </div>
+            {% endfor %}
+
+        {% elif question.question_type == 'scale' %}
+            <input type="range" name="question_{{ question.id }}" min="{{ question.scale_min }}" max="{{ question.scale_max }}" value="{{ question.scale_min }}" class="form-control" {% if question.is_required %}required{% endif %}>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                <span>{{ question.scale_min_label }}</span>
+                <span>{{ question.scale_max_label }}</span>
+            </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">Отправить ответы</button>
+</form>
+{% endblock %}

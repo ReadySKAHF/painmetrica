@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 
 from accounts.mixins import DoctorRequiredMixin
@@ -13,11 +13,28 @@ class MedicationListView(DoctorRequiredMixin, ListView):
     model = Medication
     template_name = 'medications/medication_list.html'
     context_object_name = 'medications'
-    paginate_by = 20
+    paginate_by = 10
 
     def get_queryset(self):
-        # Показываем все лекарства
-        return Medication.objects.all().select_related('created_by')
+        qs = Medication.objects.all()
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['search_query'] = self.request.GET.get('q', '').strip()
+        ctx['total_medications'] = Medication.objects.count()
+        return ctx
+
+
+class MedicationDetailView(DoctorRequiredMixin, DetailView):
+    """Карточка лекарства"""
+
+    model = Medication
+    template_name = 'medications/medication_detail.html'
+    context_object_name = 'medication'
 
 
 class MedicationCreateView(DoctorRequiredMixin, CreateView):
@@ -25,7 +42,7 @@ class MedicationCreateView(DoctorRequiredMixin, CreateView):
 
     model = Medication
     template_name = 'medications/medication_form.html'
-    fields = ['name', 'description', 'dosage_form', 'manufacturer']
+    fields = ['name', 'medication_type', 'prescription_scheme', 'side_effects', 'notes']
     success_url = reverse_lazy('medications:list')
 
     def form_valid(self, form):
@@ -39,7 +56,7 @@ class MedicationUpdateView(DoctorRequiredMixin, UpdateView):
 
     model = Medication
     template_name = 'medications/medication_form.html'
-    fields = ['name', 'description', 'dosage_form', 'manufacturer']
+    fields = ['name', 'medication_type', 'prescription_scheme', 'side_effects', 'notes']
     success_url = reverse_lazy('medications:list')
 
     def form_valid(self, form):
@@ -74,7 +91,6 @@ class PrescriptionCreateView(DoctorRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        # Ограничиваем выбор только своими пациентами
         from patients.models import Patient
         form.fields['patient'].queryset = Patient.objects.filter(assigned_doctor=self.request.user)
         return form

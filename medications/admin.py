@@ -6,18 +6,18 @@ from medications.models import Medication, Prescription
 class MedicationAdmin(admin.ModelAdmin):
     """Админка для лекарств"""
 
-    list_display = ['name', 'dosage_form', 'manufacturer', 'created_by', 'created_at']
-    list_filter = ['dosage_form', 'created_at']
-    search_fields = ['name', 'description', 'manufacturer']
+    list_display = ['name', 'medication_type', 'created_by', 'created_at']
+    list_filter = ['medication_type', 'created_at']
+    search_fields = ['name', 'prescription_scheme', 'notes']
     readonly_fields = ['created_at', 'updated_at']
     ordering = ['name']
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'description')
+            'fields': ('name', 'medication_type')
         }),
-        ('Детали', {
-            'fields': ('dosage_form', 'manufacturer')
+        ('Подробности', {
+            'fields': ('prescription_scheme', 'side_effects', 'notes')
         }),
         ('Метаданные', {
             'fields': ('created_by', 'created_at', 'updated_at'),
@@ -53,6 +53,5 @@ class PrescriptionAdmin(admin.ModelAdmin):
     )
 
     def get_patient_name(self, obj):
-        """Получение имени пациента"""
         return obj.patient.user.get_full_name()
     get_patient_name.short_description = 'Пациент'

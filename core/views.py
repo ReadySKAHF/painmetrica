@@ -27,21 +27,34 @@ class DashboardView(LoginRequiredMixin, View):
 
         if user.user_type == 'doctor':
             from patients.models import Patient
+            from django.db.models import Q
             search_query = request.GET.get('q', '').strip()
+            adv_last_name = request.GET.get('last_name', '').strip()
+            adv_first_name = request.GET.get('first_name', '').strip()
+            adv_middle_name = request.GET.get('middle_name', '').strip()
+
             patients_qs = Patient.objects.filter(
                 assigned_doctor=user
             ).select_related('user', 'user__patient_profile')
 
             if search_query:
-                from django.db.models import Q
                 patients_qs = patients_qs.filter(
                     Q(user__first_name__icontains=search_query) |
                     Q(user__last_name__icontains=search_query) |
                     Q(user__middle_name__icontains=search_query)
                 )
+            elif adv_last_name or adv_first_name or adv_middle_name:
+                adv_filter = Q()
+                if adv_last_name:
+                    adv_filter &= Q(user__last_name__icontains=adv_last_name)
+                if adv_first_name:
+                    adv_filter &= Q(user__first_name__icontains=adv_first_name)
+                if adv_middle_name:
+                    adv_filter &= Q(user__middle_name__icontains=adv_middle_name)
+                patients_qs = patients_qs.filter(adv_filter)
 
             total_patients = Patient.objects.filter(assigned_doctor=user).count()
-            paginator = Paginator(patients_qs, 20)
+            paginator = Paginator(patients_qs, 10)
             page = request.GET.get('page', 1)
             patients_page = paginator.get_page(page)
 
@@ -49,6 +62,9 @@ class DashboardView(LoginRequiredMixin, View):
             context['patients'] = patients_page
             context['total_patients'] = total_patients
             context['search_query'] = search_query
+            context['adv_last_name'] = adv_last_name
+            context['adv_first_name'] = adv_first_name
+            context['adv_middle_name'] = adv_middle_name
 
         elif user.user_type == 'patient':
             context['is_patient'] = True

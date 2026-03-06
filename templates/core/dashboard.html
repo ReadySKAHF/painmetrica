@@ -403,58 +403,87 @@
     display: flex;
     justify-content: center;
     margin-top: 6px;
+    margin-bottom: 40px;
   }
 
   .pagination {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 12px;
     padding: 12px 24px;
+    gap: 12px;
     background: var(--white);
     border-radius: 24px;
+    user-select: none;
   }
 
-  .pag-btn {
+  .pagination__btn {
     display: flex;
+    flex-direction: row;
     align-items: center;
     padding: 7px 12px;
-    background: var(--gray-200);
+    gap: 4px;
+    height: 29px;
+    background: #F9F9F9;
     border-radius: 17px;
     border: none;
     cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
     font-size: 12px;
+    line-height: 15px;
     color: var(--gray-950);
-    font-family: inherit;
-    text-decoration: none;
+    white-space: nowrap;
     transition: background 0.15s;
   }
-  .pag-btn:hover { background: var(--gray-300); }
-  .pag-btn.disabled { opacity: 0.4; pointer-events: none; }
+  .pagination__btn:hover { background: #EFEFEF; }
+  .pagination__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 
-  .pages {
+  .pagination__pages {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 6px;
   }
 
-  .page-num {
+  .page {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    width: 27px;
+    align-items: center;
+    padding: 4px 8px;
+    min-width: 26px;
     height: 27px;
     border-radius: 16px;
-    font-size: 14px;
-    color: var(--gray-950);
-    background: var(--gray-200);
-    cursor: pointer;
     border: none;
-    text-decoration: none;
-    transition: background 0.15s;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 19px;
+    color: var(--gray-950);
+    background: #F9F9F9;
+    transition: background 0.15s, color 0.15s;
   }
-  .page-num:hover { background: var(--gray-300); }
-  .page-num.active { background: var(--blue-350); color: var(--white); }
+  .page:hover:not(.page--active) { background: #EFEFEF; }
+
+  .page--active {
+    background: #5391F2;
+    color: #FEFEFE;
+    cursor: default;
+  }
+
+  .page--dots {
+    background: transparent;
+    cursor: default;
+    color: var(--gray-950);
+    padding: 4px 2px;
+    min-width: 16px;
+  }
+  .page--dots:hover { background: transparent; }
 
   /* ── NOT FOUND ── */
   .not-found {
@@ -862,7 +891,7 @@
         <span class="patients-count">Всего пациентов: {{ total_patients }}</span>
         <button type="button" class="btn-primary" onclick="openAddPatientModal()">Добавить пациента</button>
       </div>
-      <form method="get" action="{% url 'core:dashboard' %}">
+      <form method="get" action="{% url 'core:dashboard' %}" id="simpleSearchForm">
         <div class="search-field" id="searchField">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
             <circle cx="10" cy="10" r="7" stroke="#919191" stroke-width="1.375"/>
@@ -890,7 +919,7 @@
     </div>
 
     <!-- ADVANCED SEARCH -->
-    <div class="advanced-search-panel" id="advancedPanel">
+    <div class="advanced-search-panel{% if adv_last_name or adv_first_name or adv_middle_name %} open{% endif %}" id="advancedPanel">
       <div class="adv-header">
         <span class="adv-title">Расширенный поиск пациентов</span>
         <button class="btn-close" onclick="toggleAdvanced()">
@@ -899,11 +928,11 @@
           </svg>
         </button>
       </div>
-      <form method="get" action="{% url 'core:dashboard' %}">
+      <form method="get" action="{% url 'core:dashboard' %}" id="advancedSearchForm">
         <div class="adv-inputs">
-          <input class="input-simple" name="last_name" placeholder="Введите фамилию">
-          <input class="input-simple" name="first_name" placeholder="Введите имя">
-          <input class="input-simple" name="middle_name" placeholder="Введите отчество">
+          <input class="input-simple" name="last_name" placeholder="Введите фамилию" value="{{ adv_last_name }}">
+          <input class="input-simple" name="first_name" placeholder="Введите имя" value="{{ adv_first_name }}">
+          <input class="input-simple" name="middle_name" placeholder="Введите отчество" value="{{ adv_middle_name }}">
           <button type="submit" class="btn-primary">Применить фильтры</button>
         </div>
       </form>
@@ -947,15 +976,15 @@
           </svg>
         </div>
         <div class="not-found-texts">
-          {% if search_query %}
-          <p class="not-found-title">Пациент с таким ФИО не найден</p>
+          {% if search_query or adv_last_name or adv_first_name or adv_middle_name %}
+          <p class="not-found-title">Пациент с такими данными не найден</p>
           <p class="not-found-sub">Попробуйте изменить поисковый запрос</p>
           {% else %}
           <p class="not-found-title">Список пациентов пуст</p>
           <p class="not-found-sub">Добавьте первого пациента, нажав кнопку «Добавить пациента»</p>
           {% endif %}
         </div>
-        {% if search_query %}
+        {% if search_query or adv_last_name or adv_first_name or adv_middle_name %}
         <a href="{% url 'core:dashboard' %}" class="btn-outline-sm">Сбросить поиск</a>
         {% endif %}
       </div>
@@ -963,32 +992,93 @@
     </div>
 
     <!-- PAGINATION -->
-    {% if patients.has_other_pages %}
-    <div class="pagination-wrap" id="paginationWrap">
-      <div class="pagination">
-        {% if patients.has_previous %}
-        <a href="?page={{ patients.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="pag-btn">Предыдущая</a>
-        {% else %}
-        <span class="pag-btn disabled">Предыдущая</span>
-        {% endif %}
-
-        <div class="pages">
-          {% for num in patients.paginator.page_range %}
-            {% if num == patients.number %}
-            <span class="page-num active">{{ num }}</span>
-            {% elif num > patients.number|add:"-3" and num < patients.number|add:"3" %}
-            <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-num">{{ num }}</a>
-            {% endif %}
-          {% endfor %}
-        </div>
-
-        {% if patients.has_next %}
-        <a href="?page={{ patients.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="pag-btn">Следующая</a>
-        {% else %}
-        <span class="pag-btn disabled">Следующая</span>
-        {% endif %}
-      </div>
+    {% if patients.paginator.num_pages > 1 %}
+    <div class="pagination-wrap">
+      <nav class="pagination" id="pagination" aria-label="Навигация по страницам"></nav>
     </div>
+    <script>
+      (function () {
+        var TOTAL_PAGES = {{ patients.paginator.num_pages }};
+        var CURRENT_PAGE = {{ patients.number }};
+
+        function getPageUrl(page) {
+          var params = new URLSearchParams(window.location.search);
+          params.set('page', page);
+          return window.location.pathname + '?' + params.toString();
+        }
+
+        function getVisiblePages(current, total) {
+          if (total <= 7) {
+            var all = [];
+            for (var i = 1; i <= total; i++) all.push(i);
+            return all;
+          }
+          var pages = [];
+          if (current <= 4) {
+            for (var i = 1; i <= 5; i++) pages.push(i);
+            pages.push('…');
+            pages.push(total);
+          } else if (current >= total - 3) {
+            pages.push(1);
+            pages.push('…');
+            for (var i = total - 4; i <= total; i++) pages.push(i);
+          } else {
+            pages.push(1);
+            pages.push('…');
+            pages.push(current - 1);
+            pages.push(current);
+            pages.push(current + 1);
+            pages.push('…');
+            pages.push(total);
+          }
+          return pages;
+        }
+
+        var nav = document.getElementById('pagination');
+
+        /* Prev button */
+        var prev = document.createElement('button');
+        prev.className = 'pagination__btn';
+        prev.innerHTML = '<svg width="7" height="11" viewBox="0 0 7 11" fill="none"><path d="M6 1L1.5 5.5L6 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Предыдущая';
+        prev.disabled = CURRENT_PAGE === 1;
+        if (CURRENT_PAGE > 1) {
+          prev.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE - 1); });
+        }
+        nav.appendChild(prev);
+
+        /* Pages */
+        var pagesDiv = document.createElement('div');
+        pagesDiv.className = 'pagination__pages';
+        getVisiblePages(CURRENT_PAGE, TOTAL_PAGES).forEach(function (p) {
+          var btn = document.createElement('button');
+          if (p === '…') {
+            btn.className = 'page page--dots';
+            btn.textContent = '...';
+            btn.disabled = true;
+          } else {
+            btn.className = 'page' + (p === CURRENT_PAGE ? ' page--active' : '');
+            btn.textContent = p;
+            if (p !== CURRENT_PAGE) {
+              btn.addEventListener('click', function (page) {
+                return function () { window.location.href = getPageUrl(page); };
+              }(p));
+            }
+          }
+          pagesDiv.appendChild(btn);
+        });
+        nav.appendChild(pagesDiv);
+
+        /* Next button */
+        var next = document.createElement('button');
+        next.className = 'pagination__btn';
+        next.innerHTML = 'Следующая <svg width="7" height="11" viewBox="0 0 7 11" fill="none"><path d="M1 1L5.5 5.5L1 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        next.disabled = CURRENT_PAGE === TOTAL_PAGES;
+        if (CURRENT_PAGE < TOTAL_PAGES) {
+          next.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE + 1); });
+        }
+        nav.appendChild(next);
+      })();
+    </script>
     {% endif %}
 
   {% elif is_patient %}
@@ -1039,6 +1129,22 @@
   function toggleAdvanced() {
     document.getElementById('advancedPanel').classList.toggle('open');
   }
+
+  /* Сброс page=... при новом поиске */
+  document.addEventListener('DOMContentLoaded', function () {
+    var simpleForm = document.getElementById('simpleSearchForm');
+    var advForm = document.getElementById('advancedSearchForm');
+
+    function stripPageParam(form) {
+      form.addEventListener('submit', function () {
+        var existing = form.querySelector('input[name="page"]');
+        if (existing) existing.remove();
+      });
+    }
+
+    if (simpleForm) stripPageParam(simpleForm);
+    if (advForm) stripPageParam(advForm);
+  });
 </script>
 
 {% if is_doctor %}

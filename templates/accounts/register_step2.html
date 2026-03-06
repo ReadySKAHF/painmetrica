@@ -49,13 +49,6 @@
   .field-input::placeholder { color: var(--gray-550); }
   .field-input:focus { border-color: var(--blue-400); }
   .field-input.error-state { border-color: var(--red-400); }
-  .field-select-wrap { position: relative; }
-  .field-select { width: 100%; height: 48px; padding: 0 40px 0 16px; background: var(--gray-200); border: 1px solid transparent;
-    border-radius: 12px; font-family: var(--font); font-size: 12px; color: var(--gray-950); outline: none;
-    appearance: none; cursor: pointer; transition: border .15s; }
-  .field-select:focus { border-color: var(--blue-400); }
-  .field-select.error-state { border-color: var(--red-400); color: var(--red-400); }
-  .select-arrow { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--gray-550); }
   .error-block { display: none; align-items: center; gap: 10px; padding: 13px 14px; background: var(--red-bg);
     border-radius: 8px; margin-top: 4px; }
   .error-block.visible { display: flex; }
@@ -76,6 +69,49 @@
     color: var(--gray-950); cursor: pointer; transition: background .15s; width: 100px; }
   .btn-secondary:hover { background: var(--gray-250); }
   footer { text-align: center; padding: 16px; font-size: 10px; }
+
+  /* Custom dropdown */
+  .custom-select-wrap { position: relative; }
+  .custom-select-trigger { width: 100%; height: 48px; padding: 0 40px 0 16px; background: var(--gray-200);
+    border: 1px solid transparent; border-radius: 12px; font-family: var(--font); font-size: 12px;
+    color: var(--gray-550); outline: none; cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; text-align: left; transition: border .15s; }
+  .custom-select-trigger.has-value { color: var(--gray-950); }
+  .custom-select-trigger.open { border-color: var(--blue-400); }
+  .custom-select-trigger.error-state { border-color: var(--red-400); color: var(--red-400); }
+  .custom-select-trigger .trigger-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .trigger-arrow { flex-shrink: 0; color: var(--gray-550); transition: transform .2s; margin-left: 8px; }
+  .custom-select-trigger.open .trigger-arrow { transform: rotate(180deg); }
+
+  .custom-select-dropdown {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    width: 100%;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 100;
+    max-height: 204px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--blue-400) transparent;
+  }
+  .custom-select-dropdown.open { display: flex; flex-direction: column; gap: 2px; }
+  .custom-select-dropdown::-webkit-scrollbar { width: 6px; }
+  .custom-select-dropdown::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
+  .custom-select-dropdown::-webkit-scrollbar-thumb { background: var(--blue-400); border-radius: 4px; }
+
+  .custom-select-option {
+    display: flex; align-items: center; padding: 12px 8px; gap: 8px;
+    border-radius: 8px; cursor: pointer; font-size: 12px; color: var(--gray-950);
+    background: var(--white); transition: background .12s; white-space: nowrap;
+  }
+  .custom-select-option:hover { background: var(--blue-100); }
+  .custom-select-option.selected { background: var(--blue-100); color: var(--blue-400); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -126,24 +162,44 @@
 
         <!-- Специальность -->
         <div class="field-wrap">
-          <label class="field-label" id="label-specialty" for="id_specialty">Специальность</label>
-          <div class="field-select-wrap">
-            <select class="field-select" id="id_specialty" name="specialty" required>
-              <option value="">Выберите специальность</option>
-              <option value="Терапевт">Терапевт</option>
-              <option value="Кардиолог">Кардиолог</option>
-              <option value="Невролог">Невролог</option>
-              <option value="Хирург">Хирург</option>
-              <option value="Педиатр">Педиатр</option>
-              <option value="Гастроэнтеролог">Гастроэнтеролог</option>
-              <option value="Эндокринолог">Эндокринолог</option>
-              <option value="Офтальмолог">Офтальмолог</option>
-              <option value="Дерматолог">Дерматолог</option>
-              <option value="Ортопед">Ортопед</option>
-            </select>
-            <svg class="select-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
-              <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+          <label class="field-label" id="label-specialty">Специальность</label>
+          <div class="custom-select-wrap" id="wrap-specialty">
+            <button type="button" class="custom-select-trigger" id="trigger-specialty" aria-haspopup="listbox">
+              <span class="trigger-text" id="trigger-specialty-text">Выберите специальность</span>
+              <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="custom-select-dropdown" id="dropdown-specialty" role="listbox">
+              <div class="custom-select-option" data-value="Алголог">Алголог</div>
+              <div class="custom-select-option" data-value="Акушер-гинеколог">Акушер-гинеколог</div>
+              <div class="custom-select-option" data-value="Аллерголог">Аллерголог</div>
+              <div class="custom-select-option" data-value="Андролог">Андролог</div>
+              <div class="custom-select-option" data-value="Анестезиолог">Анестезиолог</div>
+              <div class="custom-select-option" data-value="Дерматолог">Дерматолог</div>
+              <div class="custom-select-option" data-value="Кардиолог">Кардиолог</div>
+              <div class="custom-select-option" data-value="Нарколог">Нарколог</div>
+              <div class="custom-select-option" data-value="Невролог">Невролог</div>
+              <div class="custom-select-option" data-value="Нефролог">Нефролог</div>
+              <div class="custom-select-option" data-value="Офтальмолог">Офтальмолог</div>
+              <div class="custom-select-option" data-value="Онколог">Онколог</div>
+              <div class="custom-select-option" data-value="Ортопед">Ортопед</div>
+              <div class="custom-select-option" data-value="Оториноларинголог (ЛОР)">Оториноларинголог (ЛОР)</div>
+              <div class="custom-select-option" data-value="Педиатр">Педиатр</div>
+              <div class="custom-select-option" data-value="Проктолог">Проктолог</div>
+              <div class="custom-select-option" data-value="Психиатр">Психиатр</div>
+              <div class="custom-select-option" data-value="Психотерапевт">Психотерапевт</div>
+              <div class="custom-select-option" data-value="Реаниматолог">Реаниматолог</div>
+              <div class="custom-select-option" data-value="Реабилитолог">Реабилитолог</div>
+              <div class="custom-select-option" data-value="Сексолог">Сексолог</div>
+              <div class="custom-select-option" data-value="Стоматолог">Стоматолог</div>
+              <div class="custom-select-option" data-value="Терапевт">Терапевт</div>
+              <div class="custom-select-option" data-value="Травматолог">Травматолог</div>
+              <div class="custom-select-option" data-value="Уролог">Уролог</div>
+              <div class="custom-select-option" data-value="Хирург">Хирург</div>
+              <div class="custom-select-option" data-value="Эндокринолог">Эндокринолог</div>
+            </div>
+            <input type="hidden" name="specialty" id="id_specialty">
           </div>
           <div class="error-block" id="error-specialty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
@@ -168,24 +224,141 @@
 
         <!-- Город -->
         <div class="field-wrap">
-          <label class="field-label" id="label-city" for="id_city">Город</label>
-          <div class="field-select-wrap">
-            <select class="field-select" id="id_city" name="city" required>
-              <option value="">Выберите город</option>
-              <option value="Москва">Москва</option>
-              <option value="Санкт-Петербург">Санкт-Петербург</option>
-              <option value="Минск">Минск</option>
-              <option value="Гомель">Гомель</option>
-              <option value="Брест">Брест</option>
-              <option value="Витебск">Витебск</option>
-              <option value="Гродно">Гродно</option>
-              <option value="Казань">Казань</option>
-              <option value="Екатеринбург">Екатеринбург</option>
-              <option value="Новосибирск">Новосибирск</option>
-            </select>
-            <svg class="select-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
-              <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+          <label class="field-label" id="label-city">Город</label>
+          <div class="custom-select-wrap" id="wrap-city">
+            <button type="button" class="custom-select-trigger" id="trigger-city" aria-haspopup="listbox">
+              <span class="trigger-text" id="trigger-city-text">Выберите город</span>
+              <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="custom-select-dropdown" id="dropdown-city" role="listbox">
+              <div class="custom-select-option" data-value="Барановичи">Барановичи</div>
+              <div class="custom-select-option" data-value="Белыничи">Белыничи</div>
+              <div class="custom-select-option" data-value="Берёза">Берёза</div>
+              <div class="custom-select-option" data-value="Берестовица">Берестовица</div>
+              <div class="custom-select-option" data-value="Бобруйск">Бобруйск</div>
+              <div class="custom-select-option" data-value="Борисов">Борисов</div>
+              <div class="custom-select-option" data-value="Брагин">Брагин</div>
+              <div class="custom-select-option" data-value="Браслав">Браслав</div>
+              <div class="custom-select-option" data-value="Брест">Брест</div>
+              <div class="custom-select-option" data-value="Буда-Кошелёво">Буда-Кошелёво</div>
+              <div class="custom-select-option" data-value="Быхов">Быхов</div>
+              <div class="custom-select-option" data-value="Василевичи">Василевичи</div>
+              <div class="custom-select-option" data-value="Верхнедвинск">Верхнедвинск</div>
+              <div class="custom-select-option" data-value="Ветка">Ветка</div>
+              <div class="custom-select-option" data-value="Вилейка">Вилейка</div>
+              <div class="custom-select-option" data-value="Витебск">Витебск</div>
+              <div class="custom-select-option" data-value="Волковыск">Волковыск</div>
+              <div class="custom-select-option" data-value="Воложин">Воложин</div>
+              <div class="custom-select-option" data-value="Высокое">Высокое</div>
+              <div class="custom-select-option" data-value="Ганцевичи">Ганцевичи</div>
+              <div class="custom-select-option" data-value="Глубокое">Глубокое</div>
+              <div class="custom-select-option" data-value="Глуск">Глуск</div>
+              <div class="custom-select-option" data-value="Гомель">Гомель</div>
+              <div class="custom-select-option" data-value="Горки">Горки</div>
+              <div class="custom-select-option" data-value="Городок">Городок</div>
+              <div class="custom-select-option" data-value="Гродно">Гродно</div>
+              <div class="custom-select-option" data-value="Давид-Городок">Давид-Городок</div>
+              <div class="custom-select-option" data-value="Дзержинск">Дзержинск</div>
+              <div class="custom-select-option" data-value="Дисна">Дисна</div>
+              <div class="custom-select-option" data-value="Добруш">Добруш</div>
+              <div class="custom-select-option" data-value="Докшицы">Докшицы</div>
+              <div class="custom-select-option" data-value="Дрибин">Дрибин</div>
+              <div class="custom-select-option" data-value="Дрогичин">Дрогичин</div>
+              <div class="custom-select-option" data-value="Дубровно">Дубровно</div>
+              <div class="custom-select-option" data-value="Дятлово">Дятлово</div>
+              <div class="custom-select-option" data-value="Ельск">Ельск</div>
+              <div class="custom-select-option" data-value="Жабинка">Жабинка</div>
+              <div class="custom-select-option" data-value="Жлобин">Жлобин</div>
+              <div class="custom-select-option" data-value="Житковичи">Житковичи</div>
+              <div class="custom-select-option" data-value="Жодино">Жодино</div>
+              <div class="custom-select-option" data-value="Заславль">Заславль</div>
+              <div class="custom-select-option" data-value="Зельва">Зельва</div>
+              <div class="custom-select-option" data-value="Иваново">Иваново</div>
+              <div class="custom-select-option" data-value="Ивацевичи">Ивацевичи</div>
+              <div class="custom-select-option" data-value="Ивье">Ивье</div>
+              <div class="custom-select-option" data-value="Калинковичи">Калинковичи</div>
+              <div class="custom-select-option" data-value="Каменец">Каменец</div>
+              <div class="custom-select-option" data-value="Кировск">Кировск</div>
+              <div class="custom-select-option" data-value="Клецк">Клецк</div>
+              <div class="custom-select-option" data-value="Климовичи">Климовичи</div>
+              <div class="custom-select-option" data-value="Кобрин">Кобрин</div>
+              <div class="custom-select-option" data-value="Копыль">Копыль</div>
+              <div class="custom-select-option" data-value="Кореличи">Кореличи</div>
+              <div class="custom-select-option" data-value="Корма">Корма</div>
+              <div class="custom-select-option" data-value="Косово">Косово</div>
+              <div class="custom-select-option" data-value="Костюковичи">Костюковичи</div>
+              <div class="custom-select-option" data-value="Краснополье">Краснополье</div>
+              <div class="custom-select-option" data-value="Крево">Крево</div>
+              <div class="custom-select-option" data-value="Кричев">Кричев</div>
+              <div class="custom-select-option" data-value="Крупки">Крупки</div>
+              <div class="custom-select-option" data-value="Лахва">Лахва</div>
+              <div class="custom-select-option" data-value="Лепель">Лепель</div>
+              <div class="custom-select-option" data-value="Лида">Лида</div>
+              <div class="custom-select-option" data-value="Лиозно">Лиозно</div>
+              <div class="custom-select-option" data-value="Логойск">Логойск</div>
+              <div class="custom-select-option" data-value="Лоев">Лоев</div>
+              <div class="custom-select-option" data-value="Лунинец">Лунинец</div>
+              <div class="custom-select-option" data-value="Любань">Любань</div>
+              <div class="custom-select-option" data-value="Любешов">Любешов</div>
+              <div class="custom-select-option" data-value="Малорита">Малорита</div>
+              <div class="custom-select-option" data-value="Марьина Горка">Марьина Горка</div>
+              <div class="custom-select-option" data-value="Микашевичи">Микашевичи</div>
+              <div class="custom-select-option" data-value="Минск">Минск</div>
+              <div class="custom-select-option" data-value="Миоры">Миоры</div>
+              <div class="custom-select-option" data-value="Могилёв">Могилёв</div>
+              <div class="custom-select-option" data-value="Молодечно">Молодечно</div>
+              <div class="custom-select-option" data-value="Мозырь">Мозырь</div>
+              <div class="custom-select-option" data-value="Мосты">Мосты</div>
+              <div class="custom-select-option" data-value="Мстиславль">Мстиславль</div>
+              <div class="custom-select-option" data-value="Мядель">Мядель</div>
+              <div class="custom-select-option" data-value="Наровля">Наровля</div>
+              <div class="custom-select-option" data-value="Несвиж">Несвиж</div>
+              <div class="custom-select-option" data-value="Новогрудок">Новогрудок</div>
+              <div class="custom-select-option" data-value="Новолукомль">Новолукомль</div>
+              <div class="custom-select-option" data-value="Новополоцк">Новополоцк</div>
+              <div class="custom-select-option" data-value="Орша">Орша</div>
+              <div class="custom-select-option" data-value="Осиповичи">Осиповичи</div>
+              <div class="custom-select-option" data-value="Островец">Островец</div>
+              <div class="custom-select-option" data-value="Ошмяны">Ошмяны</div>
+              <div class="custom-select-option" data-value="Петриков">Петриков</div>
+              <div class="custom-select-option" data-value="Пинск">Пинск</div>
+              <div class="custom-select-option" data-value="Полоцк">Полоцк</div>
+              <div class="custom-select-option" data-value="Поставы">Поставы</div>
+              <div class="custom-select-option" data-value="Пружаны">Пружаны</div>
+              <div class="custom-select-option" data-value="Речица">Речица</div>
+              <div class="custom-select-option" data-value="Рогачёв">Рогачёв</div>
+              <div class="custom-select-option" data-value="Россоны">Россоны</div>
+              <div class="custom-select-option" data-value="Свислочь">Свислочь</div>
+              <div class="custom-select-option" data-value="Светлогорск">Светлогорск</div>
+              <div class="custom-select-option" data-value="Сенно">Сенно</div>
+              <div class="custom-select-option" data-value="Скидель">Скидель</div>
+              <div class="custom-select-option" data-value="Славгород">Славгород</div>
+              <div class="custom-select-option" data-value="Слоним">Слоним</div>
+              <div class="custom-select-option" data-value="Слуцк">Слуцк</div>
+              <div class="custom-select-option" data-value="Смолевичи">Смолевичи</div>
+              <div class="custom-select-option" data-value="Солигорск">Солигорск</div>
+              <div class="custom-select-option" data-value="Столбцы">Столбцы</div>
+              <div class="custom-select-option" data-value="Столин">Столин</div>
+              <div class="custom-select-option" data-value="Толочин">Толочин</div>
+              <div class="custom-select-option" data-value="Туров">Туров</div>
+              <div class="custom-select-option" data-value="Узда">Узда</div>
+              <div class="custom-select-option" data-value="Ушачи">Ушачи</div>
+              <div class="custom-select-option" data-value="Фаниполь">Фаниполь</div>
+              <div class="custom-select-option" data-value="Хойники">Хойники</div>
+              <div class="custom-select-option" data-value="Хотимск">Хотимск</div>
+              <div class="custom-select-option" data-value="Чашники">Чашники</div>
+              <div class="custom-select-option" data-value="Чаусы">Чаусы</div>
+              <div class="custom-select-option" data-value="Червень">Червень</div>
+              <div class="custom-select-option" data-value="Чериков">Чериков</div>
+              <div class="custom-select-option" data-value="Чечерск">Чечерск</div>
+              <div class="custom-select-option" data-value="Шарковщина">Шарковщина</div>
+              <div class="custom-select-option" data-value="Шклов">Шклов</div>
+              <div class="custom-select-option" data-value="Шумилино">Шумилино</div>
+              <div class="custom-select-option" data-value="Щучин">Щучин</div>
+            </div>
+            <input type="hidden" name="city" id="id_city">
           </div>
           <div class="error-block" id="error-city">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
@@ -198,24 +371,36 @@
 
         <!-- Сфера интересов -->
         <div class="field-wrap">
-          <label class="field-label" id="label-interests" for="id_area_of_interest">Сфера интересов</label>
-          <div class="field-select-wrap">
-            <select class="field-select" id="id_area_of_interest" name="area_of_interest" required>
-              <option value="">Выберите сферу</option>
-              <option value="Кардиология">Кардиология</option>
-              <option value="Неврология">Неврология</option>
-              <option value="Педиатрия">Педиатрия</option>
-              <option value="Хирургия">Хирургия</option>
-              <option value="Гастроэнтерология">Гастроэнтерология</option>
-              <option value="Эндокринология">Эндокринология</option>
-              <option value="Офтальмология">Офтальмология</option>
-              <option value="Дерматология">Дерматология</option>
-              <option value="Ортопедия">Ортопедия</option>
-              <option value="Онкология">Онкология</option>
-            </select>
-            <svg class="select-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
-              <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+          <label class="field-label" id="label-interests">Сфера интересов</label>
+          <div class="custom-select-wrap" id="wrap-interests">
+            <button type="button" class="custom-select-trigger" id="trigger-interests" aria-haspopup="listbox">
+              <span class="trigger-text" id="trigger-interests-text">Выберите сферу</span>
+              <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="custom-select-dropdown" id="dropdown-interests" role="listbox">
+              <div class="custom-select-option" data-value="Эпилептология и пароксизмальные состояния">Эпилептология и пароксизмальные состояния</div>
+              <div class="custom-select-option" data-value="Цереброваскулярные заболевания (инсульты, ТИА)">Цереброваскулярные заболевания (инсульты, ТИА)</div>
+              <div class="custom-select-option" data-value="Нейродегенеративные болезни (Альцгеймер, Паркинсон, рассеянный склероз)">Нейродегенеративные болезни (Альцгеймер, Паркинсон, рассеянный склероз)</div>
+              <div class="custom-select-option" data-value="Головные боли и мигрень">Головные боли и мигрень</div>
+              <div class="custom-select-option" data-value="Двигательные расстройства">Двигательные расстройства</div>
+              <div class="custom-select-option" data-value="Нарушения сна">Нарушения сна</div>
+              <div class="custom-select-option" data-value="Нервно-мышечные заболевания">Нервно-мышечные заболевания</div>
+              <div class="custom-select-option" data-value="Демиелинизирующие заболевания">Демиелинизирующие заболевания</div>
+              <div class="custom-select-option" data-value="Нейроиммунология">Нейроиммунология</div>
+              <div class="custom-select-option" data-value="Детская неврология">Детская неврология</div>
+              <div class="custom-select-option" data-value="Нейроонкология">Нейроонкология</div>
+              <div class="custom-select-option" data-value="Когнитивные нарушения и деменция">Когнитивные нарушения и деменция</div>
+              <div class="custom-select-option" data-value="Нейрофизиология и функциональная диагностика">Нейрофизиология и функциональная диагностика</div>
+              <div class="custom-select-option" data-value="Нейровизуализация">Нейровизуализация</div>
+              <div class="custom-select-option" data-value="Нейрореабилитация">Нейрореабилитация</div>
+              <div class="custom-select-option" data-value="Болевые синдромы и невралгии">Болевые синдромы и невралгии</div>
+              <div class="custom-select-option" data-value="Нейрогенетика">Нейрогенетика</div>
+              <div class="custom-select-option" data-value="Нейроинфекции">Нейроинфекции</div>
+              <div class="custom-select-option" data-value="Периферическая нервная система">Периферическая нервная система</div>
+            </div>
+            <input type="hidden" name="area_of_interest" id="id_area_of_interest">
           </div>
           <div class="error-block" id="error-interests">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
@@ -248,113 +433,102 @@
 <footer>© 2026 Painmetrica</footer>
 
 <script>
-// Elements
-const selSpecialty = document.getElementById('id_specialty');
-const selCity = document.getElementById('id_city');
-const selInterests = document.getElementById('id_area_of_interest');
+// Custom dropdown logic
+function initCustomSelect(triggerId, dropdownId, hiddenInputId, labelId, errorBlockId) {
+  const trigger = document.getElementById(triggerId);
+  const dropdown = document.getElementById(dropdownId);
+  const hiddenInput = document.getElementById(hiddenInputId);
+  const label = document.getElementById(labelId);
+  const errorBlock = document.getElementById(errorBlockId);
+  const triggerText = trigger.querySelector('.trigger-text');
+
+  trigger.addEventListener('click', () => {
+    const isOpen = dropdown.classList.contains('open');
+    closeAllDropdowns();
+    if (!isOpen) {
+      dropdown.classList.add('open');
+      trigger.classList.add('open');
+    }
+  });
+
+  dropdown.querySelectorAll('.custom-select-option').forEach(option => {
+    option.addEventListener('click', () => {
+      const value = option.dataset.value;
+      hiddenInput.value = value;
+      triggerText.textContent = value;
+      trigger.classList.add('has-value');
+      trigger.classList.remove('error-state', 'open');
+      dropdown.classList.remove('open');
+      dropdown.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
+      option.classList.add('selected');
+      if (label) label.classList.remove('error');
+      if (errorBlock) errorBlock.classList.remove('visible');
+      checkForm();
+    });
+  });
+
+  return { trigger, dropdown, hiddenInput, label, errorBlock };
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.custom-select-dropdown.open').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.custom-select-trigger.open').forEach(t => t.classList.remove('open'));
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.custom-select-wrap')) {
+    closeAllDropdowns();
+  }
+});
+
+const specialtySelect = initCustomSelect('trigger-specialty', 'dropdown-specialty', 'id_specialty', 'label-specialty', 'error-specialty');
+const citySelect = initCustomSelect('trigger-city', 'dropdown-city', 'id_city', 'label-city', 'error-city');
+const interestsSelect = initCustomSelect('trigger-interests', 'dropdown-interests', 'id_area_of_interest', 'label-interests', 'error-interests');
+
 const inpPosition = document.getElementById('id_position');
 const inpWorkplace = document.getElementById('id_workplace');
 const cbTerms = document.getElementById('cb-terms');
 const btnSubmit = document.getElementById('btn-submit');
 
-const errorSpecialty = document.getElementById('error-specialty');
-const errorCity = document.getElementById('error-city');
-const errorInterests = document.getElementById('error-interests');
-
-const labelSpecialty = document.getElementById('label-specialty');
-const labelCity = document.getElementById('label-city');
-const labelInterests = document.getElementById('label-interests');
-
-// Validation function
 function checkForm() {
-  const specialtyOk = selSpecialty.value !== '';
-  const cityOk = selCity.value !== '';
-  const interestsOk = selInterests.value !== '';
+  const specialtyOk = document.getElementById('id_specialty').value !== '';
+  const cityOk = document.getElementById('id_city').value !== '';
+  const interestsOk = document.getElementById('id_area_of_interest').value !== '';
   const positionOk = inpPosition.value.trim() !== '';
   const workplaceOk = inpWorkplace.value.trim() !== '';
   const termsOk = cbTerms.checked;
-
-  const allValid = specialtyOk && cityOk && interestsOk && positionOk && workplaceOk && termsOk;
-  btnSubmit.disabled = !allValid;
+  btnSubmit.disabled = !(specialtyOk && cityOk && interestsOk && positionOk && workplaceOk && termsOk);
 }
 
-// Specialty validation
-selSpecialty.addEventListener('change', () => {
-  if (selSpecialty.value !== '') {
-    selSpecialty.classList.remove('error-state');
-    errorSpecialty.classList.remove('visible');
-    labelSpecialty.classList.remove('error');
-  } else {
-    selSpecialty.classList.add('error-state');
-    errorSpecialty.classList.add('visible');
-    labelSpecialty.classList.add('error');
-  }
-  checkForm();
-});
-
-// City validation
-selCity.addEventListener('change', () => {
-  if (selCity.value !== '') {
-    selCity.classList.remove('error-state');
-    errorCity.classList.remove('visible');
-    labelCity.classList.remove('error');
-  } else {
-    selCity.classList.add('error-state');
-    errorCity.classList.add('visible');
-    labelCity.classList.add('error');
-  }
-  checkForm();
-});
-
-// Interests validation
-selInterests.addEventListener('change', () => {
-  if (selInterests.value !== '') {
-    selInterests.classList.remove('error-state');
-    errorInterests.classList.remove('visible');
-    labelInterests.classList.remove('error');
-  } else {
-    selInterests.classList.add('error-state');
-    errorInterests.classList.add('visible');
-    labelInterests.classList.add('error');
-  }
-  checkForm();
-});
-
-// Input fields validation
 inpPosition.addEventListener('input', checkForm);
 inpWorkplace.addEventListener('input', checkForm);
-
-// Checkbox validation
 cbTerms.addEventListener('change', checkForm);
 
-// Form submit - show errors for empty selects
 document.getElementById('step2-form').addEventListener('submit', (e) => {
   let hasError = false;
 
-  if (selSpecialty.value === '') {
-    selSpecialty.classList.add('error-state');
-    errorSpecialty.classList.add('visible');
-    labelSpecialty.classList.add('error');
+  if (!document.getElementById('id_specialty').value) {
+    specialtySelect.trigger.classList.add('error-state');
+    specialtySelect.errorBlock.classList.add('visible');
+    specialtySelect.label.classList.add('error');
     hasError = true;
   }
 
-  if (selCity.value === '') {
-    selCity.classList.add('error-state');
-    errorCity.classList.add('visible');
-    labelCity.classList.add('error');
+  if (!document.getElementById('id_city').value) {
+    citySelect.trigger.classList.add('error-state');
+    citySelect.errorBlock.classList.add('visible');
+    citySelect.label.classList.add('error');
     hasError = true;
   }
 
-  if (selInterests.value === '') {
-    selInterests.classList.add('error-state');
-    errorInterests.classList.add('visible');
-    labelInterests.classList.add('error');
+  if (!document.getElementById('id_area_of_interest').value) {
+    interestsSelect.trigger.classList.add('error-state');
+    interestsSelect.errorBlock.classList.add('visible');
+    interestsSelect.label.classList.add('error');
     hasError = true;
   }
 
-  if (hasError) {
-    e.preventDefault();
-  }
+  if (hasError) e.preventDefault();
 });
 </script>
 

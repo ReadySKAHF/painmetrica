@@ -1,5 +1,5 @@
 from django.contrib import admin
-from medications.models import Medication, Prescription
+from medications.models import Medication, MedicationNote, Prescription
 
 
 @admin.register(Medication)
@@ -14,16 +14,26 @@ class MedicationAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'medication_type')
+            'fields': ('name', 'medication_type', 'image')
         }),
         ('Подробности', {
-            'fields': ('prescription_scheme', 'side_effects', 'notes')
+            'fields': ('prescription_scheme', 'side_effects')
         }),
         ('Метаданные', {
             'fields': ('created_by', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(MedicationNote)
+class MedicationNoteAdmin(admin.ModelAdmin):
+    """Примечания врачей к лекарствам"""
+
+    list_display = ['medication', 'doctor', 'updated_at']
+    list_filter = ['doctor', 'medication']
+    readonly_fields = ['created_at', 'updated_at']
+    search_fields = ['medication__name', 'doctor__last_name', 'text']
 
 
 @admin.register(Prescription)

@@ -7,9 +7,9 @@ class Medication(models.Model):
 
     name = models.CharField('Название', max_length=200)
     medication_type = models.CharField('Тип', max_length=100, blank=True)
+    image = models.ImageField('Фото', upload_to='medications/', blank=True, null=True)
     prescription_scheme = models.TextField('Схема назначения', blank=True)
     side_effects = models.TextField('Побочные эффекты', blank=True)
-    notes = models.CharField('Примечания', max_length=500, blank=True)
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -29,6 +29,34 @@ class Medication(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class MedicationNote(models.Model):
+    """Примечание врача к лекарству — у каждого доктора своё"""
+
+    medication = models.ForeignKey(
+        Medication,
+        on_delete=models.CASCADE,
+        related_name='doctor_notes',
+        verbose_name='Лекарство'
+    )
+    doctor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='medication_notes',
+        verbose_name='Врач'
+    )
+    text = models.TextField('Примечание')
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Примечание к лекарству'
+        verbose_name_plural = 'Примечания к лекарствам'
+        unique_together = [['medication', 'doctor']]
+
+    def __str__(self):
+        return f'Примечание {self.doctor} к {self.medication}'
 
 
 class Prescription(models.Model):

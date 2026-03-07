@@ -5,19 +5,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ medication.name }} — Painmetrica</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --white: #FEFEFE;
-    --gray-200: #F9F9F9;
-    --gray-250: #F5F5F5;
-    --gray-300: #EAEAEA;
-    --gray-550: #919191;
-    --gray-950: #262626;
     --blue-400: #2E7CF6;
     --blue-500: #2E67F6;
+    --blue-100: #EEF5FF;
+    --gray-950: #262626;
+    --gray-550: #919191;
+    --gray-300: #EAEAEA;
+    --gray-250: #F5F5F5;
+    --gray-200: #F9F9F9;
+    --white: #FEFEFE;
   }
 
   body {
@@ -46,186 +48,280 @@
     z-index: 100;
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    flex-shrink: 0;
-  }
-
-  .nav-links {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 42px;
-  }
-
-  .nav-link {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    text-decoration: none;
-  }
-
-  .nav-link .nav-icon {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .nav-link .nav-label {
-    font-size: 18px;
-    line-height: 18px;
-    font-weight: 400;
-    color: var(--gray-950);
-  }
-
+  .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+  .nav-links { display: flex; flex-direction: row; align-items: center; gap: 42px; }
+  .nav-link { display: flex; flex-direction: row; align-items: center; gap: 6px; cursor: pointer; text-decoration: none; }
+  .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .nav-link .nav-label { font-size: 18px; line-height: 18px; font-weight: 400; color: var(--gray-950); }
   .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    flex-shrink: 0;
-  }
-
-  .user-name {
-    font-size: 18px;
-    color: var(--gray-950);
-    white-space: nowrap;
-  }
+  .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
+  .user-name { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
 
   /* ── MAIN ── */
   .main {
     max-width: 1320px;
     margin: 0 auto;
-    padding-top: 148px;
-    padding-bottom: 40px;
-    padding-left: 12px;
-    padding-right: 12px;
+    padding: 136px 12px 40px;
   }
 
-  /* ── BACK LINK ── */
+  /* ── BACK LINK (from template) ── */
   .back-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gray-550);
     text-decoration: none;
-    margin-bottom: 32px;
-    transition: color 0.15s;
-  }
-  .back-link:hover { color: var(--gray-950); }
-
-  /* ── DETAIL CARD ── */
-  .detail-card {
-    background: var(--white);
-    border: 1px solid var(--gray-300);
-    border-radius: 24px;
-    padding: 48px;
+    color: var(--blue-500);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 24px;
   }
 
-  .detail-header {
+  /* ── MAIN GRID ── */
+  .main-grid {
     display: flex;
-    align-items: flex-start;
-    gap: 24px;
-    margin-bottom: 48px;
+    gap: 26px;
+    width: 100%;
   }
 
-  .detail-icon {
-    width: 90px;
-    height: 90px;
+  /* ── LEFT CARD ── */
+  .left-card {
+    width: 648px;
+    min-height: 451px;
+    background: var(--white);
+    border-radius: 24px;
+    position: relative;
     flex-shrink: 0;
+    padding: 49px 25px 30px;
+    font-family: 'Nunito', sans-serif;
   }
 
-  .detail-title-block {
+  .medicine-name-block {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-top: 8px;
+    gap: 12px;
+    margin-bottom: 24px;
   }
-
-  .detail-name {
-    font-size: 36px;
+  .medicine-label {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-550);
+    line-height: 1;
+  }
+  .medicine-title {
+    font-size: 20px;
     font-weight: 700;
-    line-height: 1.1;
-    color: var(--gray-950);
+    color: #000;
+    line-height: 1;
   }
 
-  .detail-type {
+  /* Photo block */
+  .medicine-photo {
+    position: absolute;
+    top: 33px;
+    right: 25px;
+    width: 311px;
+    height: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .medicine-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .photo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gray-300);
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
   }
+  .photo-placeholder svg { opacity: 0.4; }
 
-  .detail-type-label {
-    font-size: 18px;
+  /* Notes block */
+  .notes-block {
+    margin-top: 124px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .notes-header {
+    font-size: 20px;
     font-weight: 700;
-    color: var(--gray-950);
+    color: #000;
+    line-height: 1;
   }
 
-  .detail-type-value {
-    font-size: 18px;
-    font-weight: 400;
-    color: var(--gray-950);
-  }
-
-  /* ── FIELDS ── */
-  .detail-fields {
+  .note-item {
     display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-
-  .detail-field {
-    display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
     gap: 10px;
+    background: var(--blue-100);
+    border-radius: 12px;
   }
-
-  .field-label {
+  .note-text {
+    flex: 1;
     font-size: 14px;
-    font-weight: 700;
-    color: var(--gray-550);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .field-value {
-    font-size: 18px;
     font-weight: 400;
     color: var(--gray-950);
     line-height: 1.6;
-    background: var(--gray-200);
-    border-radius: 12px;
-    padding: 18px 20px;
-    white-space: pre-line;
   }
-
-  .field-value.empty {
+  .note-empty {
+    font-size: 14px;
     color: var(--gray-550);
     font-style: italic;
   }
 
-  .field-value-inline {
+  .add-note-btn {
+    display: none;
+    padding: 10px 22px;
+    background: var(--white);
+    color: var(--blue-500);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border: 1.5px solid var(--blue-500);
+    border-radius: 12px;
+    cursor: pointer;
+    width: fit-content;
+    transition: background 0.15s;
+  }
+  .add-note-btn:hover { background: var(--blue-100); }
+  .note-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .note-btn {
+    width: 20px;
+    height: 20px;
+    background: var(--white);
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s;
+  }
+  .note-btn:hover { background: var(--gray-250); }
+
+  .note-edit-area {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 14px;
+    border: 1.5px solid #D0DFFF;
+    border-radius: 12px;
+    background: var(--white);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--gray-950);
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+    display: none;
+  }
+  .note-edit-area:focus { border-color: var(--blue-500); }
+
+  .save-btn {
+    display: none;
+    padding: 10px 22px;
+    background: var(--blue-500);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    width: fit-content;
+    transition: background 0.15s;
+  }
+  .save-btn:hover { background: #1a53e0; }
+
+  .note-status {
+    font-size: 12px;
+    color: var(--gray-550);
+    display: none;
+  }
+  .note-status.show { display: block; }
+
+  /* ── RIGHT CARD ── */
+  .right-card {
+    flex: 1;
+    background: var(--white);
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-family: 'Nunito', sans-serif;
+  }
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+  }
+  .info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .section-title {
     font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-950);
+    line-height: 1;
+  }
+  .section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .section-text {
+    font-size: 14px;
     font-weight: 400;
     color: var(--gray-950);
+    line-height: 1.6;
   }
+  .section-text.collapsed {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .section-empty {
+    font-size: 14px;
+    color: var(--gray-550);
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .read-more {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-550);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'Nunito', sans-serif;
+    text-align: left;
+  }
+  .read-more:hover { color: var(--blue-500); }
 
-  /* ── DIVIDER ── */
   .divider {
+    width: 100%;
     height: 1px;
-    background: var(--gray-300);
-    margin: 0;
+    background: var(--gray-250);
   }
 
   /* ── FOOTER ── */
@@ -241,30 +337,17 @@
     padding: 24px 0;
     gap: 8px;
   }
+  .footer-tagline { font-size: 14px; color: var(--gray-950); text-align: center; line-height: 1.5; padding: 0 24px; }
+  .footer-copy { font-size: 14px; color: var(--gray-950); text-align: center; }
 
-  .footer-tagline {
-    font-size: 14px;
-    color: var(--gray-950);
-    text-align: center;
-    line-height: 1.5;
-    padding: 0 24px;
-  }
-
-  .footer-copy {
-    font-size: 14px;
-    color: var(--gray-950);
-    text-align: center;
-  }
-
-  @media (max-width: 1360px) {
-    .header { width: calc(100vw - 24px); }
-  }
-  @media (max-width: 768px) {
+  @media (max-width: 1360px) { .header { width: calc(100vw - 24px); } }
+  @media (max-width: 900px) {
     .header { padding: 20px 24px; height: auto; border-radius: 24px; flex-wrap: wrap; gap: 12px; }
-    .main { padding-top: 180px; padding-left: 12px; padding-right: 12px; }
-    .detail-card { padding: 24px; }
-    .detail-name { font-size: 24px; }
-    .detail-header { flex-direction: column; }
+    .main { padding-top: 180px; }
+    .main-grid { flex-direction: column; }
+    .left-card { width: 100%; }
+    .medicine-photo { position: static; width: 100%; height: 160px; margin-bottom: 24px; }
+    .notes-block { margin-top: 16px; }
   }
 </style>
 </head>
@@ -281,17 +364,13 @@
   <nav class="nav-links">
     <a class="nav-link" href="{% url 'core:dashboard' %}">
       <span class="nav-icon">
-        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.9814 17.3938C18.208 17.3938 17.5489 17.1233 17.0039 16.5825C16.4597 16.0408 16.1876 15.3838 16.1876 14.6113C16.1876 13.8388 16.458 13.18 16.9989 12.635C17.5405 12.09 18.1976 11.8175 18.9701 11.8175C19.7426 11.8175 20.4014 12.0883 20.9464 12.63C21.4914 13.17 21.7639 13.8267 21.7639 14.6C21.7639 15.3733 21.493 16.0325 20.9514 16.5775C20.4114 17.1217 19.7547 17.3938 18.9814 17.3938ZM13.4464 23.9325C13.1605 23.9325 12.921 23.8358 12.7276 23.6425C12.5343 23.4492 12.4376 23.2092 12.4376 22.9225V22.5188C12.4376 22.2471 12.5055 21.9879 12.6414 21.7413C12.778 21.4954 12.9614 21.2979 13.1914 21.1488C14.0655 20.6504 14.9822 20.2688 15.9414 20.0038C16.8997 19.7388 17.911 19.6063 18.9751 19.6063C20.0393 19.6063 21.051 19.7388 22.0101 20.0038C22.9693 20.2688 23.886 20.6504 24.7601 21.1488C24.9901 21.2988 25.1735 21.4963 25.3101 21.7413C25.446 21.9879 25.5139 22.2471 25.5139 22.5188V22.9225C25.5139 23.2092 25.4172 23.4492 25.2239 23.6425C25.0305 23.8358 24.7905 23.9325 24.5039 23.9325H13.4464ZM12.1251 17.25H4.62512C4.44762 17.25 4.29887 17.19 4.17887 17.07C4.05971 16.95 4.00012 16.8013 4.00012 16.6238C4.00012 16.4463 4.05971 16.2979 4.17887 16.1788C4.29887 16.0596 4.44762 16 4.62512 16H12.1251C12.3018 16 12.4501 16.06 12.5701 16.18C12.6901 16.3 12.7501 16.4488 12.7501 16.6263C12.7501 16.8038 12.6901 16.9521 12.5701 17.0713C12.4501 17.1904 12.3018 17.25 12.1251 17.25ZM17.1251 7.25H4.62512C4.44762 7.25 4.29887 7.19 4.17887 7.07C4.05971 6.95 4.00012 6.80125 4.00012 6.62375C4.00012 6.44625 4.05971 6.29792 4.17887 6.17875C4.29887 6.05958 4.44762 6 4.62512 6H17.1251C17.3018 6 17.4501 6.06 17.5701 6.18C17.6901 6.3 17.7501 6.44875 17.7501 6.62625C17.7501 6.80375 17.6901 6.95208 17.5701 7.07125C17.4501 7.19042 17.3018 7.25 17.1251 7.25ZM13.7639 12.25H4.62512C4.44762 12.25 4.29887 12.19 4.17887 12.07C4.05971 11.95 4.00012 11.8012 4.00012 11.6238C4.00012 11.4462 4.05971 11.2979 4.17887 11.1788C4.29887 11.0596 4.44762 11 4.62512 11H14.4801C14.3326 11.1942 14.1985 11.3913 14.0776 11.5912C13.9568 11.7913 13.8514 12.0108 13.7639 12.25Z" fill="#262626"/>
-        </svg>
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M18.9814 17.3938C18.208 17.3938 17.5489 17.1233 17.0039 16.5825C16.4597 16.0408 16.1876 15.3838 16.1876 14.6113C16.1876 13.8388 16.458 13.18 16.9989 12.635C17.5405 12.09 18.1976 11.8175 18.9701 11.8175C19.7426 11.8175 20.4014 12.0883 20.9464 12.63C21.4914 13.17 21.7639 13.8267 21.7639 14.6C21.7639 15.3733 21.493 16.0325 20.9514 16.5775C20.4114 17.1217 19.7547 17.3938 18.9814 17.3938ZM13.4464 23.9325C13.1605 23.9325 12.921 23.8358 12.7276 23.6425C12.5343 23.4492 12.4376 23.2092 12.4376 22.9225V22.5188C12.4376 22.2471 12.5055 21.9879 12.6414 21.7413C12.778 21.4954 12.9614 21.2979 13.1914 21.1488C14.0655 20.6504 14.9822 20.2688 15.9414 20.0038C16.8997 19.7388 17.911 19.6063 18.9751 19.6063C20.0393 19.6063 21.051 19.7388 22.0101 20.0038C22.9693 20.2688 23.886 20.6504 24.7601 21.1488C24.9901 21.2988 25.1735 21.4963 25.3101 21.7413C25.446 21.9879 25.5139 22.2471 25.5139 22.5188V22.9225C25.5139 23.2092 25.4172 23.4492 25.2239 23.6425C25.0305 23.8358 24.7905 23.9325 24.5039 23.9325H13.4464ZM12.1251 17.25H4.62512C4.44762 17.25 4.29887 17.19 4.17887 17.07C4.05971 16.95 4.00012 16.8013 4.00012 16.6238C4.00012 16.4463 4.05971 16.2979 4.17887 16.1788C4.29887 16.0596 4.44762 16 4.62512 16H12.1251C12.3018 16 12.4501 16.06 12.5701 16.18C12.6901 16.3 12.7501 16.4488 12.7501 16.6263C12.7501 16.8038 12.6901 16.9521 12.5701 17.0713C12.4501 17.1904 12.3018 17.25 12.1251 17.25ZM17.1251 7.25H4.62512C4.44762 7.25 4.29887 7.19 4.17887 7.07C4.05971 6.95 4.00012 6.80125 4.00012 6.62375C4.00012 6.44625 4.05971 6.29792 4.17887 6.17875C4.29887 6.05958 4.44762 6 4.62512 6H17.1251C17.3018 6 17.4501 6.06 17.5701 6.18C17.6901 6.3 17.7501 6.44875 17.7501 6.62625C17.7501 6.80375 17.6901 6.95208 17.5701 7.07125C17.4501 7.19042 17.3018 7.25 17.1251 7.25ZM13.7639 12.25H4.62512C4.44762 12.25 4.29887 12.19 4.17887 12.07C4.05971 11.95 4.00012 11.8012 4.00012 11.6238C4.00012 11.4462 4.05971 11.2979 4.17887 11.1788C4.29887 11.0596 4.44762 11 4.62512 11H14.4801C14.3326 11.1942 14.1985 11.3913 14.0776 11.5912C13.9568 11.7913 13.8514 12.0108 13.7639 12.25Z" fill="#262626"/></svg>
       </span>
       <span class="nav-label">Мои пациенты</span>
     </a>
     <a class="nav-link active" href="{% url 'medications:list' %}">
       <span class="nav-icon">
-        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#2E7CF6"/>
-        </svg>
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#2E7CF6"/></svg>
       </span>
       <span class="nav-label">Лекарства</span>
     </a>
@@ -299,11 +378,7 @@
 
   <div class="header-right">
     <div style="width:36px;height:36px;flex-shrink:0;">
-      <svg width="36" height="36" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
-        <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <svg width="36" height="36" viewBox="0 0 30 29" fill="none"><rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/><path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <span class="user-name">{{ user.last_name }} {{ user.middle_name }}</span>
   </div>
@@ -312,59 +387,105 @@
 <!-- MAIN -->
 <main class="main">
 
-  <a href="{% url 'medications:list' %}" class="back-link">
-    <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-      <path d="M6 1L1.5 5.5L6 10" stroke="#919191" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <a class="back-link" href="{% url 'medications:list' %}">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    Назад к лекарствам
+    Все лекарства
   </a>
 
-  <div class="detail-card">
-    <div class="detail-header">
-      <img src="{% static 'icon-medicine-card.svg' %}" class="detail-icon" alt="">
-      <div class="detail-title-block">
-        <h1 class="detail-name">{{ medication.name }}</h1>
-        {% if medication.medication_type %}
-        <div class="detail-type">
-          <span class="detail-type-label">Тип:</span>
-          <span class="detail-type-value">{{ medication.medication_type }}</span>
+  <div class="main-grid">
+
+    <!-- LEFT CARD -->
+    <div class="left-card">
+
+      <div class="medicine-name-block">
+        <span class="medicine-label">Название лекарственного препарата</span>
+        <span class="medicine-title">{{ medication.name }}</span>
+      </div>
+
+      <!-- Photo (absolute, top-right) -->
+      <div class="medicine-photo">
+        {% if medication.image %}
+          <img src="{{ medication.image.url }}" alt="{{ medication.name }}">
+        {% else %}
+          <div class="photo-placeholder">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="6" y="10" width="36" height="28" rx="4" stroke="#AAAAAA" stroke-width="2"/>
+              <circle cx="18" cy="22" r="4" stroke="#AAAAAA" stroke-width="2"/>
+              <path d="M6 34L16 24L22 30L30 20L42 34" stroke="#AAAAAA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Notes -->
+      <div class="notes-block">
+        <div class="notes-header">Примечания</div>
+
+        <!-- State: есть примечание (скрыт если примечания нет) -->
+        <div class="note-item" id="noteView" {% if not doctor_note %}style="display:none"{% endif %}>
+          <span class="note-text" id="noteTextDisplay">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</span>
+          <div class="note-actions">
+            <button class="note-btn" title="Редактировать" onclick="switchToEdit()">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="#262626" stroke-width="0.75" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="note-btn" title="Удалить" onclick="deleteNote()">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 2L8 8M8 2L2 8" stroke="#262626" stroke-width="0.75" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
-        {% endif %}
+
+        <!-- State: примечаний нет (скрыт если примечание есть) -->
+        <div id="noteEmpty" {% if doctor_note %}style="display:none"{% endif %}>
+          <p class="note-empty">Примечаний нет</p>
+        </div>
+
+        <!-- Textarea (скрыта по умолчанию) -->
+        <textarea class="note-edit-area" id="noteEdit" placeholder="Введите примечание...">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</textarea>
+        <button class="save-btn" id="saveBtn" onclick="saveNote()">Сохранить</button>
+        <button class="add-note-btn" id="addNoteBtn" onclick="switchToEdit()">Добавить примечание</button>
+        <span class="note-status" id="noteStatus"></span>
+      </div>
+
+    </div>
+
+    <!-- RIGHT CARD -->
+    <div class="right-card">
+      <div class="card-title">Информация о препарате</div>
+
+      <div class="info-section">
+        <div class="section-title">Схема назначения</div>
+        <div class="section-body">
+          {% if medication.prescription_scheme %}
+          <p class="section-text collapsed" id="prescText">{{ medication.prescription_scheme }}</p>
+          <button class="read-more" onclick="toggleText('prescText', this)">Читать полностью</button>
+          {% else %}
+          <p class="section-empty">Не указана</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="info-section">
+        <div class="section-title">Побочные эффекты</div>
+        <div class="section-body">
+          {% if medication.side_effects %}
+          <p class="section-text collapsed" id="sideText">{{ medication.side_effects }}</p>
+          <button class="read-more" onclick="toggleText('sideText', this)">Читать полностью</button>
+          {% else %}
+          <p class="section-empty">Не указаны</p>
+          {% endif %}
+        </div>
       </div>
     </div>
 
-    <div class="divider" style="margin-bottom: 32px;"></div>
-
-    <div class="detail-fields">
-      <div class="detail-field">
-        <span class="field-label">Схема назначения</span>
-        {% if medication.prescription_scheme %}
-        <p class="field-value">{{ medication.prescription_scheme }}</p>
-        {% else %}
-        <p class="field-value empty">Не указана</p>
-        {% endif %}
-      </div>
-
-      <div class="detail-field">
-        <span class="field-label">Побочные эффекты</span>
-        {% if medication.side_effects %}
-        <p class="field-value">{{ medication.side_effects }}</p>
-        {% else %}
-        <p class="field-value empty">Не указаны</p>
-        {% endif %}
-      </div>
-
-      <div class="detail-field">
-        <span class="field-label">Примечания</span>
-        {% if medication.notes %}
-        <p class="field-value">{{ medication.notes }}</p>
-        {% else %}
-        <p class="field-value empty">Нет примечаний</p>
-        {% endif %}
-      </div>
-    </div>
   </div>
-
 </main>
 
 <!-- FOOTER -->
@@ -378,5 +499,147 @@
   <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
 </footer>
 
+<!-- CSRF для AJAX -->
+<form id="csrfForm" style="display:none">{% csrf_token %}</form>
+
+<script>
+  var UPDATE_URL = "{% url 'medications:update_notes' medication.pk %}";
+  var HAS_NOTE = {{ doctor_note|yesno:"true,false" }};
+
+  function getCsrf() {
+    return document.querySelector('#csrfForm [name=csrfmiddlewaretoken]').value;
+  }
+
+  /* Показать состояние "нет примечания" */
+  function showEmptyState() {
+    var noteView  = document.getElementById('noteView');
+    var noteEmpty = document.getElementById('noteEmpty');
+    var ta        = document.getElementById('noteEdit');
+    var saveBtn   = document.getElementById('saveBtn');
+    var addBtn    = document.getElementById('addNoteBtn');
+
+    if (noteView)  noteView.style.display  = 'none';
+    if (noteEmpty) noteEmpty.style.display = 'block';
+    ta.style.display      = 'none';
+    saveBtn.style.display = 'none';
+    addBtn.style.display  = 'block';
+  }
+
+  /* Показать режим редактирования */
+  function switchToEdit() {
+    var noteView  = document.getElementById('noteView');
+    var noteEmpty = document.getElementById('noteEmpty');
+    var ta        = document.getElementById('noteEdit');
+    var saveBtn   = document.getElementById('saveBtn');
+    var addBtn    = document.getElementById('addNoteBtn');
+
+    if (noteView)  noteView.style.display  = 'none';
+    if (noteEmpty) noteEmpty.style.display = 'none';
+    ta.style.display      = 'block';
+    saveBtn.style.display = 'block';
+    addBtn.style.display  = 'none';
+    ta.focus();
+  }
+
+  /* Показать заполненное примечание */
+  function showNoteState(text) {
+    var noteView      = document.getElementById('noteView');
+    var noteEmpty     = document.getElementById('noteEmpty');
+    var noteTextEl    = document.getElementById('noteTextDisplay');
+    var ta            = document.getElementById('noteEdit');
+    var saveBtn       = document.getElementById('saveBtn');
+    var addBtn        = document.getElementById('addNoteBtn');
+
+    noteTextEl.textContent = text;
+    noteView.style.display  = 'flex';
+    if (noteEmpty) noteEmpty.style.display = 'none';
+    ta.style.display      = 'none';
+    saveBtn.style.display = 'none';
+    addBtn.style.display  = 'none';
+  }
+
+  function saveNote() {
+    var val    = document.getElementById('noteEdit').value.trim();
+    var btn    = document.getElementById('saveBtn');
+    var status = document.getElementById('noteStatus');
+    btn.disabled    = true;
+    btn.textContent = 'Сохранение...';
+
+    fetch(UPDATE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCsrf()
+      },
+      body: 'notes=' + encodeURIComponent(val)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.disabled    = false;
+      btn.textContent = 'Сохранить';
+      if (data.status === 'ok') {
+        if (val) {
+          showNoteState(val);
+          HAS_NOTE = true;
+        } else {
+          showEmptyState();
+          HAS_NOTE = false;
+        }
+        status.textContent = 'Сохранено';
+        status.classList.add('show');
+        setTimeout(function() { status.classList.remove('show'); }, 2000);
+      }
+    })
+    .catch(function() {
+      btn.disabled    = false;
+      btn.textContent = 'Сохранить';
+      status.textContent = 'Ошибка сохранения';
+      status.classList.add('show');
+    });
+  }
+
+  function deleteNote() {
+    var status = document.getElementById('noteStatus');
+    fetch(UPDATE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCsrf()
+      },
+      body: 'notes='
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') {
+        document.getElementById('noteEdit').value = '';
+        showEmptyState();
+        HAS_NOTE = false;
+      }
+    })
+    .catch(function() {
+      status.textContent = 'Ошибка удаления';
+      status.classList.add('show');
+    });
+  }
+
+  function toggleText(id, btn) {
+    var el = document.getElementById(id);
+    if (el.classList.contains('collapsed')) {
+      el.classList.remove('collapsed');
+      btn.textContent = 'Свернуть';
+    } else {
+      el.classList.add('collapsed');
+      btn.textContent = 'Читать полностью';
+    }
+  }
+
+  /* Начальное состояние */
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!HAS_NOTE) {
+      showEmptyState();
+    }
+    /* noteView уже виден если HAS_NOTE — ничего не делаем */
+  });
+</script>
 </body>
 </html>

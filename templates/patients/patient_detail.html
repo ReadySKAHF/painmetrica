@@ -203,10 +203,12 @@
     background: var(--blue-500);
     border: none;
     font-family: inherit;
-    cursor: not-allowed;
-    opacity: 0.5;
+    cursor: pointer;
     width: 100%;
+    transition: background 0.15s;
   }
+  .sidebar-btn:hover { background: #1a57e0; }
+  .sidebar-btn:disabled { cursor: not-allowed; opacity: 0.5; }
 
   /* ── MAIN CONTENT ── */
   .content {
@@ -377,83 +379,90 @@
     background: var(--white);
     border-radius: 20px;
     padding: 32px 40px;
-    min-height: 300px;
+    min-height: 120px;
   }
 
   .results-title {
     font-size: 18px;
     font-weight: 700;
     color: var(--gray-950);
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
-  .results-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-
-  .test-card {
-    width: 155px;
-    height: 110px;
+  .result-entry {
+    border: 1px solid var(--gray-300);
     border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    position: relative;
     overflow: hidden;
-    cursor: default;
+    margin-bottom: 16px;
   }
+  .result-entry:last-child { margin-bottom: 0; }
 
-  .test-card.blue { background: var(--blue-500); }
-  .test-card.red  { background: #F62E2E; }
-
-  .test-card::before {
-    content: '';
-    position: absolute;
-    width: 170px; height: 170px;
-    border: 36px solid rgba(255,255,255,0.10);
-    border-radius: 50%;
-    top: -60px; right: -55px;
-  }
-  .test-card::after {
-    content: '';
-    position: absolute;
-    width: 110px; height: 110px;
-    border: 28px solid rgba(255,255,255,0.07);
-    border-radius: 50%;
-    bottom: -38px; left: -28px;
-  }
-
-  .test-card-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--white);
-    text-align: center;
-    position: relative;
-    z-index: 1;
-    padding: 0 6px;
-  }
-
-  .test-card-result {
+  .result-entry-header {
     display: flex;
-    align-items: baseline;
-    gap: 4px;
-    position: relative;
-    z-index: 1;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--gray-250);
+    flex-wrap: wrap;
   }
 
-  .test-card-score { font-size: 16px; font-weight: 700; color: var(--white); }
-  .test-card-unit  { font-size: 12px; font-weight: 400; color: var(--white); }
+  .result-test-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-950);
+    flex: 1;
+  }
+
+  .result-date {
+    font-size: 13px;
+    color: var(--gray-550);
+    white-space: nowrap;
+  }
+
+  .result-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue-500);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .result-link:hover { text-decoration: underline; }
+
+  .result-subs { display: flex; flex-direction: column; }
+
+  .result-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    border-top: 1px solid var(--gray-300);
+  }
+
+  .result-sub-name {
+    font-size: 14px;
+    color: var(--gray-950);
+    flex: 1;
+  }
+
+  .result-sub-score {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--blue-500);
+    white-space: nowrap;
+  }
+
+  .result-sub-label {
+    font-size: 13px;
+    color: var(--gray-550);
+    white-space: nowrap;
+  }
 
   .empty-results {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 160px;
     gap: 14px;
   }
 
@@ -599,7 +608,21 @@
       <div>
         <div class="sidebar-section-title">Тестирование</div>
         <div class="sidebar-elements">
-          <button class="sidebar-btn" disabled title="Скоро">Начать тестирование</button>
+          {% for test in available_tests %}
+            {% if is_doctor %}
+            <form method="post" action="{% url 'tests:start_for_patient' test.pk patient.pk %}" style="width:100%;">
+              {% csrf_token %}
+              <button type="submit" class="sidebar-btn">Начать тестирование</button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'tests:start' test.pk %}" style="width:100%;">
+              {% csrf_token %}
+              <button type="submit" class="sidebar-btn">Начать тестирование</button>
+            </form>
+            {% endif %}
+          {% empty %}
+            <button class="sidebar-btn" disabled>Нет доступных тестов</button>
+          {% endfor %}
         </div>
       </div>
     </aside>
@@ -715,18 +738,25 @@
       <div class="results-card">
         <div class="results-title">Результаты тестирований</div>
 
-        {% if test_results %}
-        <div class="results-grid">
-          {% for result in test_results %}
-          <div class="test-card blue">
-            <div class="test-card-name">{{ result.test.title }}</div>
-            <div class="test-card-result">
-              <span class="test-card-score">{{ result.total_score }}</span>
-              <span class="test-card-unit">балла(ов)</span>
+        {% if results_with_subs %}
+          {% for item in results_with_subs %}
+          <div class="result-entry">
+            <div class="result-entry-header">
+              <span class="result-test-name">{{ item.result.test.title }}</span>
+              <span class="result-date">{{ item.result.completed_at|date:"d.m.Y в H:i" }}</span>
+              <a href="{% url 'tests:result' item.result.session.pk %}" class="result-link">Подробнее →</a>
+            </div>
+            <div class="result-subs">
+              {% for sub in item.sub_results %}
+              <div class="result-sub-row">
+                <span class="result-sub-name">{{ sub.name }}</span>
+                <span class="result-sub-score">{{ sub.score }} б.</span>
+                <span class="result-sub-label">{{ sub.label }}</span>
+              </div>
+              {% endfor %}
             </div>
           </div>
           {% endfor %}
-        </div>
         {% else %}
         <div class="empty-results">
           <svg width="56" height="56" viewBox="0 0 64 64" fill="none">

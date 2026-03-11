@@ -181,8 +181,7 @@
                         <li><a href="{% url 'medications:list' %}">Лекарства</a></li>
                         <li><a href="{% url 'tests:manage' %}">Тесты</a></li>
                     {% elif user.user_type == 'patient' %}
-                        <li><a href="{% url 'tests:list' %}">Доступные тесты</a></li>
-                        <li><a href="{% url 'tests:my_results' %}">Мои результаты</a></li>
+                        <li><a href="{% url 'patients:my_profile' %}">Моя карточка</a></li>
                     {% endif %}
 
                     <li><span style="color: var(--medium-gray);">{{ user.get_full_name }}</span></li>

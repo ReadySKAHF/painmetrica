@@ -4,14 +4,22 @@ from tests import views
 app_name = 'tests'
 
 urlpatterns = [
-    # Для пациентов
-    path('', views.TestListView.as_view(), name='list'),
-    path('<int:pk>/start/', views.TestStartView.as_view(), name='start'),
-    path('result/<int:pk>/', views.TestTakeView.as_view(), name='take'),
-    path('result/<int:pk>/submit/', views.TestSubmitView.as_view(), name='submit'),
+    # ── Прохождение теста ──
+    # Пациент запускает тест за себя
+    path('<int:pk>/start/', views.PatientStartTestView.as_view(), name='start'),
+    # Доктор запускает тест за пациента
+    path('<int:pk>/start/patient/<int:patient_id>/', views.DoctorStartTestView.as_view(), name='start_for_patient'),
+    # Этап теста (UUID в URL)
+    path('session/<uuid:session_id>/stage/<int:order>/', views.StageView.as_view(), name='stage'),
+    # AJAX: сохранение прогресса
+    path('session/<uuid:session_id>/save/', views.SaveProgressView.as_view(), name='save_progress'),
+    # Страница результатов
+    path('session/<uuid:session_id>/result/', views.ResultView.as_view(), name='result'),
+
+    # ── Пациент: история результатов (редирект на карточку) ──
     path('my-results/', views.MyResultsView.as_view(), name='my_results'),
 
-    # Для докторов
+    # ── Управление тестами (доктора) ──
     path('manage/', views.TestManageListView.as_view(), name='manage'),
     path('manage/create/', views.TestCreateView.as_view(), name='create'),
     path('manage/<int:pk>/edit/', views.TestUpdateView.as_view(), name='edit'),

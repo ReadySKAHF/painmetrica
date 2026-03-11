@@ -1,13 +1,13 @@
 import json
 from datetime import datetime
 
-from django.shortcuts import render, get_object_or_404
-from django.urls import reverse_lazy
-from django.views import View
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 from accounts.mixins import DoctorRequiredMixin
 from patients.models import Patient
@@ -55,9 +55,51 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             '1y': '6–12 месяцев',
             '1y+': 'Более 1 года',
         }
-        context['test_results'] = self.object.test_results.filter(
+
+        from tests.models import ScoreRange
+
+        def build_sub_results(result):
+            answers = (
+                result.answers
+                .select_related('question__stage')
+            )
+            step_scores = {}
+            step_stages = {}
+            for answer in answers:
+                stage = answer.question.stage
+                if stage is None:
+                    continue
+                step = stage.sidebar_step
+                if step not in step_scores:
+                    step_scores[step] = 0
+                    step_stages[step] = stage
+                step_scores[step] += answer.score
+            sub_results = []
+            for step in sorted(step_scores.keys()):
+                score = step_scores[step]
+                stage = step_stages[step]
+                score_range = ScoreRange.objects.filter(
+                    test=result.test,
+                    sidebar_step=step,
+                    min_score__lte=score,
+                    max_score__gte=score,
+                ).first()
+                sub_results.append({
+                    'name': stage.name,
+                    'score': score,
+                    'label': score_range.label if score_range else '—',
+                })
+            return sub_results
+
+        raw_results = self.object.test_results.filter(
             status='completed'
-        ).select_related('test').order_by('-started_at')
+        ).select_related('test', 'session').order_by('-completed_at')
+
+        context['results_with_subs'] = [
+            {'result': r, 'sub_results': build_sub_results(r)}
+            for r in raw_results
+        ]
+        context['test_results'] = raw_results  # для обратной совместимости
         context['is_doctor'] = self.request.user.user_type == 'doctor'
         context['pain_duration_label'] = DURATION_LABELS.get(
             self.object.pain_duration, '—'
@@ -66,6 +108,9 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             context['date_of_birth'] = self.object.user.patient_profile.date_of_birth
         except Exception:
             context['date_of_birth'] = None
+
+        from tests.models import Test
+        context['available_tests'] = Test.objects.filter(is_active=True)
         return context
 
 
@@ -210,3 +255,14 @@ class PatientUpdateAPIView(LoginRequiredMixin, View):
                 if patient.pain_duration else '—'
             ),
         })
+
+
+class PatientMyProfileView(LoginRequiredMixin, View):
+    """Редирект пациента на его собственную карточку."""
+
+    def get(self, request):
+        try:
+            patient = request.user.patient_record
+            return redirect('patients:detail', pk=patient.pk)
+        except Exception:
+            return redirect('core:dashboard')

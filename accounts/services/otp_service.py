@@ -19,6 +19,14 @@ class OTPService:
         Returns:
             OTPCode: Созданный OTP код
         """
+        # Инвалидируем существующие активные коды для этого пользователя+назначения
+        OTPCode.objects.filter(
+            user=user,
+            purpose=purpose,
+            is_used=False,
+            expires_at__gt=timezone.now()
+        ).update(is_used=True)
+
         # Создаем новый OTP код
         otp = OTPCode.objects.create(
             user=user,

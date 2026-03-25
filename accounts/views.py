@@ -321,13 +321,6 @@ class ResendOTPView(View):
 
         try:
             user = User.objects.get(id=user_id)
-
-            if OTPService.has_valid_otp(user, purpose):
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Действующий код уже был отправлен. Подождите 5 минут.'
-                }, status=429)
-
             OTPService.generate_and_send_otp(user, purpose)
 
             return JsonResponse({
@@ -337,6 +330,19 @@ class ResendOTPView(View):
 
         except User.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'Пользователь не найден.'}, status=404)
+
+
+class CheckEmailView(View):
+    """AJAX: проверка существования email в системе"""
+
+    def get(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        email = request.GET.get('email', '').strip().lower()
+        if not email:
+            return JsonResponse({'exists': False})
+        exists = User.objects.filter(email__iexact=email).exists()
+        return JsonResponse({'exists': exists})
 
 
 # ──────────────────────────────────────────────────────────────────────

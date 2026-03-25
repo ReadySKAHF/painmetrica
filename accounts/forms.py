@@ -12,7 +12,8 @@ class RegisterStepOneForm(forms.ModelForm):
     password = forms.CharField(
         label='Пароль',
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        min_length=8
+        min_length=8,
+        max_length=20
     )
 
     class Meta:
@@ -26,23 +27,52 @@ class RegisterStepOneForm(forms.ModelForm):
         }
 
     def clean_email(self):
-        """Проверка уникальности email"""
+        """Проверка уникальности и корректности email"""
         email = self.cleaned_data.get('email')
+        if not email:
+            return email
+        if len(email) > 50:
+            raise ValidationError('Электронная почта не должна превышать 50 символов.')
         if User.objects.filter(email__iexact=email).exists():
-            raise ValidationError('Пользователь с таким email уже существует.')
+            raise ValidationError('Пользователь с такой Электронной почтой уже зарегистрирован')
         return email.lower()
+
+    def clean_password(self):
+        """Проверка пароля: только латиница, 8–20 символов, сложность"""
+        import re
+        password = self.cleaned_data.get('password')
+        if not password:
+            return password
+        if re.search(r'[а-яА-ЯёЁ]', password):
+            raise ValidationError('Пароль должен содержать только латинские буквы')
+        if not re.search(r'[A-Z]', password):
+            raise ValidationError('Пароль должен содержать как минимум 1 заглавную букву')
+        if not re.search(r'\d', password):
+            raise ValidationError('Пароль должен содержать как минимум 1 цифру')
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;\'`~]', password):
+            raise ValidationError('Пароль должен содержать как минимум 1 спец. символ')
+        return password
 
 
 class DoctorProfileForm(forms.ModelForm):
     """Форма второго шага регистрации - профессиональные данные доктора"""
+
+    position = forms.CharField(
+        label='Должность',
+        max_length=50,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'maxlength': '50'})
+    )
+    workplace = forms.CharField(
+        label='Место работы',
+        max_length=50,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'maxlength': '50'})
+    )
 
     class Meta:
         model = DoctorProfile
         fields = ['specialty', 'position', 'workplace', 'city', 'area_of_interest']
         widgets = {
             'specialty': forms.TextInput(attrs={'class': 'form-control'}),
-            'position': forms.TextInput(attrs={'class': 'form-control'}),
-            'workplace': forms.TextInput(attrs={'class': 'form-control'}),
             'city': forms.TextInput(attrs={'class': 'form-control'}),
             'area_of_interest': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }

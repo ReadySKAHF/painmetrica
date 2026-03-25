@@ -19,6 +19,9 @@ urlpatterns = [
     # API повторной отправки OTP
     path('api/resend-otp/', views.ResendOTPView.as_view(), name='resend_otp'),
 
+    # API проверки email
+    path('api/check-email/', views.CheckEmailView.as_view(), name='check_email'),
+
     # Регистрация пациентов
     path('api/send-patient-invitation/', views.SendPatientInvitationView.as_view(), name='send_patient_invitation'),
     path('api/manual-patient-create/', views.ManualPatientCreateView.as_view(), name='manual_patient_create'),

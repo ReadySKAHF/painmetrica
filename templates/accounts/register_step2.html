@@ -212,14 +212,42 @@
 
         <!-- Должность -->
         <div class="field-wrap">
-          <label class="field-label" for="id_position">Должность</label>
-          <input class="field-input" type="text" id="id_position" name="position" placeholder="Введите должность" required>
+          <label class="field-label" for="id_position" id="label-position">Должность</label>
+          <input class="field-input" type="text" id="id_position" name="position" placeholder="Введите должность" maxlength="50" required>
+          <div class="error-block" id="error-position-empty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не ввели Должность</span>
+          </div>
+          <div class="error-block" id="error-position-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Должность не должна превышать 50 символов</span>
+          </div>
         </div>
 
         <!-- Место работы -->
         <div class="field-wrap">
-          <label class="field-label" for="id_workplace">Место работы</label>
-          <input class="field-input" type="text" id="id_workplace" name="workplace" placeholder="Введите место работы" required>
+          <label class="field-label" for="id_workplace" id="label-workplace">Место работы</label>
+          <input class="field-input" type="text" id="id_workplace" name="workplace" placeholder="Введите место работы" maxlength="50" required>
+          <div class="error-block" id="error-workplace-empty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не ввели Место работы</span>
+          </div>
+          <div class="error-block" id="error-workplace-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Место работы не должна превышать 50 символов</span>
+          </div>
         </div>
 
         <!-- Город -->
@@ -500,8 +528,23 @@ function checkForm() {
   btnSubmit.disabled = !(specialtyOk && cityOk && interestsOk && positionOk && workplaceOk && termsOk);
 }
 
-inpPosition.addEventListener('input', checkForm);
-inpWorkplace.addEventListener('input', checkForm);
+const positionErrorEmpty = document.getElementById('error-position-empty');
+const workplaceErrorEmpty = document.getElementById('error-workplace-empty');
+
+inpPosition.addEventListener('input', () => {
+  if (inpPosition.value.trim()) {
+    inpPosition.classList.remove('error-state');
+    positionErrorEmpty.classList.remove('visible');
+  }
+  checkForm();
+});
+inpWorkplace.addEventListener('input', () => {
+  if (inpWorkplace.value.trim()) {
+    inpWorkplace.classList.remove('error-state');
+    workplaceErrorEmpty.classList.remove('visible');
+  }
+  checkForm();
+});
 cbTerms.addEventListener('change', checkForm);
 
 document.getElementById('step2-form').addEventListener('submit', (e) => {
@@ -511,6 +554,18 @@ document.getElementById('step2-form').addEventListener('submit', (e) => {
     specialtySelect.trigger.classList.add('error-state');
     specialtySelect.errorBlock.classList.add('visible');
     specialtySelect.label.classList.add('error');
+    hasError = true;
+  }
+
+  if (!inpPosition.value.trim()) {
+    inpPosition.classList.add('error-state');
+    positionErrorEmpty.classList.add('visible');
+    hasError = true;
+  }
+
+  if (!inpWorkplace.value.trim()) {
+    inpWorkplace.classList.add('error-state');
+    workplaceErrorEmpty.classList.add('visible');
     hasError = true;
   }
 

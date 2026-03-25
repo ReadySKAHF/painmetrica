@@ -444,7 +444,7 @@
     <h1 class="form-title">Регистрация в системе</h1>
     <p class="form-subtitle">Создайте аккаунт для работы с Painmetrica</p>
 
-    <form method="post">
+    <form method="post" id="step1-form">
       {% csrf_token %}
 
       <div class="field-group">
@@ -476,6 +476,13 @@
             </svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
           </div>
+          <div class="error-block" id="error-last-name-empty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не ввели Фамилию</span>
+          </div>
         </div>
 
         <div class="field-wrap">
@@ -505,6 +512,13 @@
             </svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
           </div>
+          <div class="error-block" id="error-first-name-empty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не ввели Имя</span>
+          </div>
         </div>
 
         <div class="field-wrap">
@@ -531,9 +545,11 @@
           <input
             class="field-input {% if form.email.errors %}error-state{% endif %}"
             type="email"
+            id="inp-email"
             name="email"
             value="{{ form.email.value|default:'' }}"
             placeholder="Введите почту"
+            maxlength="50"
             required
           >
           {% if form.email.errors %}
@@ -545,6 +561,34 @@
               <span class="error-text">{{ form.email.errors.0 }}</span>
             </div>
           {% endif %}
+          <div class="error-block" id="error-email-exists">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Пользователь с такой Электронной почтой уже зарегистрирован</span>
+          </div>
+          <div class="error-block" id="error-email-empty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не ввели Электронную почту</span>
+          </div>
+          <div class="error-block" id="error-email-format">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Не корректный адрес Электронной почты</span>
+          </div>
+          <div class="error-block" id="error-email-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Электронная почта не должна превышать 50 символов</span>
+          </div>
         </div>
 
 
@@ -559,6 +603,7 @@
               placeholder="Введите пароль"
               required
               minlength="8"
+              maxlength="20"
             >
             <button class="eye-btn" id="eye-toggle" type="button" title="Показать пароль">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -568,7 +613,7 @@
               </svg>
             </button>
           </div>
-          <div class="info-block" id="info-password">
+          <div class="info-block" id="info-password" style="display:none">
             <svg class="info-icon" viewBox="0 0 18 18" fill="none">
               <circle cx="9" cy="9" r="8.5" stroke="currentColor"/>
               <path d="M9 5v4M9 13h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -584,6 +629,41 @@
               <span class="error-text">{{ form.password.errors.0 }}</span>
             </div>
           {% endif %}
+          <div class="error-block" id="error-password-empty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Вы не ввели Пароль</span>
+          </div>
+          <div class="error-block" id="error-password-min">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Пароль должен содержать не менее 8 символов</span>
+          </div>
+          <div class="error-block" id="error-password-max">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Пароль должен содержать не более 20 символов</span>
+          </div>
+          <div class="error-block" id="error-password-latin">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Пароль должен содержать только латинские буквы</span>
+          </div>
+          <div class="error-block" id="error-password-complexity">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text">Пароль должен содержать как минимум 1 спец. символ, 1 цифру, 1 заглавную букву</span>
+          </div>
         </div>
 
       </div>
@@ -614,15 +694,11 @@ eyeToggle.addEventListener('click', () => {
 // ============================================
 // ВАЛИДАЦИЯ ПОЛЕЙ ФИО
 // ============================================
-
-// Регулярное выражение для проверки: только буквы (кириллица/латиница), пробелы, дефисы
 const namePattern = /^[a-zA-Zа-яА-ЯёЁ\s\-]*$/;
 
-// Функция валидации имени
 function validateNameField(input, errorBlock) {
   const value = input.value;
   const isValid = namePattern.test(value);
-
   if (!isValid && value !== '') {
     input.classList.add('error-state');
     errorBlock.classList.add('visible');
@@ -632,80 +708,252 @@ function validateNameField(input, errorBlock) {
   }
 }
 
-// Функция проверки пустого поля при blur
-function checkEmptyField(input) {
-  if (input.hasAttribute('required') && input.value.trim() === '') {
-    input.classList.add('error-state');
-  }
-}
-
-// Валидация для Фамилии
+// Фамилия
 const lastNameInput = document.getElementById('inp-last-name');
 const lastNameError = document.getElementById('error-last-name');
+const lastNameErrorEmpty = document.getElementById('error-last-name-empty');
 
 lastNameInput.addEventListener('input', () => {
+  lastNameErrorEmpty.classList.remove('visible');
   validateNameField(lastNameInput, lastNameError);
 });
-
 lastNameInput.addEventListener('blur', () => {
-  checkEmptyField(lastNameInput);
-});
-
-lastNameInput.addEventListener('focus', () => {
-  if (lastNameInput.value.trim() !== '') {
-    lastNameInput.classList.remove('error-state');
+  if (lastNameInput.value.trim() === '') {
+    lastNameInput.classList.add('error-state');
+    lastNameErrorEmpty.classList.add('visible');
   }
 });
+lastNameInput.addEventListener('focus', () => {
+  if (lastNameInput.value.trim() !== '') lastNameInput.classList.remove('error-state');
+  lastNameErrorEmpty.classList.remove('visible');
+});
 
-// Валидация для Имени
+// Имя
 const firstNameInput = document.getElementById('inp-first-name');
 const firstNameError = document.getElementById('error-first-name');
+const firstNameErrorEmpty = document.getElementById('error-first-name-empty');
 
 firstNameInput.addEventListener('input', () => {
+  firstNameErrorEmpty.classList.remove('visible');
   validateNameField(firstNameInput, firstNameError);
 });
-
 firstNameInput.addEventListener('blur', () => {
-  checkEmptyField(firstNameInput);
-});
-
-firstNameInput.addEventListener('focus', () => {
-  if (firstNameInput.value.trim() !== '') {
-    firstNameInput.classList.remove('error-state');
+  if (firstNameInput.value.trim() === '') {
+    firstNameInput.classList.add('error-state');
+    firstNameErrorEmpty.classList.add('visible');
   }
 });
+firstNameInput.addEventListener('focus', () => {
+  if (firstNameInput.value.trim() !== '') firstNameInput.classList.remove('error-state');
+  firstNameErrorEmpty.classList.remove('visible');
+});
 
-// Валидация для Отчества (необязательное поле)
+// Отчество (необязательное)
 const middleNameInput = document.getElementById('inp-middle-name');
 const middleNameError = document.getElementById('error-middle-name');
-
 middleNameInput.addEventListener('input', () => {
   validateNameField(middleNameInput, middleNameError);
 });
 
 // ============================================
+// ВАЛИДАЦИЯ EMAIL
+// ============================================
+const emailInput = document.getElementById('inp-email');
+const emailErrorExists = document.getElementById('error-email-exists');
+const emailErrorEmpty = document.getElementById('error-email-empty');
+const emailErrorFormat = document.getElementById('error-email-format');
+const emailErrorLength = document.getElementById('error-email-length');
+let emailExistsFlag = false;
+
+function isValidEmailFormat(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function clearEmailErrors() {
+  emailErrorExists.classList.remove('visible');
+  emailErrorEmpty.classList.remove('visible');
+  emailErrorFormat.classList.remove('visible');
+  emailErrorLength.classList.remove('visible');
+  emailInput.classList.remove('error-state');
+  emailExistsFlag = false;
+}
+
+function validateEmailField() {
+  const value = emailInput.value.trim();
+  clearEmailErrors();
+  if (value === '') return;
+  if (value.length > 50) {
+    emailInput.classList.add('error-state');
+    emailErrorLength.classList.add('visible');
+    return;
+  }
+  if (!isValidEmailFormat(value)) {
+    emailInput.classList.add('error-state');
+    emailErrorFormat.classList.add('visible');
+    return;
+  }
+  // Формат валиден — проверяем существование через AJAX
+  fetch("{% url 'accounts:check_email' %}?email=" + encodeURIComponent(value))
+    .then(r => r.json())
+    .then(data => {
+      if (data.exists) {
+        emailInput.classList.add('error-state');
+        emailErrorExists.classList.add('visible');
+        emailExistsFlag = true;
+      }
+    })
+    .catch(() => {});
+}
+
+emailInput.addEventListener('input', () => {
+  clearEmailErrors();
+});
+emailInput.addEventListener('blur', () => {
+  const value = emailInput.value.trim();
+  if (value === '') {
+    emailInput.classList.add('error-state');
+    emailErrorEmpty.classList.add('visible');
+  } else {
+    validateEmailField();
+  }
+});
+emailInput.addEventListener('focus', () => {
+  clearEmailErrors();
+});
+
+// ============================================
 // ВАЛИДАЦИЯ ПАРОЛЯ
 // ============================================
-
 const passwordInfo = document.getElementById('info-password');
+const passErrorEmpty = document.getElementById('error-password-empty');
+const passErrorMin = document.getElementById('error-password-min');
+const passErrorMax = document.getElementById('error-password-max');
+const passErrorLatin = document.getElementById('error-password-latin');
+const passErrorComplexity = document.getElementById('error-password-complexity');
 
-// Функция проверки требований к паролю
-function validatePassword(password) {
-  const hasUpperCase = /[A-ZА-ЯЁ]/.test(password);      // Заглавная буква
-  const hasDigit = /\d/.test(password);                  // Цифра
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;'`~]/.test(password); // Спец. символ
+function clearPasswordErrors() {
+  passErrorEmpty.classList.remove('visible');
+  passErrorMin.classList.remove('visible');
+  passErrorMax.classList.remove('visible');
+  passErrorLatin.classList.remove('visible');
+  passErrorComplexity.classList.remove('visible');
+  passInput.classList.remove('error-state');
+}
 
+function checkPasswordComplexity(password) {
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasDigit = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;'`~]/.test(password);
   return hasUpperCase && hasDigit && hasSpecialChar;
 }
 
-passInput.addEventListener('input', () => {
-  const isValid = validatePassword(passInput.value);
+function validatePasswordField() {
+  const value = passInput.value;
+  clearPasswordErrors();
+  passwordInfo.style.display = 'none';
+  if (value === '') return;
 
-  if (isValid) {
-    passwordInfo.style.display = 'none';
-  } else {
-    passwordInfo.style.display = 'flex';
+  if (/[а-яА-ЯёЁ]/.test(value)) {
+    passInput.classList.add('error-state');
+    passErrorLatin.classList.add('visible');
+    return;
   }
+  if (value.length < 8) {
+    passInput.classList.add('error-state');
+    passErrorMin.classList.add('visible');
+    return;
+  }
+  if (value.length > 20) {
+    passInput.classList.add('error-state');
+    passErrorMax.classList.add('visible');
+    return;
+  }
+  if (!checkPasswordComplexity(value)) {
+    passInput.classList.add('error-state');
+    passErrorComplexity.classList.add('visible');
+    return;
+  }
+}
+
+passInput.addEventListener('input', () => {
+  passErrorEmpty.classList.remove('visible');
+  validatePasswordField();
+});
+passInput.addEventListener('blur', () => {
+  if (passInput.value === '') {
+    passInput.classList.add('error-state');
+    passErrorEmpty.classList.add('visible');
+  }
+});
+
+// ============================================
+// ВАЛИДАЦИЯ ПРИ ОТПРАВКЕ ФОРМЫ
+// ============================================
+document.getElementById('step1-form').addEventListener('submit', (e) => {
+  let hasError = false;
+
+  // Фамилия
+  if (lastNameInput.value.trim() === '') {
+    lastNameInput.classList.add('error-state');
+    lastNameErrorEmpty.classList.add('visible');
+    hasError = true;
+  }
+
+  // Имя
+  if (firstNameInput.value.trim() === '') {
+    firstNameInput.classList.add('error-state');
+    firstNameErrorEmpty.classList.add('visible');
+    hasError = true;
+  }
+
+  // Email
+  const emailVal = emailInput.value.trim();
+  if (emailVal === '') {
+    emailInput.classList.add('error-state');
+    emailErrorEmpty.classList.add('visible');
+    hasError = true;
+  } else if (emailVal.length > 50) {
+    emailInput.classList.add('error-state');
+    emailErrorLength.classList.add('visible');
+    hasError = true;
+  } else if (!isValidEmailFormat(emailVal)) {
+    emailInput.classList.add('error-state');
+    emailErrorFormat.classList.add('visible');
+    hasError = true;
+  }
+
+  // Пароль
+  const passVal = passInput.value;
+  if (passVal === '') {
+    passInput.classList.add('error-state');
+    passErrorEmpty.classList.add('visible');
+    hasError = true;
+  } else if (/[а-яА-ЯёЁ]/.test(passVal)) {
+    passInput.classList.add('error-state');
+    passErrorLatin.classList.add('visible');
+    hasError = true;
+  } else if (passVal.length < 8) {
+    passInput.classList.add('error-state');
+    passErrorMin.classList.add('visible');
+    hasError = true;
+  } else if (passVal.length > 20) {
+    passInput.classList.add('error-state');
+    passErrorMax.classList.add('visible');
+    hasError = true;
+  } else if (!checkPasswordComplexity(passVal)) {
+    passInput.classList.add('error-state');
+    passErrorComplexity.classList.add('visible');
+    hasError = true;
+  }
+
+  // Email существует (флаг от AJAX)
+  if (emailExistsFlag) {
+    emailInput.classList.add('error-state');
+    emailErrorExists.classList.add('visible');
+    hasError = true;
+  }
+
+  if (hasError) e.preventDefault();
 });
 </script>
 

@@ -357,6 +357,39 @@
   .edit-error { font-size: 13px; color: #E43D3D; display: none; }
   .edit-error.show { display: block; }
 
+  /* Edit card — error blocks */
+  .edit-card .error-block {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    background: #FFF0F0;
+    border-radius: 8px;
+    margin-top: 4px;
+  }
+  .edit-card .error-block.visible { display: flex; }
+  .edit-card .error-icon { width: 18px; height: 18px; flex-shrink: 0; }
+  .edit-card .error-text { font-size: 10px; color: #E43D3D; line-height: 1.4; }
+  #edit-dob::-webkit-calendar-picker-indicator { display: none; }
+  .field-select.error { border-color: #E43D3D; }
+
+  /* Date field with calendar icon */
+  .edit-date-wrap { position: relative; }
+  .edit-date-wrap .field-input { padding-right: 40px; }
+  .edit-date-icon {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; opacity: .55; cursor: pointer;
+  }
+  .edit-date-icon:hover { opacity: .85; }
+
+  /* Patient edit — 2-column grid for 4 personal fields */
+  .edit-col--patient {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 32px;
+    align-items: start;
+  }
+
   .btn-cancel {
     font-size: 13px; font-weight: 600; color: var(--gray-550);
     background: none; border: none; font-family: inherit;
@@ -690,22 +723,57 @@
         <div class="edit-cols">
 
           <!-- Левая колонка: ФИО + дата рождения (для всех) -->
-          <div class="edit-col">
+          <div class="edit-col {% if not is_doctor %}edit-col--patient{% endif %}">
             <div class="form-field">
               <label class="field-label">Имя</label>
-              <input class="field-input" id="edit-first-name" type="text" value="{{ patient.user.first_name }}" placeholder="Имя">
+              <input class="field-input" id="edit-first-name" type="text" value="{{ patient.user.first_name }}" placeholder="Имя" maxlength="50">
+              <div class="error-block" id="err-edit-first-name">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Цифры и спец. символы запрещены</span>
+              </div>
+              <div class="error-block" id="err-edit-first-name-empty">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Вы не ввели имя пациента</span>
+              </div>
             </div>
             <div class="form-field">
-              <label class="field-label">Отчество</label>
-              <input class="field-input" id="edit-middle-name" type="text" value="{{ patient.user.middle_name }}" placeholder="Отчество">
+              <label class="field-label">Отчество <span style="font-weight:400;color:var(--gray-550);">(необязательно)</span></label>
+              <input class="field-input" id="edit-middle-name" type="text" value="{{ patient.user.middle_name }}" placeholder="Отчество" maxlength="50">
+              <div class="error-block" id="err-edit-middle-name">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Цифры и спец. символы запрещены</span>
+              </div>
             </div>
             <div class="form-field">
               <label class="field-label">Фамилия</label>
-              <input class="field-input" id="edit-last-name" type="text" value="{{ patient.user.last_name }}" placeholder="Фамилия">
+              <input class="field-input" id="edit-last-name" type="text" value="{{ patient.user.last_name }}" placeholder="Фамилия" maxlength="50">
+              <div class="error-block" id="err-edit-last-name">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Цифры и спец. символы запрещены</span>
+              </div>
+              <div class="error-block" id="err-edit-last-name-empty">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Вы не ввели фамилию пациента</span>
+              </div>
             </div>
             <div class="form-field">
               <label class="field-label">Дата рождения</label>
-              <input class="field-input" id="edit-dob" type="date" value="{{ date_of_birth|date:'Y-m-d'|default:'' }}">
+              <div class="edit-date-wrap">
+                <input class="field-input" id="edit-dob" type="date" value="{{ date_of_birth|date:'Y-m-d'|default:'' }}">
+                <svg class="edit-date-icon" viewBox="0 0 18 18" fill="none" onclick="openEditDatePicker()">
+                  <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
+                  <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
+                  <path d="M6 1V4M12 1V4" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="error-block" id="err-edit-dob-empty">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Укажите дату рождения</span>
+              </div>
+              <div class="error-block" id="err-edit-dob-range">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Дата должна быть между 01.01.1890 и сегодняшним днём</span>
+              </div>
             </div>
           </div>
 
@@ -714,7 +782,11 @@
           <div class="edit-col">
             <div class="form-field">
               <label class="field-label">Локализация боли</label>
-              <input class="field-input" id="edit-pain-location" type="text" value="{{ patient.pain_location }}" placeholder="Локализация боли">
+              <input class="field-input" id="edit-pain-location" type="text" value="{{ patient.pain_location }}" placeholder="Локализация боли" maxlength="200">
+              <div class="error-block" id="err-edit-pain-location">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Укажите локализацию боли</span>
+              </div>
             </div>
             <div class="form-field">
               <label class="field-label">Длительность боли</label>
@@ -727,6 +799,10 @@
                 <option value="1y" {% if patient.pain_duration == '1y' %}selected{% endif %}>6–12 месяцев</option>
                 <option value="1y+" {% if patient.pain_duration == '1y+' %}selected{% endif %}>Более 1 года</option>
               </select>
+              <div class="error-block" id="err-edit-pain-duration">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Укажите длительность боли</span>
+              </div>
             </div>
           </div>
           {% endif %}
@@ -795,42 +871,113 @@
     return '';
   }
 
-  function switchToEdit() {
-    document.getElementById('view-card').style.display = 'none';
-    document.getElementById('edit-card').classList.add('active');
-  }
+  const BAD_NAME_EDIT = /[^a-zA-Zа-яёА-ЯЁ\s\-]/;
 
-  function switchToView() {
-    document.getElementById('edit-card').classList.remove('active');
-    document.getElementById('view-card').style.display = '';
+  function setEditErr(id) { document.getElementById(id).classList.add('visible'); }
+  function clrEditErr(id) { document.getElementById(id).classList.remove('visible'); }
+
+  function clearAllEditErrors() {
+    ['err-edit-first-name','err-edit-first-name-empty',
+     'err-edit-last-name','err-edit-last-name-empty',
+     'err-edit-middle-name',
+     'err-edit-dob-empty','err-edit-dob-range',
+     'err-edit-pain-location','err-edit-pain-duration'
+    ].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('visible');
+    });
     const errEl = document.getElementById('edit-error');
     errEl.classList.remove('show');
     errEl.textContent = '';
   }
 
+  function initEditDob() {
+    const dob = document.getElementById('edit-dob');
+    const today = new Date();
+    const yy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dob.max = yy + '-' + mm + '-' + dd;
+    dob.min = '1890-01-01';
+  }
+
+  function openEditDatePicker() {
+    const dob = document.getElementById('edit-dob');
+    try { dob.showPicker(); } catch(e) { dob.focus(); }
+  }
+
+  function switchToEdit() {
+    document.getElementById('view-card').style.display = 'none';
+    document.getElementById('edit-card').classList.add('active');
+    initEditDob();
+  }
+
+  function switchToView() {
+    document.getElementById('edit-card').classList.remove('active');
+    document.getElementById('view-card').style.display = '';
+    clearAllEditErrors();
+  }
+
   async function savePatient() {
     const btn = document.getElementById('save-btn');
     const errEl = document.getElementById('edit-error');
+    clearAllEditErrors();
 
+    let valid = true;
+
+    // Имя
     const firstName = document.getElementById('edit-first-name').value.trim();
-    const lastName  = document.getElementById('edit-last-name').value.trim();
-
-    if (!firstName || !lastName) {
-      errEl.textContent = 'Имя и фамилия обязательны';
-      errEl.classList.add('show');
-      return;
+    if (!firstName) {
+      setEditErr('err-edit-first-name-empty'); valid = false;
+    } else if (BAD_NAME_EDIT.test(firstName)) {
+      setEditErr('err-edit-first-name'); valid = false;
     }
+
+    // Фамилия
+    const lastName = document.getElementById('edit-last-name').value.trim();
+    if (!lastName) {
+      setEditErr('err-edit-last-name-empty'); valid = false;
+    } else if (BAD_NAME_EDIT.test(lastName)) {
+      setEditErr('err-edit-last-name'); valid = false;
+    }
+
+    // Отчество (необязательно, но без цифр/спецсимволов)
+    const middleName = document.getElementById('edit-middle-name').value.trim();
+    if (middleName && BAD_NAME_EDIT.test(middleName)) {
+      setEditErr('err-edit-middle-name'); valid = false;
+    }
+
+    // Дата рождения
+    const dob = document.getElementById('edit-dob');
+    const dobVal = dob.value;
+    if (!dobVal) {
+      setEditErr('err-edit-dob-empty'); valid = false;
+    } else if (dobVal < '1890-01-01' || dobVal > dob.max) {
+      setEditErr('err-edit-dob-range'); valid = false;
+    }
+
+    {% if is_doctor %}
+    // Локализация боли
+    const painLoc = document.getElementById('edit-pain-location').value.trim();
+    if (!painLoc) { setEditErr('err-edit-pain-location'); valid = false; }
+
+    // Длительность боли
+    const painDur = document.getElementById('edit-pain-duration').value;
+    if (!painDur) { setEditErr('err-edit-pain-duration'); valid = false; }
+    {% endif %}
+
+    if (!valid) return;
 
     const payload = {
       first_name:    firstName,
-      middle_name:   document.getElementById('edit-middle-name').value.trim(),
+      middle_name:   middleName,
       last_name:     lastName,
-      date_of_birth: document.getElementById('edit-dob').value,
+      date_of_birth: dobVal,
     };
 
     {% if is_doctor %}
-    payload.pain_location = document.getElementById('edit-pain-location').value.trim();
-    payload.pain_duration  = document.getElementById('edit-pain-duration').value;
+    payload.pain_location = painLoc;
+    payload.pain_duration  = painDur;
     {% endif %}
 
     btn.disabled = true;

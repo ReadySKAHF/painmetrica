@@ -769,8 +769,18 @@
   .f-date-wrap .f-input { padding-right: 40px; }
   .f-date-icon {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    width: 18px; height: 18px; pointer-events: none; opacity: .55;
+    width: 18px; height: 18px; opacity: .55; cursor: pointer;
   }
+  #fBirthdate::-webkit-calendar-picker-indicator { display: none; }
+  .m-form .error-block, .m2 .error-block {
+    display: none; align-items: center; gap: 10px;
+    padding: 10px 12px; background: #FFEBEB; border-radius: 8px; margin-top: 4px;
+    width: 100%;
+  }
+  .m-form .error-block.visible, .m2 .error-block.visible { display: flex; }
+  .m-form .error-icon, .m2 .error-icon { width: 18px; height: 18px; flex-shrink: 0; }
+  .m-form .error-text, .m2 .error-text { font-size: 10px; color: #E43D3D; line-height: 1.4; }
+  .f-select.f-error { border-color: #E43D3D !important; box-shadow: 0 0 0 3px rgba(228,61,61,.12); }
 
   .f-select {
     width: 100%; height: 44px;
@@ -862,7 +872,7 @@
         <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <span class="user-name">{{ user.last_name }} {{ user.middle_name }}</span>
+    <span class="user-name">{{ user.first_name }} {{ user.middle_name }}</span>
   {% if is_patient and patient_pk %}
   </a>
   {% else %}
@@ -1224,9 +1234,20 @@
     <div class="m-input-wrap">
       <input class="m-input" id="inviteEmail" type="email" placeholder="user@gmail.com" autocomplete="email">
     </div>
-    <p class="m-error" id="inviteError"></p>
+    <div class="error-block" id="inviteErrFormat">
+      <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="error-text">Некорректный адрес Электронной почты</span>
+    </div>
+    <div class="error-block" id="inviteErrExists">
+      <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="error-text">Пациент с такой почтой уже зарегистрирован</span>
+    </div>
+    <div class="error-block" id="inviteErrOther">
+      <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="error-text"></span>
+    </div>
     <button class="m-btn" id="sendInviteBtn" onclick="sendInvitation()" style="max-width:280px">Отправить письмо на почту</button>
-    <p class="m-footer">Вы также можете <a onclick="showModal('modal1')">зарегистрировать пациента самостоятельно</a></p>
+    <p class="m-footer">Вы также можете <a onclick="showModal('formA')">зарегистрировать пациента самостоятельно</a></p>
   </div>
 
   <!-- Modal 3: успех -->
@@ -1248,25 +1269,41 @@
       <div class="f-inputs">
         <div class="f-field">
           <label class="f-label">Имя пациента</label>
-          <input class="f-input" id="fName" type="text" placeholder="Введите имя пациента" autocomplete="off">
+          <input class="f-input" id="fName" type="text" placeholder="Введите имя пациента" autocomplete="off" maxlength="50">
+          <div class="error-block" id="fNameErr">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text"></span>
+          </div>
         </div>
         <div class="f-field">
-          <label class="f-label">Отчество пациента</label>
-          <input class="f-input" id="fPatronymic" type="text" placeholder="Введите отчество пациента" autocomplete="off">
+          <label class="f-label">Отчество пациента <span style="font-weight:400;color:#919191">(необязательно)</span></label>
+          <input class="f-input" id="fPatronymic" type="text" placeholder="Введите отчество пациента" autocomplete="off" maxlength="50">
+          <div class="error-block" id="fPatronymicErr">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text"></span>
+          </div>
         </div>
         <div class="f-field">
           <label class="f-label">Фамилия пациента</label>
-          <input class="f-input" id="fSurname" type="text" placeholder="Введите фамилию пациента" autocomplete="off">
+          <input class="f-input" id="fSurname" type="text" placeholder="Введите фамилию пациента" autocomplete="off" maxlength="50">
+          <div class="error-block" id="fSurnameErr">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text"></span>
+          </div>
         </div>
         <div class="f-field">
           <label class="f-label">Дата рождения</label>
           <div class="f-date-wrap">
             <input class="f-input" id="fBirthdate" type="date">
-            <svg class="f-date-icon" viewBox="0 0 18 18" fill="none">
+            <svg class="f-date-icon" id="fDateIcon" viewBox="0 0 18 18" fill="none" onclick="openDatePicker()">
               <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
               <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
               <path d="M6 1V4M12 1V4" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
+          </div>
+          <div class="error-block" id="fBirthdateErr">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text"></span>
           </div>
         </div>
       </div>
@@ -1291,12 +1328,21 @@
         <div class="f-field">
           <label class="f-label">Диагноз</label>
           <input class="f-input" id="fDiagnosis" type="text" placeholder="Введите диагноз" autocomplete="off">
+          <div class="error-block" id="fDiagnosisErr">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text"></span>
+          </div>
         </div>
         <div class="f-field">
           <label class="f-label">Локализация боли</label>
           <input class="f-input" id="fPainLoc" type="text" placeholder="Укажите локализацию боли" autocomplete="off">
+          <div class="error-block" id="fPainLocErr">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text"></span>
+          </div>
         </div>
         <div class="f-field">
+          <label class="f-label">Длительность боли</label>
           <select class="f-select" id="fDuration">
             <option value="">Длительность не указана</option>
             <option value="1w">Менее 1 недели</option>
@@ -1306,6 +1352,10 @@
             <option value="1y">6–12 месяцев</option>
             <option value="1y+">Более 1 года</option>
           </select>
+          <div class="error-block" id="fDurationErr">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text"></span>
+          </div>
         </div>
       </div>
       <p class="m-error" id="formBError"></p>
@@ -1352,6 +1402,8 @@
 
   function closeAllModals() {
     overlay.classList.add('hidden');
+    clearFormA();
+    clearFormB();
     setTimeout(() => showModal('modal1'), 180);
   }
 
@@ -1360,19 +1412,78 @@
     if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeAllModals();
   });
 
+  // Инициализация поля даты
+  (function() {
+    const bd = document.getElementById('fBirthdate');
+    bd.max = new Date().toISOString().split('T')[0];
+    bd.min = '1890-01-01';
+    bd.addEventListener('input', function() {
+      if (this.value.length > 10) this.value = this.value.slice(0, 10);
+    });
+  })();
+
+  function openDatePicker() {
+    const input = document.getElementById('fBirthdate');
+    try { input.showPicker(); } catch(e) { input.focus(); }
+  }
+
+  // ── Вспомогательные функции валидации ──
+  const BAD_NAME = /[^a-zA-Zа-яёА-ЯЁ\s\-]/;
+
+  function setFieldError(inputId, msgId, message) {
+    const el  = document.getElementById(inputId);
+    const blk = document.getElementById(msgId);
+    el.classList.add('f-error');
+    blk.querySelector('.error-text').textContent = message;
+    blk.classList.add('visible');
+  }
+
+  function clearFieldError(inputId, msgId) {
+    const el  = document.getElementById(inputId);
+    const blk = document.getElementById(msgId);
+    el.classList.remove('f-error');
+    blk.querySelector('.error-text').textContent = '';
+    blk.classList.remove('visible');
+  }
+
+  // Сбрасывать ошибку при вводе
+  ['fName','fSurname','fPatronymic','fBirthdate','fDiagnosis','fPainLoc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => {
+      const errId = id + 'Err';
+      if (document.getElementById(errId)) clearFieldError(id, errId);
+    });
+  });
+  document.getElementById('fDuration').addEventListener('change', () => {
+    clearFieldError('fDuration', 'fDurationErr');
+  });
+
+  // ── Вспомогательные для email-блока ──
+  function hideInviteErrors() {
+    ['inviteErrFormat','inviteErrExists','inviteErrOther'].forEach(id =>
+      document.getElementById(id).classList.remove('visible')
+    );
+    document.getElementById('inviteEmail').classList.remove('input-error');
+  }
+
+  document.getElementById('inviteEmail').addEventListener('input', hideInviteErrors);
+
   // ── Отправка приглашения ──
   async function sendInvitation() {
     const emailEl = document.getElementById('inviteEmail');
     const btn     = document.getElementById('sendInviteBtn');
-    const errEl   = document.getElementById('inviteError');
     const email   = emailEl.value.trim();
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      emailEl.classList.add('input-error'); emailEl.focus(); return;
+    hideInviteErrors();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      emailEl.classList.add('input-error');
+      document.getElementById('inviteErrFormat').classList.add('visible');
+      emailEl.focus();
+      return;
     }
 
     btn.disabled = true; btn.textContent = 'Отправляем…';
-    errEl.className = 'm-error';
 
     try {
       const resp = await fetch("{% url 'accounts:send_patient_invitation' %}", {
@@ -1382,37 +1493,92 @@
       });
       const data = await resp.json();
       if (data.success) {
-        showModal('modal3'); emailEl.value = '';
+        emailEl.value = '';
+        showModal('modal3');
       } else {
-        errEl.textContent = data.message || 'Произошла ошибка.';
-        errEl.className = 'm-error show';
+        emailEl.classList.add('input-error');
+        const msg = data.message || '';
+        if (msg.toLowerCase().includes('уже') || msg.toLowerCase().includes('exist')) {
+          document.getElementById('inviteErrExists').classList.add('visible');
+        } else {
+          const other = document.getElementById('inviteErrOther');
+          other.querySelector('.error-text').textContent = msg || 'Произошла ошибка.';
+          other.classList.add('visible');
+        }
       }
     } catch {
-      errEl.textContent = 'Ошибка соединения.'; errEl.className = 'm-error show';
+      const other = document.getElementById('inviteErrOther');
+      other.querySelector('.error-text').textContent = 'Ошибка соединения.';
+      other.classList.add('visible');
     } finally {
       btn.disabled = false; btn.textContent = 'Отправить письмо на почту';
     }
   }
 
+  function onSuccessOk() { closeAllModals(); }
+
   // ── Шаг 1 → Шаг 2 ──
   function goToFormB() {
-    const name    = document.getElementById('fName').value.trim();
-    const surname = document.getElementById('fSurname').value.trim();
-    if (!name)    { markF('fName');    return; }
-    if (!surname) { markF('fSurname'); return; }
-    showModal('formB');
-  }
+    const name       = document.getElementById('fName').value.trim();
+    const surname    = document.getElementById('fSurname').value.trim();
+    const patronymic = document.getElementById('fPatronymic').value.trim();
+    const birthdate  = document.getElementById('fBirthdate').value;
 
-  function markF(id) {
-    const el = document.getElementById(id);
-    el.classList.add('f-error'); el.focus();
-    setTimeout(() => el.classList.remove('f-error'), 1600);
+    clearFieldError('fName',       'fNameErr');
+    clearFieldError('fSurname',    'fSurnameErr');
+    clearFieldError('fPatronymic', 'fPatronymicErr');
+    clearFieldError('fBirthdate',  'fBirthdateErr');
+
+    let valid = true;
+
+    if (!name) {
+      setFieldError('fName', 'fNameErr', 'Вы не ввели имя пациента');
+      valid = false;
+    } else if (BAD_NAME.test(name)) {
+      setFieldError('fName', 'fNameErr', 'Цифры и спец. символы запрещены');
+      valid = false;
+    }
+
+    if (!surname) {
+      setFieldError('fSurname', 'fSurnameErr', 'Вы не ввели фамилию пациента');
+      valid = false;
+    } else if (BAD_NAME.test(surname)) {
+      setFieldError('fSurname', 'fSurnameErr', 'Цифры и спец. символы запрещены');
+      valid = false;
+    }
+
+    if (patronymic && BAD_NAME.test(patronymic)) {
+      setFieldError('fPatronymic', 'fPatronymicErr', 'Цифры и спец. символы запрещены');
+      valid = false;
+    }
+
+    if (!birthdate) {
+      setFieldError('fBirthdate', 'fBirthdateErr', 'Вы не ввели дату рождения пациента');
+      valid = false;
+    } else {
+      const today   = new Date(); today.setHours(0,0,0,0);
+      const minDate = new Date('1890-01-01');
+      const entered = new Date(birthdate);
+      if (entered > today) {
+        setFieldError('fBirthdate', 'fBirthdateErr', 'Дата рождения не может быть в будущем');
+        valid = false;
+      } else if (entered < minDate) {
+        setFieldError('fBirthdate', 'fBirthdateErr', 'Дата рождения не может быть раньше 01.01.1890');
+        valid = false;
+      }
+    }
+
+    if (valid) showModal('formB');
   }
 
   function clearFormA() {
     ['fName','fPatronymic','fSurname','fBirthdate'].forEach(id => {
       document.getElementById(id).value = '';
       document.getElementById(id).classList.remove('f-error');
+    });
+    ['fNameErr','fPatronymicErr','fSurnameErr','fBirthdateErr'].forEach(id => {
+      const blk = document.getElementById(id);
+      if (blk) { blk.querySelector('.error-text').textContent = ''; blk.classList.remove('visible'); }
     });
   }
 
@@ -1422,6 +1588,11 @@
       document.getElementById(id).classList.remove('f-error');
     });
     document.getElementById('fDuration').value = '';
+    document.getElementById('fDuration').classList.remove('f-error');
+    ['fDiagnosisErr','fPainLocErr','fDurationErr'].forEach(id => {
+      const blk = document.getElementById(id);
+      if (blk) { blk.querySelector('.error-text').textContent = ''; blk.classList.remove('visible'); }
+    });
   }
 
   // ── Добавить пациента (шаг 2) ──
@@ -1429,13 +1600,37 @@
     const btn   = document.getElementById('addPatientBtn');
     const errEl = document.getElementById('formBError');
 
-    const first_name   = document.getElementById('fName').value.trim();
-    const middle_name  = document.getElementById('fPatronymic').value.trim();
-    const last_name    = document.getElementById('fSurname').value.trim();
-    const date_of_birth = document.getElementById('fBirthdate').value;
-    const diagnosis    = document.getElementById('fDiagnosis').value.trim();
+    const diagnosis     = document.getElementById('fDiagnosis').value.trim();
     const pain_location = document.getElementById('fPainLoc').value.trim();
     const pain_duration = document.getElementById('fDuration').value;
+
+    clearFieldError('fDiagnosis', 'fDiagnosisErr');
+    clearFieldError('fPainLoc',   'fPainLocErr');
+    clearFieldError('fDuration',  'fDurationErr');
+
+    let valid = true;
+
+    if (!diagnosis) {
+      setFieldError('fDiagnosis', 'fDiagnosisErr', 'Вы не ввели диагноз');
+      valid = false;
+    }
+
+    if (!pain_location) {
+      setFieldError('fPainLoc', 'fPainLocErr', 'Вы не указали локализацию боли');
+      valid = false;
+    }
+
+    if (!pain_duration) {
+      setFieldError('fDuration', 'fDurationErr', 'Вы не указали длительность боли');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const first_name    = document.getElementById('fName').value.trim();
+    const middle_name   = document.getElementById('fPatronymic').value.trim();
+    const last_name     = document.getElementById('fSurname').value.trim();
+    const date_of_birth = document.getElementById('fBirthdate').value;
 
     btn.disabled = true; btn.textContent = 'Добавляем…';
     errEl.className = 'm-error';

@@ -580,7 +580,7 @@
               <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span class="error-text">Не корректный адрес Электронной почты</span>
+            <span class="error-text">Некорректный адрес Электронной почты</span>
           </div>
           <div class="error-block" id="error-email-length">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
@@ -656,13 +656,6 @@
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
             <span class="error-text">Пароль должен содержать только латинские буквы</span>
-          </div>
-          <div class="error-block" id="error-password-complexity">
-            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
-              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <span class="error-text">Пароль должен содержать как минимум 1 спец. символ, 1 цифру, 1 заглавную букву</span>
           </div>
         </div>
 
@@ -829,14 +822,11 @@ const passErrorEmpty = document.getElementById('error-password-empty');
 const passErrorMin = document.getElementById('error-password-min');
 const passErrorMax = document.getElementById('error-password-max');
 const passErrorLatin = document.getElementById('error-password-latin');
-const passErrorComplexity = document.getElementById('error-password-complexity');
-
 function clearPasswordErrors() {
   passErrorEmpty.classList.remove('visible');
   passErrorMin.classList.remove('visible');
   passErrorMax.classList.remove('visible');
   passErrorLatin.classList.remove('visible');
-  passErrorComplexity.classList.remove('visible');
   passInput.classList.remove('error-state');
 }
 
@@ -850,8 +840,9 @@ function checkPasswordComplexity(password) {
 function validatePasswordField() {
   const value = passInput.value;
   clearPasswordErrors();
-  passwordInfo.style.display = 'none';
-  if (value === '') return;
+  if (value === '') { passwordInfo.style.display = 'none'; return; }
+
+  passwordInfo.style.display = 'flex';
 
   if (/[а-яА-ЯёЁ]/.test(value)) {
     passInput.classList.add('error-state');
@@ -866,13 +857,14 @@ function validatePasswordField() {
   if (value.length > 20) {
     passInput.classList.add('error-state');
     passErrorMax.classList.add('visible');
+    passwordInfo.style.display = 'none';
     return;
   }
   if (!checkPasswordComplexity(value)) {
-    passInput.classList.add('error-state');
-    passErrorComplexity.classList.add('visible');
     return;
   }
+  // Все требования выполнены
+  passwordInfo.style.display = 'none';
 }
 
 passInput.addEventListener('input', () => {
@@ -939,10 +931,6 @@ document.getElementById('step1-form').addEventListener('submit', (e) => {
   } else if (passVal.length > 20) {
     passInput.classList.add('error-state');
     passErrorMax.classList.add('visible');
-    hasError = true;
-  } else if (!checkPasswordComplexity(passVal)) {
-    passInput.classList.add('error-state');
-    passErrorComplexity.classList.add('visible');
     hasError = true;
   }
 

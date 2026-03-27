@@ -486,7 +486,7 @@
         <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <span class="user-name">{{ user.last_name }} {{ user.middle_name }}</span>
+    <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
   </div>
 </header>
 
@@ -506,7 +506,7 @@
   <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="toolbar-left">
-      <span class="medications-count">Всего лекарств: {{ total_medications }}</span>
+      <span class="medications-count">{% if search_query %}Найдено лекарств{% else %}Всего лекарств{% endif %}: {{ total_medications }}</span>
     </div>
     <form method="get" action="{% url 'medications:list' %}" id="searchForm">
       <div class="search-field">

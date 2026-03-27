@@ -53,7 +53,7 @@ class DashboardView(LoginRequiredMixin, View):
                     adv_filter &= Q(user__middle_name__icontains=adv_middle_name)
                 patients_qs = patients_qs.filter(adv_filter)
 
-            total_patients = Patient.objects.filter(assigned_doctor=user).count()
+            total_patients = patients_qs.count()
             paginator = Paginator(patients_qs, 10)
             page = request.GET.get('page', 1)
             patients_page = paginator.get_page(page)

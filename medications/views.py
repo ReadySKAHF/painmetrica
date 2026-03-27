@@ -28,7 +28,7 @@ class MedicationListView(DoctorRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['search_query'] = self.request.GET.get('q', '').strip()
-        ctx['total_medications'] = Medication.objects.count()
+        ctx['total_medications'] = self.get_queryset().count()
         return ctx
 
 

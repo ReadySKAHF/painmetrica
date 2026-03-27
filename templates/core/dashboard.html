@@ -872,7 +872,7 @@
         <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <span class="user-name">{{ user.first_name }} {{ user.middle_name }}</span>
+    <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
   {% if is_patient and patient_pk %}
   </a>
   {% else %}
@@ -898,7 +898,7 @@
     <!-- TOOLBAR -->
     <div class="toolbar">
       <div class="toolbar-left">
-        <span class="patients-count">Всего пациентов: {{ total_patients }}</span>
+        <span class="patients-count">{% if search_query or adv_last_name or adv_first_name or adv_middle_name %}Найдено пациентов{% else %}Всего пациентов{% endif %}: {{ total_patients }}</span>
         <button type="button" class="btn-primary" onclick="openAddPatientModal()">Добавить пациента</button>
       </div>
       <form method="get" action="{% url 'core:dashboard' %}" id="simpleSearchForm">

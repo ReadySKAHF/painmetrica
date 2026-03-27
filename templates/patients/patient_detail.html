@@ -209,6 +209,7 @@
   }
   .sidebar-btn:hover { background: #1a57e0; }
   .sidebar-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+  a.sidebar-btn { text-decoration: none; }
 
   /* ── MAIN CONTENT ── */
   .content {
@@ -576,7 +577,7 @@
         <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <span class="user-name">{{ user.last_name }} {{ user.middle_name }}</span>
+    <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
   </div>
 </header>
 
@@ -641,8 +642,13 @@
       <div>
         <div class="sidebar-section-title">Тестирование</div>
         <div class="sidebar-elements">
-          {% for test in available_tests %}
-            {% if is_doctor %}
+          {% for test, active_session in tests_with_sessions %}
+            {% if active_session %}
+              <a class="sidebar-btn"
+                 href="{% url 'tests:stage' session_id=active_session.pk order=active_session.current_stage_order %}">
+                Продолжить тестирование
+              </a>
+            {% elif is_doctor %}
             <form method="post" action="{% url 'tests:start_for_patient' test.pk patient.pk %}" style="width:100%;">
               {% csrf_token %}
               <button type="submit" class="sidebar-btn">Начать тестирование</button>
@@ -681,9 +687,9 @@
             <div class="patient-row">
               <span class="label">Диагноз</span>
               {% if patient.medical_history %}
-              <span class="value">{{ patient.medical_history }}</span>
+              <span class="value" id="view-diagnosis">{{ patient.medical_history }}</span>
               {% else %}
-              <span class="value empty">—</span>
+              <span class="value empty" id="view-diagnosis">—</span>
               {% endif %}
             </div>
 
@@ -780,6 +786,14 @@
           <!-- Правая колонка: медицинские поля (только для доктора) -->
           {% if is_doctor %}
           <div class="edit-col">
+            <div class="form-field">
+              <label class="field-label">Диагноз</label>
+              <input class="field-input" id="edit-diagnosis" type="text" value="{{ patient.medical_history }}" placeholder="Диагноз" maxlength="500">
+              <div class="error-block" id="err-edit-diagnosis">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Укажите диагноз</span>
+              </div>
+            </div>
             <div class="form-field">
               <label class="field-label">Локализация боли</label>
               <input class="field-input" id="edit-pain-location" type="text" value="{{ patient.pain_location }}" placeholder="Локализация боли" maxlength="200">
@@ -881,6 +895,7 @@
      'err-edit-last-name','err-edit-last-name-empty',
      'err-edit-middle-name',
      'err-edit-dob-empty','err-edit-dob-range',
+     'err-edit-diagnosis',
      'err-edit-pain-location','err-edit-pain-duration'
     ].forEach(function(id) {
       const el = document.getElementById(id);
@@ -957,6 +972,10 @@
     }
 
     {% if is_doctor %}
+    // Диагноз
+    const diagnosis = document.getElementById('edit-diagnosis').value.trim();
+    if (!diagnosis) { setEditErr('err-edit-diagnosis'); valid = false; }
+
     // Локализация боли
     const painLoc = document.getElementById('edit-pain-location').value.trim();
     if (!painLoc) { setEditErr('err-edit-pain-location'); valid = false; }
@@ -976,7 +995,8 @@
     };
 
     {% if is_doctor %}
-    payload.pain_location = painLoc;
+    payload.diagnosis      = diagnosis;
+    payload.pain_location  = painLoc;
     payload.pain_duration  = painDur;
     {% endif %}
 
@@ -1004,6 +1024,10 @@
         dobEl.className    = 'value' + (data.date_of_birth ? '' : ' empty');
 
         {% if is_doctor %}
+        const diagEl = document.getElementById('view-diagnosis');
+        diagEl.textContent = data.diagnosis || '—';
+        diagEl.className   = 'value' + (data.diagnosis ? '' : ' empty');
+
         const locEl = document.getElementById('view-pain-location');
         locEl.textContent = data.pain_location || '—';
         locEl.className   = 'value' + (data.pain_location ? '' : ' empty');

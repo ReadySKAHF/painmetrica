@@ -109,8 +109,21 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
         except Exception:
             context['date_of_birth'] = None
 
-        from tests.models import Test
-        context['available_tests'] = Test.objects.filter(is_active=True)
+        from tests.models import Test, TestSession
+
+        tests = list(Test.objects.filter(is_active=True))
+        active_sessions_map = {}
+        for session in TestSession.objects.filter(
+            patient=self.object,
+            status='in_progress',
+            taken_by=self.request.user,
+        ).order_by('-started_at'):
+            if session.test_id not in active_sessions_map:
+                active_sessions_map[session.test_id] = session
+
+        context['tests_with_sessions'] = [
+            (t, active_sessions_map.get(t.pk)) for t in tests
+        ]
         return context
 
 
@@ -237,17 +250,19 @@ class PatientUpdateAPIView(LoginRequiredMixin, View):
 
         # Доктор может обновлять медицинские поля
         if user.user_type == 'doctor':
+            patient.medical_history = data.get('diagnosis', '').strip()
             patient.pain_location = data.get('pain_location', '').strip()
             duration = data.get('pain_duration', '').strip()
             valid_durations = ['', '1w', '1m', '3m', '6m', '1y', '1y+']
             patient.pain_duration = duration if duration in valid_durations else ''
-            patient.save(update_fields=['pain_location', 'pain_duration'])
+            patient.save(update_fields=['medical_history', 'pain_location', 'pain_duration'])
 
         return JsonResponse({
             'success': True,
             'full_name': patient_user.get_full_name(),
             'date_of_birth': profile.date_of_birth.strftime('%d.%m.%Y') if profile.date_of_birth else '',
             'date_of_birth_iso': profile.date_of_birth.strftime('%Y-%m-%d') if profile.date_of_birth else '',
+            'diagnosis': patient.medical_history,
             'pain_location': patient.pain_location,
             'pain_duration': patient.pain_duration,
             'pain_duration_label': (

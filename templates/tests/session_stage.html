@@ -64,6 +64,7 @@
       width: 314px; flex-shrink: 0;
       background: #FEFEFE; border-radius: 16px; padding: 26px 23px;
       display: flex; flex-direction: column; gap: 0;
+      position: sticky; top: 128px;
     }
     .step-item { display: flex; align-items: flex-start; gap: 12px; position: relative; }
     .step-col { display: flex; flex-direction: column; align-items: center; }
@@ -240,6 +241,43 @@
     }
     .next-btn:hover { background: #1a57e0; }
 
+    /* ── Question error highlight ── */
+    .question-card.q-invalid { border: 1.5px solid #E43D3D; }
+    .q-error-plaque {
+      display: none; align-items: center; gap: 8px;
+      padding: 10px 12px; background: #FFF0F0; border-radius: 8px; margin-top: 2px;
+    }
+    .q-error-plaque.visible { display: flex; }
+    .q-error-plaque svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .q-error-plaque span { font-size: 12px; color: #E43D3D; line-height: 1.4; font-weight: 500; }
+
+    /* ── Validation modal ── */
+    .val-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: none; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .val-overlay.active { display: flex; }
+    .val-card {
+      background: #FEFEFE; border-radius: 20px; padding: 48px 40px 40px;
+      max-width: 480px; width: calc(100% - 32px);
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+    }
+    .val-icon-wrap {
+      width: 84px; height: 84px; background: #FFF0F0;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .val-title {
+      font-size: 20px; font-weight: 700; text-align: center;
+      color: #262626; line-height: 1.45;
+    }
+    .val-ok-btn {
+      width: 100%; padding: 14px; background: #2E67F6; color: #FEFEFE;
+      border: none; border-radius: 13px; font-size: 16px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: background 0.15s; margin-top: 4px;
+    }
+    .val-ok-btn:hover { background: #1a57e0; }
+
     @media (max-width: 900px) {
       body { padding: 128px 0 0; }
       .page-main { padding: 0 12px 40px; }
@@ -264,7 +302,7 @@
       <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <span class="site-user-name">{{ request.user.last_name }} {{ request.user.middle_name }}</span>
+    <span class="site-user-name">{{ request.user.last_name }} {{ request.user.first_name }}</span>
   </div>
 </header>
 
@@ -379,8 +417,12 @@
 
           {% for question in group.list %}
           {% with saved_val=saved_answers|get_item:question.pk %}
-          <div class="question-card">
+          <div class="question-card" id="qcard-{{ question.pk }}">
             <div class="question-text">{{ question.question_text }}</div>
+            <div class="q-error-plaque" id="qerr-{{ question.pk }}">
+              <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span>Вы не указали ответ</span>
+            </div>
             <div class="options" data-qid="{{ question.pk }}">
               {% for option in question.options.all %}
               {% with sel=saved_val|stringformat:"s" oid=option.pk|stringformat:"s" %}
@@ -409,6 +451,21 @@
     </div>
   </div>
 
+  <!-- Validation modal -->
+  <div class="val-overlay" id="valOverlay">
+    <div class="val-card">
+      <div class="val-icon-wrap">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <path d="M20 8L20 22" stroke="#E43D3D" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="20" cy="30" r="2" fill="#E43D3D"/>
+          <circle cx="20" cy="20" r="17" stroke="#E43D3D" stroke-width="2.5"/>
+        </svg>
+      </div>
+      <p class="val-title" id="valTitle"></p>
+      <button class="val-ok-btn" type="button" onclick="closeValModal()">Хорошо</button>
+    </div>
+  </div>
+
   <script>
   (function() {
     const SAVE_URL = '{% url "tests:save_progress" session.pk %}';
@@ -422,6 +479,12 @@
       }).catch(function() {});
     }
 
+    // ── Общая функция модального окна ──
+    function showValModal(msg) {
+      document.getElementById('valTitle').textContent = msg;
+      document.getElementById('valOverlay').classList.add('active');
+    }
+
     {% if is_scale_stage %}
     // ── Слайдер VAS ──
     var range     = document.getElementById('vasRange');
@@ -433,6 +496,14 @@
 
     var MIN = parseInt(range.min);
     var MAX = parseInt(range.max);
+    var vasInteracted = {% if scale_saved_value is not None %}true{% else %}false{% endif %};
+
+    document.getElementById('stageForm').addEventListener('submit', function(e) {
+      if (!vasInteracted) {
+        e.preventDefault();
+        showValModal('Вы не указали ответ');
+      }
+    });
 
     for (var i = MIN; i <= MAX; i++) {
       var d = document.createElement('div');
@@ -476,6 +547,7 @@
     }
 
     range.addEventListener('input', function() {
+      vasInteracted = true;
       var val = parseInt(range.value);
       updateSlider(val);
       var ans = {};
@@ -487,6 +559,41 @@
 
     {% else %}
     // ── Выбор вариантов ──
+    document.getElementById('stageForm').addEventListener('submit', function(e) {
+      // Сброс предыдущих ошибок
+      document.querySelectorAll('.question-card').forEach(function(c) {
+        c.classList.remove('q-invalid');
+      });
+      document.querySelectorAll('.q-error-plaque').forEach(function(p) {
+        p.classList.remove('visible');
+      });
+
+      var unanswered = [];
+      var qIdx = 0;
+      document.querySelectorAll('.options').forEach(function(optGroup) {
+        qIdx++;
+        var hasSelected = optGroup.querySelector('.option.selected') !== null;
+        if (!hasSelected) {
+          unanswered.push(qIdx);
+          var qid = optGroup.dataset.qid;
+          var card = document.getElementById('qcard-' + qid);
+          var plaque = document.getElementById('qerr-' + qid);
+          if (card) card.classList.add('q-invalid');
+          if (plaque) plaque.classList.add('visible');
+        }
+      });
+
+      if (unanswered.length > 0) {
+        e.preventDefault();
+        var msg = unanswered.length === 1
+          ? 'Вы не ответили на вопрос ' + unanswered[0]
+          : 'Вы не ответили на вопросы ' + unanswered.join(', ');
+        showValModal(msg);
+        var firstInvalid = document.querySelector('.question-card.q-invalid');
+        if (firstInvalid) firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
+      }
+    });
+
     document.querySelectorAll('.options').forEach(function(optGroup) {
       optGroup.querySelectorAll('.option').forEach(function(opt) {
         opt.addEventListener('click', function() {
@@ -509,6 +616,10 @@
     });
     {% endif %}
   })();
+
+  function closeValModal() {
+    document.getElementById('valOverlay').classList.remove('active');
+  }
   </script>
 
 </main>

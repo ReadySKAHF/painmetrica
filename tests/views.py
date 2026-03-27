@@ -387,6 +387,89 @@ class ResultView(LoginRequiredMixin, View):
 
 
 # ─────────────────────────────────────────────
+# API: отправка баллов напрямую
+# ─────────────────────────────────────────────
+
+class ScoreSubmitAPIView(LoginRequiredMixin, View):
+    """POST /api/tests/submit-scores/
+    Принимает готовые баллы по шагам (sidebar_step) и возвращает заключения.
+    Не создаёт сессию/результат в БД — чистое вычисление.
+    Требует: авторизованный пользователь (любой тип).
+    """
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({'error': 'Невалидный JSON'}, status=400)
+
+        test_id = data.get('test_id')
+        scores  = data.get('scores')  # {sidebar_step: score}
+
+        if not test_id or not isinstance(scores, dict):
+            return JsonResponse(
+                {'error': 'Обязательные поля: test_id (int), scores (object {step: score})'},
+                status=400,
+            )
+
+        test = Test.objects.filter(pk=test_id).first()
+        if not test:
+            return JsonResponse({'error': f'Тест с id={test_id} не найден'}, status=404)
+
+        # Нормализуем ключи к int
+        try:
+            scores_int = {int(k): int(v) for k, v in scores.items()}
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Ключи и значения scores должны быть числами'}, status=400)
+
+        total_score = sum(scores_int.values())
+
+        results = []
+        # Берём уникальные шаги сайдбара из этапов теста
+        steps_meta = {}
+        for stage in test.stages.order_by('sidebar_step', 'order'):
+            if stage.sidebar_step not in steps_meta:
+                steps_meta[stage.sidebar_step] = stage.name
+
+        for step in sorted(steps_meta.keys()):
+            score = scores_int.get(step)
+            if score is None:
+                continue
+
+            score_range = ScoreRange.objects.filter(
+                test=test,
+                sidebar_step=step,
+                min_score__lte=score,
+                max_score__gte=score,
+            ).first()
+
+            results.append({
+                'sidebar_step': step,
+                'name': steps_meta[step],
+                'score': score,
+                'label': score_range.label if score_range else None,
+                'conclusion': score_range.conclusion if score_range else None,
+            })
+
+        # Общее заключение (диапазон без привязки к шагу)
+        overall_range = ScoreRange.objects.filter(
+            test=test,
+            sidebar_step__isnull=True,
+            min_score__lte=total_score,
+            max_score__gte=total_score,
+        ).first()
+
+        return JsonResponse({
+            'test_id': test.pk,
+            'test_title': test.title,
+            'total_score': total_score,
+            'overall_label': overall_range.label if overall_range else None,
+            'overall_conclusion': overall_range.conclusion if overall_range else None,
+            'steps': results,
+        })
+
+
+# ─────────────────────────────────────────────
 # Доктор: управление тестами
 # ─────────────────────────────────────────────
 

@@ -25,4 +25,7 @@ urlpatterns = [
     path('manage/<int:pk>/edit/', views.TestUpdateView.as_view(), name='edit'),
     path('manage/<int:pk>/delete/', views.TestDeleteView.as_view(), name='delete'),
     path('results/', views.AllResultsView.as_view(), name='all_results'),
+
+    # ── API: прямая отправка баллов ──
+    path('api/submit-scores/', views.ScoreSubmitAPIView.as_view(), name='api_submit_scores'),
 ]

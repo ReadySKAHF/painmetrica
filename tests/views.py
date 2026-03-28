@@ -577,6 +577,90 @@ class AllResultsView(DoctorRequiredMixin, ListView):
         ).select_related('test', 'patient__user', 'taken_by').order_by('-completed_at')
 
 
+class TestCompareView(DoctorRequiredMixin, View):
+    """Сравнение результатов тестов пациента по сопоставимым категориям."""
+
+    COMPARABLE_CATEGORIES = ['complex', 'painad']
+
+    def get(self, request, patient_pk):
+        patient = get_object_or_404(Patient, pk=patient_pk, assigned_doctor=request.user)
+
+        qs = (
+            TestResult.objects
+            .filter(
+                patient=patient,
+                status='completed',
+                test__category__in=self.COMPARABLE_CATEGORIES,
+            )
+            .select_related('test', 'session')
+            .prefetch_related('answers__question__stage', 'answers__selected_options')
+            .order_by('-completed_at')
+        )
+
+        # Фильтрация по датам
+        date_from_str = request.GET.get('date_from', '').strip()
+        date_to_str   = request.GET.get('date_to',   '').strip()
+        if date_from_str:
+            try:
+                from datetime import date
+                qs = qs.filter(completed_at__date__gte=date.fromisoformat(date_from_str))
+            except ValueError:
+                date_from_str = ''
+        if date_to_str:
+            try:
+                from datetime import date
+                qs = qs.filter(completed_at__date__lte=date.fromisoformat(date_to_str))
+            except ValueError:
+                date_to_str = ''
+
+        result_groups = [
+            {'result': r, 'sub_results': self._build_sub_results(r)}
+            for r in qs
+        ]
+
+        context = {
+            'patient': patient,
+            'result_groups': result_groups,
+            'filter_date_from': date_from_str,
+            'filter_date_to': date_to_str,
+            'is_doctor': True,
+        }
+        return render(request, 'tests/compare.html', context)
+
+    @staticmethod
+    def _build_sub_results(result):
+        step_scores = {}
+        step_stages = {}
+        for answer in result.answers.all():
+            stage = answer.question.stage
+            if stage is None:
+                continue
+            step = stage.sidebar_step
+            if step not in step_scores:
+                step_scores[step] = 0
+                step_stages[step] = stage
+            step_scores[step] += answer.score
+
+        sub_results = []
+        for step in sorted(step_scores.keys()):
+            score = step_scores[step]
+            stage = step_stages[step]
+            score_range = ScoreRange.objects.filter(
+                test=result.test,
+                sidebar_step=step,
+                min_score__lte=score,
+                max_score__gte=score,
+            ).first()
+            sub_results.append({
+                'step': step,
+                'name': stage.name,
+                'score': score,
+                'label': score_range.label if score_range else '—',
+                'conclusion': score_range.conclusion if score_range else '',
+            })
+        return sub_results
+
+
 class TestMethodologyView(LoginRequiredMixin, View):
     """Страница с методикой расчёта тестов"""
 

@@ -7,8 +7,17 @@ from django.conf import settings
 class Test(models.Model):
     """Модель теста/опросника (батарея из нескольких этапов)"""
 
+    CATEGORY_CHOICES = [
+        ('complex', 'Комплексная оценка болевого синдрома'),
+        ('painad', 'PAINAD'),
+    ]
+
     title = models.CharField('Название', max_length=300)
     description = models.TextField('Описание')
+    category = models.CharField(
+        'Категория', max_length=20,
+        choices=CATEGORY_CHOICES, blank=True, default='',
+    )
     is_active = models.BooleanField('Активен', default=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

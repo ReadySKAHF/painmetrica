@@ -642,12 +642,17 @@
   .ht-divider { width: 1px; height: 14px; background: var(--gray-300); flex-shrink: 0; }
   .btn-show {
     height: 44px; padding: 0 20px;
-    background: var(--blue-500); border: none; border-radius: 10px;
+    background: var(--blue-500); border: 1.5px solid transparent; border-radius: 10px;
     font-family: inherit; font-size: 13px; font-weight: 600;
     color: var(--white); cursor: pointer; white-space: nowrap;
     transition: opacity 0.15s;
   }
   .btn-show:hover { opacity: 0.88; }
+  .btn-show.clear {
+    background: var(--white); border-color: var(--gray-950);
+    color: var(--gray-950);
+  }
+  .btn-show.clear:hover { opacity: 0.75; }
 
   .ht-action-btns { display: flex; gap: 10px; align-items: center; }
 
@@ -1091,11 +1096,18 @@
                 </svg>
               </div>
             </div>
-            <button type="submit" class="btn-show">Показать</button>
+            <button type="submit" class="btn-show {% if filter_date_from or filter_date_to %}clear{% endif %}"
+                    id="ht-btn-show">{% if filter_date_from or filter_date_to %}Очистить{% else %}Показать{% endif %}</button>
           </form>
           <div class="ht-action-btns">
-            <button class="btn-primary" disabled style="cursor:not-allowed;opacity:0.65;">Сравнить результаты тестов</button>
+            {% if is_doctor %}
+            {% if can_compare %}
+            <a href="{% url 'tests:compare' patient.pk %}" class="btn-primary" style="text-decoration:none;">Сравнить результаты тестов</a>
+            {% else %}
+            <button class="btn-primary" disabled style="cursor:not-allowed;opacity:0.65;" title="Нужно минимум 2 теста одной категории">Сравнить результаты тестов</button>
+            {% endif %}
             <button class="btn-outline" disabled style="cursor:not-allowed;opacity:0.65;">Выгрузить в Excel</button>
+            {% endif %}
           </div>
         </div>
 
@@ -1248,6 +1260,36 @@
     const input = document.getElementById(id);
     try { input.showPicker(); } catch(e) { input.focus(); }
   }
+
+  (function () {
+    const htBtnShow  = document.getElementById('ht-btn-show');
+    const htDateFrom = document.getElementById('htDateFrom');
+    const htDateTo   = document.getElementById('htDateTo');
+    if (!htBtnShow) return;
+
+    let filterApplied = htBtnShow.classList.contains('clear');
+
+    function syncBtn() {
+      if (filterApplied) return;
+      // нет логики блокировки — кнопка всегда доступна для отправки
+    }
+
+    htDateFrom.addEventListener('change', () => { filterApplied = false; });
+    htDateTo.addEventListener('change',   () => { filterApplied = false; });
+
+    htBtnShow.addEventListener('click', function (e) {
+      if (filterApplied) {
+        e.preventDefault();
+        htDateFrom.value = '';
+        htDateTo.value   = '';
+        const url = new URL(window.location.href);
+        url.searchParams.delete('date_from');
+        url.searchParams.delete('date_to');
+        url.searchParams.set('tab', 'history');
+        window.location.href = url.toString();
+      }
+    });
+  })();
 
   (function() {
     const today = new Date();

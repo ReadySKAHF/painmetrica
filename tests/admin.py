@@ -49,14 +49,14 @@ class AnswerInline(admin.TabularInline):
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
-    list_display = ['title', 'created_by', 'is_active', 'get_stages_count', 'created_at']
-    list_filter = ['is_active', 'created_by']
+    list_display = ['title', 'category', 'created_by', 'is_active', 'get_stages_count', 'created_at']
+    list_filter = ['is_active', 'category', 'created_by']
     search_fields = ['title', 'description']
     readonly_fields = ['created_at', 'updated_at']
     inlines = [StageInline, ScoreRangeInline]
 
     fieldsets = (
-        ('Основная информация', {'fields': ('title', 'description', 'is_active', 'created_by')}),
+        ('Основная информация', {'fields': ('title', 'description', 'category', 'is_active', 'created_by')}),
         ('Метаданные', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
     )
 

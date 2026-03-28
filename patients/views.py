@@ -139,6 +139,16 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             for r in history_page
         ]
 
+        # Проверяем возможность сравнения: ≥2 завершённых теста одной категории
+        from collections import Counter
+        COMPARABLE = ['complex', 'painad']
+        category_counts = Counter(
+            r.test.category
+            for r in raw_results
+            if r.test.category in COMPARABLE
+        )
+        context['can_compare'] = any(cnt >= 2 for cnt in category_counts.values())
+
         context['active_tab'] = self.request.GET.get('tab', 'profile')
         context['is_doctor'] = self.request.user.user_type == 'doctor'
         context['pain_duration_label'] = DURATION_LABELS.get(

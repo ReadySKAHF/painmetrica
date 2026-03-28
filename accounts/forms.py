@@ -142,4 +142,5 @@ class PatientRegisterViaInviteForm(forms.Form):
     first_name = forms.CharField(label='Имя', max_length=150)
     middle_name = forms.CharField(label='Отчество', max_length=150, required=False)
     last_name = forms.CharField(label='Фамилия', max_length=150)
+    date_of_birth = forms.DateField(label='Дата рождения', required=True)
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(), min_length=8)

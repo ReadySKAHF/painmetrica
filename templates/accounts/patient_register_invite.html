@@ -97,6 +97,15 @@
   .field-input.error-state { border-color: var(--red-400); }
   .field-input[readonly] { background: var(--gray-300); cursor: default; color: var(--gray-550); }
 
+  .date-wrap { position: relative; }
+  .date-wrap .field-input { padding-right: 44px; appearance: none; -webkit-appearance: none; cursor: pointer; }
+  .date-wrap .field-input::-webkit-calendar-picker-indicator { opacity: 0; position: absolute; right: 0; width: 44px; height: 100%; cursor: pointer; }
+  .date-icon {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    pointer-events: none; display: flex; align-items: center; justify-content: center;
+    color: var(--gray-550);
+  }
+
   .pass-wrap { position: relative; }
   .pass-wrap .field-input { padding-right: 44px; }
   .eye-btn {
@@ -249,6 +258,41 @@
         </div>
 
         <div class="field-wrap">
+          <label class="field-label">Дата рождения</label>
+          <div class="date-wrap">
+            <input class="field-input {% if form.date_of_birth.errors %}error-state{% endif %}"
+              type="date" id="inp-dob" name="date_of_birth"
+              value="{{ form.date_of_birth.value|default:'' }}"
+              min="1890-01-01">
+            <span class="date-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
+                <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
+                <path d="M6 1V4M12 1V4" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </div>
+          {% if form.date_of_birth.errors %}
+          <div class="error-block visible">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text">{{ form.date_of_birth.errors.0 }}</span>
+          </div>
+          {% endif %}
+          <div class="error-block" id="error-dob-empty">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text">Вы не ввели Дату рождения</span>
+          </div>
+          <div class="error-block" id="error-dob-future">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text">Дата рождения не может быть в будущем</span>
+          </div>
+          <div class="error-block" id="error-dob-min">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text">Дата рождения не может быть раньше 01.01.1890</span>
+          </div>
+        </div>
+
+        <div class="field-wrap">
           <label class="field-label">Электронная почта</label>
           <input class="field-input" type="email" value="{{ invitation.email }}" readonly>
         </div>
@@ -360,6 +404,27 @@ const middleNameInput = document.getElementById('inp-middle-name');
 const middleNameError = document.getElementById('error-middle-name');
 middleNameInput.addEventListener('input', () => { validateNameField(middleNameInput, middleNameError); });
 
+// ── Валидация даты рождения ──
+const dobInput       = document.getElementById('inp-dob');
+const dobErrEmpty    = document.getElementById('error-dob-empty');
+const dobErrFuture   = document.getElementById('error-dob-future');
+const dobErrMin      = document.getElementById('error-dob-min');
+
+function clearDobErrors() {
+  [dobErrEmpty, dobErrFuture, dobErrMin].forEach(el => el.classList.remove('visible'));
+  dobInput.classList.remove('error-state');
+}
+
+dobInput.addEventListener('change', () => {
+  clearDobErrors();
+  if (!dobInput.value) return;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const minDate = new Date('1890-01-01');
+  const entered = new Date(dobInput.value);
+  if (entered > today) { dobInput.classList.add('error-state'); dobErrFuture.classList.add('visible'); }
+  else if (entered < minDate) { dobInput.classList.add('error-state'); dobErrMin.classList.add('visible'); }
+});
+
 // ── Валидация пароля ──
 const passwordInfo       = document.getElementById('info-password');
 const passErrorEmpty     = document.getElementById('error-password-empty');
@@ -402,6 +467,20 @@ document.querySelector('form').addEventListener('submit', (e) => {
   }
   if (firstNameInput.value.trim() === '') {
     firstNameInput.classList.add('error-state'); firstNameErrorEmpty.classList.add('visible'); hasError = true;
+  }
+
+  clearDobErrors();
+  if (!dobInput.value) {
+    dobInput.classList.add('error-state'); dobErrEmpty.classList.add('visible'); hasError = true;
+  } else {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const minDate = new Date('1890-01-01');
+    const entered = new Date(dobInput.value);
+    if (entered > today) {
+      dobInput.classList.add('error-state'); dobErrFuture.classList.add('visible'); hasError = true;
+    } else if (entered < minDate) {
+      dobInput.classList.add('error-state'); dobErrMin.classList.add('visible'); hasError = true;
+    }
   }
 
   const passVal = passInput.value;

@@ -494,7 +494,10 @@ class PatientRegisterViaInviteStep1View(View):
                 user_type='patient',
                 is_email_verified=False,
             )
-            PatientProfile.objects.create(user=user)
+            PatientProfile.objects.create(
+                user=user,
+                date_of_birth=form.cleaned_data.get('date_of_birth'),
+            )
             Patient.objects.create(user=user, assigned_doctor=invitation.doctor)
 
             request.session['patient_invite_user_id'] = user.id

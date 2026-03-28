@@ -842,17 +842,17 @@
             {% if active_session %}
               <a class="sidebar-btn"
                  href="{% url 'tests:stage' session_id=active_session.pk order=active_session.current_stage_order %}">
-                Продолжить тестирование
+                Продолжить: {{ test.title }}
               </a>
             {% elif is_doctor %}
             <form method="post" action="{% url 'tests:start_for_patient' test.pk patient.pk %}" style="width:100%;">
               {% csrf_token %}
-              <button type="submit" class="sidebar-btn">Начать тестирование</button>
+              <button type="submit" class="sidebar-btn">{{ test.title }}</button>
             </form>
             {% else %}
             <form method="post" action="{% url 'tests:start' test.pk %}" style="width:100%;">
               {% csrf_token %}
-              <button type="submit" class="sidebar-btn">Начать тестирование</button>
+              <button type="submit" class="sidebar-btn">{{ test.title }}</button>
             </form>
             {% endif %}
           {% empty %}

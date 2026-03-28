@@ -151,7 +151,7 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
 
         from tests.models import Test, TestSession
 
-        tests = list(Test.objects.filter(is_active=True))
+        tests = list(Test.objects.filter(is_active=True).order_by('pk'))
         active_sessions_map = {}
         for session in TestSession.objects.filter(
             patient=self.object,

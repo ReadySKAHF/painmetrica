@@ -52,7 +52,10 @@
     .score-card {
       background: #FEFEFE; border-radius: 16px; padding: 32px 40px;
       display: flex; align-items: center; gap: 40px; margin-bottom: 16px;
+      text-decoration: none; color: inherit; cursor: pointer;
+      transition: box-shadow 0.18s;
     }
+    .score-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
     .score-circle {
       width: 120px; height: 120px; border-radius: 50%;
       background: #EEF5FF; border: 4px solid #2E7CF6;
@@ -113,7 +116,7 @@
       body { padding: 128px 0 0; }
       .page-main { padding: 0 12px 40px; }
       .site-header { padding: 20px 24px; height: auto; border-radius: 24px; }
-      .score-card { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
+      a.score-card { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
     }
   </style>
 </head>
@@ -138,11 +141,11 @@
 <main class="page-main">
   <!-- Навигация -->
   <div class="topbar">
-    <a href="{% url 'patients:detail' patient.pk %}" class="back-link">
+    <a href="{% url 'patients:detail' patient.pk %}?tab=history" class="back-link">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path d="M15 19L8 12L15 5" stroke="#2E67F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      В карточку пациента: {{ patient.user.get_full_name }}
+      История тестирования
     </a>
   </div>
 
@@ -150,7 +153,7 @@
 
   <!-- Итоговые баллы по каждому суб-тесту -->
   {% for sub in sub_results %}
-  <div class="score-card">
+  <a href="{% url 'tests:result_detail' session_id=session.pk sidebar_step=sub.sidebar_step %}" class="score-card">
     <div class="score-circle">
       <span class="score-number">{{ sub.score }}</span>
       <span class="score-label">баллов</span>
@@ -164,7 +167,7 @@
       <div class="score-conclusion-text">{{ sub.conclusion }}</div>
       {% endif %}
     </div>
-  </div>
+  </a>
   {% endfor %}
 
   <!-- Мета-информация -->
@@ -189,48 +192,6 @@
     </div>
   </div>
 
-  <!-- Детальные ответы по этапам -->
-  <div class="answers-section-title">Детальные ответы</div>
-
-  {% regroup answers by question.stage as stage_groups %}
-  {% for stage_group in stage_groups %}
-  <div class="stage-group">
-    <div class="stage-group-title">{{ stage_group.grouper.page_title }}</div>
-
-    {% for answer in stage_group.list %}
-    <div class="answer-row">
-      <div class="answer-question">{{ answer.question.question_text }}</div>
-      <div class="answer-value">
-        {% if answer.question.question_type == 'scale' %}
-          {{ answer.scale_value }}
-          <span class="answer-score-badge">{{ answer.score }} б.</span>
-        {% else %}
-          {% for opt in answer.selected_options.all %}
-            {{ opt.option_text }}{% if not forloop.last %}, {% endif %}
-          {% empty %}
-            <span style="color:#919191;">—</span>
-          {% endfor %}
-          {% if answer.score != 0 %}
-          <span class="answer-score-badge">{{ answer.score }} б.</span>
-          {% endif %}
-        {% endif %}
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {% endfor %}
-
-  <!-- Действия -->
-  <div class="result-actions">
-    <a href="{% url 'patients:detail' patient.pk %}" class="btn-primary">
-      В карточку пациента
-    </a>
-    {% if request.user.user_type == 'doctor' %}
-    <a href="{% url 'tests:all_results' %}" class="btn-secondary">
-      Все результаты
-    </a>
-    {% endif %}
-  </div>
 
 </main>
 

@@ -371,6 +371,7 @@ class ResultView(LoginRequiredMixin, View):
                 max_score__gte=score,
             ).first()
             sub_results.append({
+                'sidebar_step': step,
                 'name': stage.name,
                 'score': score,
                 'label': score_range.label if score_range else '—',
@@ -383,6 +384,44 @@ class ResultView(LoginRequiredMixin, View):
             'answers': answers,
             'patient': session.patient,
             'sub_results': sub_results,
+        })
+
+
+# ─────────────────────────────────────────────
+# Детальные ответы по шагу (sidebar_step)
+# ─────────────────────────────────────────────
+
+class ResultDetailView(LoginRequiredMixin, View):
+    """Вопросы и ответы по одному sidebar_step."""
+
+    def get(self, request, session_id, sidebar_step):
+        session = get_object_or_404(TestSession, pk=session_id, status='completed')
+
+        user = request.user
+        if user.user_type == 'patient':
+            if session.patient.user != user:
+                raise PermissionDenied
+        elif user.user_type == 'doctor':
+            if session.taken_by != user and session.patient.assigned_doctor != user:
+                raise PermissionDenied
+        else:
+            raise PermissionDenied
+
+        result = get_object_or_404(TestResult, session=session)
+        answers = list(
+            result.answers
+            .filter(question__stage__sidebar_step=sidebar_step)
+            .select_related('question', 'question__stage')
+            .prefetch_related('selected_options')
+            .order_by('question__stage__order', 'question__order')
+        )
+
+        return render(request, 'tests/result_detail.html', {
+            'session': session,
+            'result': result,
+            'patient': session.patient,
+            'answers': answers,
+            'sidebar_step': sidebar_step,
         })
 
 

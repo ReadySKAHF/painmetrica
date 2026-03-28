@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -95,11 +96,50 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             status='completed'
         ).select_related('test', 'session').order_by('-completed_at')
 
-        context['results_with_subs'] = [
+        # Текущий статус — самый последний результат
+        current_result = raw_results.first()
+        if current_result:
+            context['current_status'] = {
+                'result': current_result,
+                'sub_results': build_sub_results(current_result),
+            }
+            history_qs = raw_results.exclude(pk=current_result.pk)
+        else:
+            context['current_status'] = None
+            history_qs = raw_results
+
+        # Фильтр по датам
+        date_from_str = self.request.GET.get('date_from', '').strip()
+        date_to_str = self.request.GET.get('date_to', '').strip()
+        if date_from_str:
+            try:
+                from datetime import date
+                history_qs = history_qs.filter(
+                    completed_at__date__gte=date.fromisoformat(date_from_str)
+                )
+            except ValueError:
+                date_from_str = ''
+        if date_to_str:
+            try:
+                from datetime import date
+                history_qs = history_qs.filter(
+                    completed_at__date__lte=date.fromisoformat(date_to_str)
+                )
+            except ValueError:
+                date_to_str = ''
+        context['filter_date_from'] = date_from_str
+        context['filter_date_to'] = date_to_str
+
+        # Пагинация истории (3 на страницу)
+        paginator = Paginator(history_qs, 3)
+        history_page = paginator.get_page(self.request.GET.get('page', 1))
+        context['history_page'] = history_page
+        context['history_results'] = [
             {'result': r, 'sub_results': build_sub_results(r)}
-            for r in raw_results
+            for r in history_page
         ]
-        context['test_results'] = raw_results  # для обратной совместимости
+
+        context['active_tab'] = self.request.GET.get('tab', 'profile')
         context['is_doctor'] = self.request.user.user_type == 'doctor'
         context['pain_duration_label'] = DURATION_LABELS.get(
             self.object.pain_duration, '—'

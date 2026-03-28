@@ -15,6 +15,8 @@ urlpatterns = [
     path('session/<uuid:session_id>/save/', views.SaveProgressView.as_view(), name='save_progress'),
     # Страница результатов
     path('session/<uuid:session_id>/result/', views.ResultView.as_view(), name='result'),
+    # Детальные ответы по шагу
+    path('session/<uuid:session_id>/result/<int:sidebar_step>/', views.ResultDetailView.as_view(), name='result_detail'),
 
     # ── Пациент: история результатов (редирект на карточку) ──
     path('my-results/', views.MyResultsView.as_view(), name='my_results'),

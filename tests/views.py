@@ -575,3 +575,18 @@ class AllResultsView(DoctorRequiredMixin, ListView):
         return TestResult.objects.filter(
             patient__assigned_doctor=self.request.user,
         ).select_related('test', 'patient__user', 'taken_by').order_by('-completed_at')
+
+
+class TestMethodologyView(LoginRequiredMixin, View):
+    """Страница с методикой расчёта тестов"""
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        context = {'is_doctor': user.user_type == 'doctor', 'is_patient': user.user_type == 'patient'}
+        if context['is_patient']:
+            try:
+                context['patient_pk'] = user.patient_record.pk
+            except Exception:
+                context['patient_pk'] = None
+        return render(request, 'tests/test_methodology.html', context)
+

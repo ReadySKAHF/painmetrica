@@ -30,4 +30,7 @@ urlpatterns = [
 
     # ── API: прямая отправка баллов ──
     path('api/submit-scores/', views.ScoreSubmitAPIView.as_view(), name='api_submit_scores'),
+
+    # ── Методика расчёта тестов ──
+    path('methodology/', views.TestMethodologyView.as_view(), name='methodology'),
 ]

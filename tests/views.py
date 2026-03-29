@@ -24,6 +24,19 @@ from tests.models import Answer, QuestionOption, ScoreRange, Stage, Test, TestRe
 # Вспомогательные функции
 # ─────────────────────────────────────────────
 
+def _load_score_ranges(test):
+    """Загружает все ScoreRange теста одним запросом."""
+    return list(ScoreRange.objects.filter(test=test))
+
+
+def _match_score_range(ranges, sidebar_step, score):
+    """Ищет подходящий диапазон в уже загруженном списке (без запросов к БД)."""
+    for sr in ranges:
+        if sr.sidebar_step == sidebar_step and sr.min_score <= score <= sr.max_score:
+            return sr
+    return None
+
+
 def _build_sidebar(test, current_order):
     """Формирует список шагов для сайдбара.
     Возвращает список dict с полями: step, name, description, status (done/active/inactive)."""
@@ -361,17 +374,13 @@ class ResultView(LoginRequiredMixin, View):
                 step_stages[step] = stage
             step_scores[step] += answer.score
 
-        # Заключение для каждого шага
+        # Заключение для каждого шага — один запрос на все диапазоны
+        score_ranges = _load_score_ranges(session.test)
         sub_results = []
         for step in sorted(step_scores.keys()):
             score = step_scores[step]
             stage = step_stages[step]
-            score_range = ScoreRange.objects.filter(
-                test=session.test,
-                sidebar_step=step,
-                min_score__lte=score,
-                max_score__gte=score,
-            ).first()
+            score_range = _match_score_range(score_ranges, step, score)
             sub_results.append({
                 'sidebar_step': step,
                 'name': stage.name,
@@ -427,16 +436,13 @@ class AfterTestResultView(LoginRequiredMixin, View):
                 step_stages[step] = stage
             step_scores[step] += answer.score
 
+        # Один запрос на все диапазоны теста
+        score_ranges = _load_score_ranges(session.test)
         sub_results = []
         for step in sorted(step_scores.keys()):
             score = step_scores[step]
             stage = step_stages[step]
-            score_range = ScoreRange.objects.filter(
-                test=session.test,
-                sidebar_step=step,
-                min_score__lte=score,
-                max_score__gte=score,
-            ).first()
+            score_range = _match_score_range(score_ranges, step, score)
             sub_results.append({
                 'sidebar_step': step,
                 'name': stage.name,
@@ -589,17 +595,15 @@ class ScoreSubmitAPIView(LoginRequiredMixin, View):
             if stage.sidebar_step not in steps_meta:
                 steps_meta[stage.sidebar_step] = stage.name
 
+        # Один запрос на все диапазоны теста
+        score_ranges = _load_score_ranges(test)
+
         for step in sorted(steps_meta.keys()):
             score = scores_int.get(step)
             if score is None:
                 continue
 
-            score_range = ScoreRange.objects.filter(
-                test=test,
-                sidebar_step=step,
-                min_score__lte=score,
-                max_score__gte=score,
-            ).first()
+            score_range = _match_score_range(score_ranges, step, score)
 
             results.append({
                 'sidebar_step': step,
@@ -610,12 +614,11 @@ class ScoreSubmitAPIView(LoginRequiredMixin, View):
             })
 
         # Общее заключение (диапазон без привязки к шагу)
-        overall_range = ScoreRange.objects.filter(
-            test=test,
-            sidebar_step__isnull=True,
-            min_score__lte=total_score,
-            max_score__gte=total_score,
-        ).first()
+        overall_range = next(
+            (sr for sr in score_ranges
+             if sr.sidebar_step is None and sr.min_score <= total_score <= sr.max_score),
+            None,
+        )
 
         return JsonResponse({
             'test_id': test.pk,
@@ -732,10 +735,17 @@ class TestCompareView(DoctorRequiredMixin, View):
             except ValueError:
                 date_to_str = ''
 
-        result_groups = [
-            {'result': r, 'sub_results': self._build_sub_results(r)}
-            for r in qs
-        ]
+        # Кэшируем ScoreRange по test_id — один запрос на каждый уникальный тест
+        ranges_cache = {}
+        result_groups = []
+        for r in qs:
+            tid = r.test_id
+            if tid not in ranges_cache:
+                ranges_cache[tid] = _load_score_ranges(r.test)
+            result_groups.append({
+                'result': r,
+                'sub_results': self._build_sub_results(r, ranges_cache[tid]),
+            })
 
         context = {
             'patient': patient,
@@ -747,7 +757,7 @@ class TestCompareView(DoctorRequiredMixin, View):
         return render(request, 'tests/compare.html', context)
 
     @staticmethod
-    def _build_sub_results(result):
+    def _build_sub_results(result, score_ranges):
         step_scores = {}
         step_stages = {}
         for answer in result.answers.all():
@@ -764,12 +774,7 @@ class TestCompareView(DoctorRequiredMixin, View):
         for step in sorted(step_scores.keys()):
             score = step_scores[step]
             stage = step_stages[step]
-            score_range = ScoreRange.objects.filter(
-                test=result.test,
-                sidebar_step=step,
-                min_score__lte=score,
-                max_score__gte=score,
-            ).first()
+            score_range = _match_score_range(score_ranges, step, score)
             sub_results.append({
                 'step': step,
                 'name': stage.name,

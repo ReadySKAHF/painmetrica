@@ -12,6 +12,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 
 from accounts.mixins import DoctorRequiredMixin
 from patients.models import Patient
+from tests.views import _load_score_ranges, _match_score_range
 
 
 class PatientListView(DoctorRequiredMixin, ListView):
@@ -57,8 +58,6 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             '1y+': 'Более 1 года',
         }
 
-        from tests.models import ScoreRange
-
         def build_sub_results(result):
             answers = (
                 result.answers
@@ -75,16 +74,12 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
                     step_scores[step] = 0
                     step_stages[step] = stage
                 step_scores[step] += answer.score
+            score_ranges = _load_score_ranges(result.test)
             sub_results = []
             for step in sorted(step_scores.keys()):
                 score = step_scores[step]
                 stage = step_stages[step]
-                score_range = ScoreRange.objects.filter(
-                    test=result.test,
-                    sidebar_step=step,
-                    min_score__lte=score,
-                    max_score__gte=score,
-                ).first()
+                score_range = _match_score_range(score_ranges, step, score)
                 sub_results.append({
                     'name': stage.name,
                     'score': score,

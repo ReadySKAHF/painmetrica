@@ -211,6 +211,10 @@ class TestSession(models.Model):
         verbose_name = 'Сессия тестирования'
         verbose_name_plural = 'Сессии тестирования'
         ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['patient', 'status'], name='testsession_patient_status_idx'),
+            models.Index(fields=['taken_by', 'status'], name='testsession_takenby_status_idx'),
+        ]
 
     def __str__(self):
         return f'Сессия {self.patient} — {self.test.title} [{self.status}]'
@@ -276,6 +280,10 @@ class TestResult(models.Model):
         verbose_name = 'Результат теста'
         verbose_name_plural = 'Результаты тестов'
         ordering = ['-completed_at']
+        indexes = [
+            models.Index(fields=['patient', '-completed_at'], name='testresult_patient_date_idx'),
+            models.Index(fields=['patient', 'status'], name='testresult_patient_status_idx'),
+        ]
 
     def __str__(self):
         return f'{self.test.title} — {self.patient.user.get_full_name()} ({self.total_score} б.)'

@@ -151,6 +151,10 @@ class PatientStartTestView(LoginRequiredMixin, View):
 
         test = get_object_or_404(Test, pk=pk, is_active=True)
 
+        DOCTOR_ONLY = {'Тест PAINAD', 'Тест NCS-R'}
+        if test.title in DOCTOR_ONLY:
+            raise PermissionDenied
+
         try:
             patient = request.user.patient_record
         except Exception:

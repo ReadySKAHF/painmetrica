@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Сравнение результатов — Painmetrica</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -204,12 +205,22 @@
 
   /* ── CHART ── */
   .chart-area {
-    flex: 1; min-height: 320px;
-    background: var(--gray-300); border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
+    flex: 1;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 16px;
+    padding: 24px 20px 16px;
     position: sticky; top: 128px;
+    display: flex; flex-direction: column;
+    min-height: 460px;
   }
-  .chart-placeholder { font-size: 15px; font-weight: 400; color: var(--gray-550); }
+  .chart-empty {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+  }
+  .chart-empty-icon { opacity: 0.25; }
+  .chart-empty-text { font-size: 14px; color: var(--gray-550); font-weight: 400; }
+  .chart-wrapper { flex: 1; position: relative; min-height: 380px; }
 
   /* ── FOOTER ── */
   .site-footer {
@@ -344,7 +355,11 @@
             <label class="custom-checkbox">
               <input type="checkbox" class="session-cb"
                      data-group="{{ forloop.parentloop.counter }}"
-                     data-id="{{ group.result.session.pk }}_{{ sub.step }}">
+                     data-id="{{ group.result.session.pk }}_{{ sub.step }}"
+                     data-session="{{ group.result.session.pk }}"
+                     data-date="{{ group.result.completed_at|date:'d.m.Y, H:i:s' }}"
+                     data-name="{{ sub.name }}"
+                     data-score="{{ sub.score }}">
               <span class="cb-box">
                 <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
                   <path d="M1 4.5L4 7.5L10 1.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -381,7 +396,19 @@
 
     <!-- ПРАВАЯ КОЛОНКА: График -->
     <div class="chart-area" id="chart-area">
-      <span class="chart-placeholder" id="chart-placeholder">График</span>
+      <div class="chart-empty" id="chart-placeholder">
+        <svg class="chart-empty-icon" width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <path d="M6 38L16 24L24 30L34 14L42 22" stroke="#262626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="24" r="3" fill="#262626"/>
+          <circle cx="24" cy="30" r="3" fill="#262626"/>
+          <circle cx="34" cy="14" r="3" fill="#262626"/>
+          <circle cx="42" cy="22" r="3" fill="#262626"/>
+        </svg>
+        <span class="chart-empty-text">Выберите сессии для построения графика</span>
+      </div>
+      <div class="chart-wrapper" id="chart-wrapper" style="display:none;">
+        <canvas id="compare-chart"></canvas>
+      </div>
     </div>
 
   </div>
@@ -467,17 +494,124 @@ function syncGroupCheckbox(groupNum) {
 // Инициализируем состояния
 document.querySelectorAll('.session-group').forEach(g => syncGroupCheckbox(g.dataset.group));
 
+// ── CHART ─────────────────────────────────────────────────────────────────────
+
+const CHART_COLORS = [
+  '#2E7CF6', '#E43D3D', '#F5A623', '#27AE60',
+  '#9B51E0', '#F06292', '#00BCD4', '#FF7043',
+];
+
+// Порядок этапов по оси X
+const STAGE_ORDER = ['Тест VAS', 'Тест DN4', 'Тест CSI', 'Тест HADS', 'Тест PAINAD', 'Тест NCS-R'];
+
+function formatStageName(name) {
+  if (name === 'Тест VAS') return 'Тест ВАШ (VAS)/PAINAD/NCS-R';
+  return name;
+}
+
+let chartInstance = null;
+
 function updateChart() {
-  const checked = document.querySelectorAll('.session-cb:checked');
-  const placeholder = document.getElementById('chart-placeholder');
-  if (checked.length >= 2) {
-    placeholder.style.color = '#2E67F6';
-    placeholder.style.fontWeight = '600';
-    placeholder.textContent = 'Выберите 2 позиции для построения графика';
+  const checkedCbs   = document.querySelectorAll('.session-cb:checked');
+  const placeholder  = document.getElementById('chart-placeholder');
+  const chartWrapper = document.getElementById('chart-wrapper');
+
+  if (checkedCbs.length === 0) {
+    placeholder.style.display = 'flex';
+    chartWrapper.style.display = 'none';
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    return;
+  }
+
+  // Группируем по session PK; сохраняем порядок первого появления для цвета
+  const sessionMap = new Map();
+  checkedCbs.forEach(cb => {
+    const pk    = cb.dataset.session;
+    const date  = cb.dataset.date;
+    const name  = cb.dataset.name;
+    const score = parseFloat(cb.dataset.score);
+    if (!sessionMap.has(pk)) sessionMap.set(pk, { date, items: [] });
+    sessionMap.get(pk).items.push({ name, score });
+  });
+
+  // Ось X: уникальные имена этапов в заданном порядке
+  const allNames = new Set();
+  sessionMap.forEach(s => s.items.forEach(i => allNames.add(i.name)));
+  const xNames = STAGE_ORDER.filter(n => allNames.has(n));
+  allNames.forEach(n => { if (!STAGE_ORDER.includes(n)) xNames.push(n); });
+  const xLabels = xNames.map(formatStageName);
+
+  // Датасеты — один на сессию
+  let colorIdx = 0;
+  const datasets = [];
+  sessionMap.forEach(session => {
+    const color    = CHART_COLORS[colorIdx % CHART_COLORS.length];
+    const scoreMap = new Map(session.items.map(i => [i.name, i.score]));
+    datasets.push({
+      label:              session.date,
+      data:               xNames.map(n => scoreMap.has(n) ? scoreMap.get(n) : null),
+      borderColor:        color,
+      backgroundColor:    color,
+      pointBackgroundColor: color,
+      pointBorderColor:   '#fff',
+      pointBorderWidth:   2,
+      pointRadius:        5,
+      pointHoverRadius:   7,
+      borderWidth:        2.5,
+      tension:            0,
+      spanGaps:           false,
+    });
+    colorIdx++;
+  });
+
+  placeholder.style.display = 'none';
+  chartWrapper.style.display = 'block';
+
+  const ctx = document.getElementById('compare-chart').getContext('2d');
+
+  if (chartInstance) {
+    chartInstance.data.labels   = xLabels;
+    chartInstance.data.datasets = datasets;
+    chartInstance.update();
   } else {
-    placeholder.style.color = '';
-    placeholder.style.fontWeight = '';
-    placeholder.textContent = 'График';
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels: xLabels, datasets },
+      options: {
+        responsive:          true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              font:      { family: 'Manrope', size: 12 },
+              color:     '#262626',
+              boxWidth:  28,
+              boxHeight: 3,
+              padding:   20,
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} б.`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            offset: true,
+            grid:   { color: '#EAEAEA' },
+            ticks:  { font: { family: 'Manrope', size: 11 }, color: '#262626', maxRotation: 0 },
+          },
+          y: {
+            beginAtZero: true,
+            grid:  { color: '#EAEAEA' },
+            ticks: { font: { family: 'Manrope', size: 11 }, color: '#262626' },
+          },
+        },
+        interaction: { intersect: false, mode: 'index' },
+      },
+    });
   }
 }
 </script>

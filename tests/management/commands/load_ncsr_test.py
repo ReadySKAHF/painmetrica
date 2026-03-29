@@ -112,6 +112,7 @@ class Command(BaseCommand):
         test = Test.objects.create(
             title=TEST_TITLE,
             description='Пересмотренная шкала ноцицептивной комы для оценки боли у пациентов в коме.',
+            category='ncsr',
             is_active=True,
             created_by=None,
         )

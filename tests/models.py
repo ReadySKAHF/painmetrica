@@ -10,6 +10,7 @@ class Test(models.Model):
     CATEGORY_CHOICES = [
         ('complex', 'Комплексная оценка болевого синдрома'),
         ('painad', 'PAINAD'),
+        ('ncsr', 'NCS-R'),
     ]
 
     title = models.CharField('Название', max_length=300)

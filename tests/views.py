@@ -584,7 +584,7 @@ class AllResultsView(DoctorRequiredMixin, ListView):
 class TestCompareView(DoctorRequiredMixin, View):
     """Сравнение результатов тестов пациента по сопоставимым категориям."""
 
-    COMPARABLE_CATEGORIES = ['complex', 'painad']
+    COMPARABLE_CATEGORIES = ['complex', 'painad', 'ncsr']
 
     def get(self, request, patient_pk):
         patient = get_object_or_404(Patient, pk=patient_pk, assigned_doctor=request.user)

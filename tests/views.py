@@ -292,9 +292,7 @@ class StageView(LoginRequiredMixin, View):
             session.completed_at = timezone.now()
             session.save()
             _finalize_session(session)
-            # Редирект: доктор → карточка пациента, пациент → своя карточка
-            patient = session.patient
-            return redirect('patients:detail', pk=patient.pk)
+            return redirect('tests:after_result', session_id=session_id)
 
 
 # ─────────────────────────────────────────────
@@ -388,6 +386,123 @@ class ResultView(LoginRequiredMixin, View):
             'answers': answers,
             'patient': session.patient,
             'sub_results': sub_results,
+        })
+
+
+# ─────────────────────────────────────────────
+# Страница результатов сразу после теста
+# ─────────────────────────────────────────────
+
+class AfterTestResultView(LoginRequiredMixin, View):
+    """Страница результатов, которая открывается сразу после завершения теста."""
+
+    def get(self, request, session_id):
+        session = get_object_or_404(TestSession, pk=session_id, status='completed')
+
+        user = request.user
+        if user.user_type == 'patient':
+            if session.patient.user != user:
+                raise PermissionDenied
+        elif user.user_type == 'doctor':
+            if session.taken_by != user and session.patient.assigned_doctor != user:
+                raise PermissionDenied
+        else:
+            raise PermissionDenied
+
+        result = get_object_or_404(TestResult, session=session)
+        answers = list(
+            result.answers
+            .select_related('question', 'question__stage')
+            .prefetch_related('selected_options')
+            .order_by('question__stage__order', 'question__order')
+        )
+
+        step_scores = {}
+        step_stages = {}
+        for answer in answers:
+            stage = answer.question.stage
+            step = stage.sidebar_step
+            if step not in step_scores:
+                step_scores[step] = 0
+                step_stages[step] = stage
+            step_scores[step] += answer.score
+
+        sub_results = []
+        for step in sorted(step_scores.keys()):
+            score = step_scores[step]
+            stage = step_stages[step]
+            score_range = ScoreRange.objects.filter(
+                test=session.test,
+                sidebar_step=step,
+                min_score__lte=score,
+                max_score__gte=score,
+            ).first()
+            sub_results.append({
+                'sidebar_step': step,
+                'name': stage.name,
+                'score': score,
+                'label': score_range.label if score_range else '—',
+                'conclusion': score_range.conclusion if score_range else '',
+            })
+
+        # Определяем патотип для правой панели
+        category = session.test.category
+        scores_by_step = {s['sidebar_step']: s['score'] for s in sub_results}
+
+        pathotype_label = ''
+        pathotype_text = ''
+
+        if category == 'complex':
+            dn4 = scores_by_step.get(2, 0)
+            csi = scores_by_step.get(3, 0)
+            hads = scores_by_step.get(4, 0)
+
+            if dn4 >= 4 and csi >= 30:
+                pathotype_label = 'Смешанный вариант (нейропатический + дисфункциональный)'
+                pathotype_text = 'DN4 ≥ 4 б., CSI ≥ 30 б.'
+            elif dn4 >= 4 and csi < 30:
+                pathotype_label = 'Преимущественно нейропатический вариант'
+                pathotype_text = 'DN4 ≥ 4 б., CSI < 30 б.'
+            elif dn4 < 4 and csi > 40 and hads >= 8:
+                pathotype_label = 'Преимущественно дисфункциональный вариант'
+                pathotype_text = 'DN4 < 4 б., CSI > 40 б., HADS ≥ 8 б.'
+            else:
+                pathotype_label = 'Преимущественно ноцицептивный вариант'
+                pathotype_text = 'DN4 < 4 б., CSI < 30 б.'
+
+        elif category == 'painad':
+            total = result.total_score
+            if total > 2:
+                pathotype_label = 'Ноцицептивный вариант'
+                pathotype_text = result.conclusion_text
+            else:
+                pathotype_label = result.conclusion_label
+                pathotype_text = result.conclusion_text
+
+        elif category == 'ncsr':
+            total = result.total_score
+            if total >= 5:
+                pathotype_label = 'Критический уровень'
+                pathotype_text = 'Требуется немедленно найти причины боли и скорректировать терапию'
+            elif total >= 3:
+                pathotype_label = 'Рекомендуется усилить текущую анальгезию'
+                pathotype_text = result.conclusion_text
+            else:
+                pathotype_label = result.conclusion_label
+                pathotype_text = result.conclusion_text
+
+        else:
+            pathotype_label = result.conclusion_label
+            pathotype_text = result.conclusion_text
+
+        return render(request, 'tests/after_test_result.html', {
+            'session': session,
+            'result': result,
+            'patient': session.patient,
+            'sub_results': sub_results,
+            'is_doctor': user.user_type == 'doctor',
+            'pathotype_label': pathotype_label,
+            'pathotype_text': pathotype_text,
         })
 
 

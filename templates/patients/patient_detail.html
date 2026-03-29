@@ -213,7 +213,7 @@
   }
   .sidebar-btn:hover { background: #1a57e0; }
   .sidebar-btn:disabled { cursor: not-allowed; opacity: 0.5; }
-  a.sidebar-btn { text-decoration: none; }
+  a.sidebar-btn { text-decoration: none; display: flex; text-align: center; }
 
   /* ── MAIN CONTENT ── */
   .content {
@@ -938,6 +938,18 @@
           <!-- Левая колонка: ФИО + дата рождения (для всех) -->
           <div class="edit-col {% if not is_doctor %}edit-col--patient{% endif %}">
             <div class="form-field">
+              <label class="field-label">Фамилия</label>
+              <input class="field-input" id="edit-last-name" type="text" value="{{ patient.user.last_name }}" placeholder="Фамилия" maxlength="50">
+              <div class="error-block" id="err-edit-last-name">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Цифры и спец. символы запрещены</span>
+              </div>
+              <div class="error-block" id="err-edit-last-name-empty">
+                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="error-text">Вы не ввели фамилию пациента</span>
+              </div>
+            </div>
+            <div class="form-field">
               <label class="field-label">Имя</label>
               <input class="field-input" id="edit-first-name" type="text" value="{{ patient.user.first_name }}" placeholder="Имя" maxlength="50">
               <div class="error-block" id="err-edit-first-name">
@@ -955,18 +967,6 @@
               <div class="error-block" id="err-edit-middle-name">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span class="error-text">Цифры и спец. символы запрещены</span>
-              </div>
-            </div>
-            <div class="form-field">
-              <label class="field-label">Фамилия</label>
-              <input class="field-input" id="edit-last-name" type="text" value="{{ patient.user.last_name }}" placeholder="Фамилия" maxlength="50">
-              <div class="error-block" id="err-edit-last-name">
-                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span class="error-text">Цифры и спец. символы запрещены</span>
-              </div>
-              <div class="error-block" id="err-edit-last-name-empty">
-                <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span class="error-text">Вы не ввели фамилию пациента</span>
               </div>
             </div>
             <div class="form-field">

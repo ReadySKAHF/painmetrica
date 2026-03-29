@@ -463,6 +463,20 @@
       <div class="card-title">Информация о препарате</div>
 
       <div class="info-section">
+        <div class="section-title">Тип лекарства</div>
+        <div class="section-body">
+          {% if medication.medication_type %}
+          <p class="section-text collapsed" id="typeText">{{ medication.medication_type }}</p>
+          <button class="read-more" onclick="toggleText('typeText', this)">Читать полностью</button>
+          {% else %}
+          <p class="section-empty">Не указан</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="info-section">
         <div class="section-title">Схема назначения</div>
         <div class="section-body">
           {% if medication.prescription_scheme %}

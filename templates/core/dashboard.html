@@ -187,7 +187,7 @@
     gap: 8px;
     padding: 12px 22px;
     background: var(--blue-500);
-    border-radius: 13px;
+    border-radius: 33px;
     border: none;
     cursor: pointer;
     font-size: 14px;
@@ -208,7 +208,7 @@
     padding: 12px 22px;
     background: var(--white);
     border: 1px solid var(--gray-950);
-    border-radius: 13px;
+    border-radius: 33px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
@@ -999,7 +999,7 @@
           {% endif %}
         </div>
         {% if search_query or adv_last_name or adv_first_name or adv_middle_name %}
-        <a href="{% url 'core:dashboard' %}" class="btn-outline-sm">Сбросить поиск</a>
+        <a href="{% url 'core:dashboard' %}" class="btn-outline-sm">Вернуться к списку пациентов</a>
         {% endif %}
       </div>
       {% endfor %}

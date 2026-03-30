@@ -108,6 +108,13 @@ class RegisterStepTwoView(View):
         form = DoctorProfileForm(request.POST)
 
         if form.is_valid():
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+
+            # Удаляем незавершённую регистрацию с тем же email (если есть)
+            email = request.session['registration_data']['email']
+            User.objects.filter(email__iexact=email, is_email_verified=False).delete()
+
             # Создаем пользователя с профилем доктора
             user = RegisterStepOneView()._create_user_and_profile(
                 request.session['registration_data'],
@@ -480,10 +487,13 @@ class PatientRegisterViaInviteStep1View(View):
             from django.contrib.auth import get_user_model
             User = get_user_model()
 
-            # Проверяем, не зарегистрирован ли уже этот email
-            if User.objects.filter(email__iexact=invitation.email).exists():
+            # Проверяем, не зарегистрирован ли уже этот email (только верифицированные)
+            if User.objects.filter(email__iexact=invitation.email, is_email_verified=True).exists():
                 return render(request, 'accounts/patient_invite_invalid.html',
                               {'error': 'Этот email уже зарегистрирован в системе.'})
+
+            # Удаляем незавершённую регистрацию с тем же email (если есть)
+            User.objects.filter(email__iexact=invitation.email, is_email_verified=False).delete()
 
             user = User.objects.create_user(
                 email=invitation.email,
@@ -556,6 +566,33 @@ class PatientRegisterViaInviteVerifyView(View):
                 token = request.session.get('patient_invite_token')
                 if token:
                     PatientInvitation.objects.filter(token=token).update(is_used=True)
+
+                # Уведомляем доктора об успешной регистрации пациента
+                try:
+                    patient_record = Patient.objects.select_related('assigned_doctor').get(user=user)
+                    doctor = patient_record.assigned_doctor
+                    if doctor and doctor.email:
+                        full_name = ' '.join(filter(None, [user.last_name, user.first_name, user.middle_name]))
+                        send_mail(
+                            subject='Ваш пациент успешно зарегистрировался в системе',
+                            message=(
+                                f'Пациент {full_name} успешно зарегистрировался в системе Painmetrika '
+                                f'по вашему приглашению.\n\n'
+                                f'Обращаем ваше внимание, что для достоверности формирования заключения, '
+                                f'вам необходимо указать для вашего пациента следующие данные: '
+                                f'"Диагноз", "Длительность боли" и "Локализация боли"\n\n'
+                                f'Указать их можно в вашем личном кабинете по следующему пути:\n'
+                                f'Вкладка "Мои пациенты" -> Находите вашего пациента и нажимаете на кнопку '
+                                f'"Карточка пациента" -> Нажимаете на кнопку "Редактировать" -> '
+                                f'В появившихся полях заполняете поля, указанные выше -> '
+                                f'Нажимаете на кнопку "Сохранить"'
+                            ),
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[doctor.email],
+                            fail_silently=True,
+                        )
+                except Exception:
+                    pass
 
                 request.session.pop('patient_invite_user_id', None)
                 request.session.pop('patient_invite_token', None)

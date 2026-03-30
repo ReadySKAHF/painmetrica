@@ -280,7 +280,7 @@
     background: var(--blue-500);
     color: var(--white);
     border: none;
-    border-radius: 13px;
+    border-radius: 33px;
     font-size: 14px;
     font-weight: 600;
     font-family: inherit;
@@ -296,7 +296,7 @@
     background: var(--white);
     color: var(--gray-950);
     border: 1px solid var(--gray-950);
-    border-radius: 11px;
+    border-radius: 33px;
     font-size: 13px;
     font-weight: 600;
     font-family: inherit;
@@ -405,7 +405,7 @@
   .btn-save {
     padding: 12px 32px;
     background: var(--blue-500); color: var(--white);
-    border: none; border-radius: 13px;
+    border: none; border-radius: 33px;
     font-size: 14px; font-weight: 600; font-family: inherit;
     cursor: pointer; transition: opacity 0.15s; min-width: 130px;
   }
@@ -642,7 +642,7 @@
   .ht-divider { width: 1px; height: 14px; background: var(--gray-300); flex-shrink: 0; }
   .btn-show {
     height: 44px; padding: 0 20px;
-    background: var(--blue-500); border: 1.5px solid transparent; border-radius: 10px;
+    background: var(--blue-500); border: 1.5px solid transparent; border-radius: 33px;
     font-family: inherit; font-size: 13px; font-weight: 600;
     color: var(--white); cursor: pointer; white-space: nowrap;
     transition: opacity 0.15s;
@@ -918,7 +918,7 @@
         </div>
 
         <div class="patient-actions">
-          <button class="btn-primary" disabled title="Скоро" style="cursor:not-allowed; opacity:0.65;">Скачать карточку</button>
+          {% if is_doctor %}<button class="btn-primary" disabled title="Скоро" style="cursor:not-allowed; opacity:0.65;">Скачать карточку</button>{% endif %}
           <button class="btn-outline" type="button" onclick="switchToEdit()">Редактировать</button>
         </div>
       </div>

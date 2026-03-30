@@ -33,7 +33,7 @@ class RegisterStepOneForm(forms.ModelForm):
             return email
         if len(email) > 50:
             raise ValidationError('Электронная почта не должна превышать 50 символов.')
-        if User.objects.filter(email__iexact=email).exists():
+        if User.objects.filter(email__iexact=email, is_email_verified=True).exists():
             raise ValidationError('Пользователь с такой Электронной почтой уже зарегистрирован')
         return email.lower()
 

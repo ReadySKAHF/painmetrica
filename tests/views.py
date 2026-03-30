@@ -29,6 +29,32 @@ def _load_score_ranges(test):
     return list(ScoreRange.objects.filter(test=test))
 
 
+def _get_pathotype_label(category, scores_by_step, total_score, conclusion_label):
+    """Возвращает строку патотипа по категории теста и баллам по шагам."""
+    if category == 'complex':
+        dn4  = scores_by_step.get(2, 0)
+        csi  = scores_by_step.get(3, 0)
+        hads = scores_by_step.get(4, 0)
+        if dn4 >= 4 and csi >= 30:
+            return 'Смешанный вариант (нейропатический + дисфункциональный)'
+        if dn4 >= 4 and csi < 30:
+            return 'Преимущественно нейропатический вариант'
+        if dn4 < 4 and csi > 40 and hads >= 8:
+            return 'Преимущественно дисфункциональный вариант'
+        return 'Преимущественно ноцицептивный вариант'
+    if category == 'painad':
+        if total_score > 2:
+            return 'Ноцицептивный вариант'
+        return conclusion_label or '—'
+    if category == 'ncsr':
+        if total_score >= 5:
+            return 'Критический уровень'
+        if total_score >= 3:
+            return 'Рекомендуется усилить текущую анальгезию'
+        return conclusion_label or '—'
+    return conclusion_label or '—'
+
+
 def _match_score_range(ranges, sidebar_step, score):
     """Ищет подходящий диапазон в уже загруженном списке (без запросов к БД)."""
     for sr in ranges:

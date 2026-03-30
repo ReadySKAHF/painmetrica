@@ -298,12 +298,8 @@
     font-weight: 400;
     color: var(--gray-950);
     line-height: 1.6;
-  }
-  .section-text.collapsed {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .section-empty {
     font-size: 14px;
@@ -468,8 +464,8 @@
         <div class="section-title">Тип лекарства</div>
         <div class="section-body">
           {% if medication.medication_type %}
-          <p class="section-text collapsed" id="typeText">{{ medication.medication_type }}</p>
-          <button class="read-more" onclick="toggleText('typeText', this)">Читать полностью</button>
+          <p class="section-text" id="typeText" data-full="{{ medication.medication_type }}">{{ medication.medication_type }}</p>
+          <button class="read-more" id="typeBtn" onclick="toggleText('typeText', 'typeBtn')">Читать полностью</button>
           {% else %}
           <p class="section-empty">Не указан</p>
           {% endif %}
@@ -482,8 +478,8 @@
         <div class="section-title">Схема назначения</div>
         <div class="section-body">
           {% if medication.prescription_scheme %}
-          <p class="section-text collapsed" id="prescText">{{ medication.prescription_scheme }}</p>
-          <button class="read-more" onclick="toggleText('prescText', this)">Читать полностью</button>
+          <p class="section-text" id="prescText" data-full="{{ medication.prescription_scheme }}">{{ medication.prescription_scheme }}</p>
+          <button class="read-more" id="prescBtn" onclick="toggleText('prescText', 'prescBtn')">Читать полностью</button>
           {% else %}
           <p class="section-empty">Не указана</p>
           {% endif %}
@@ -496,8 +492,8 @@
         <div class="section-title">Побочные эффекты</div>
         <div class="section-body">
           {% if medication.side_effects %}
-          <p class="section-text collapsed" id="sideText">{{ medication.side_effects }}</p>
-          <button class="read-more" onclick="toggleText('sideText', this)">Читать полностью</button>
+          <p class="section-text" id="sideText" data-full="{{ medication.side_effects }}">{{ medication.side_effects }}</p>
+          <button class="read-more" id="sideBtn" onclick="toggleText('sideText', 'sideBtn')">Читать полностью</button>
           {% else %}
           <p class="section-empty">Не указаны</p>
           {% endif %}
@@ -642,19 +638,38 @@
     });
   }
 
-  function toggleText(id, btn) {
-    var el = document.getElementById(id);
-    if (el.classList.contains('collapsed')) {
-      el.classList.remove('collapsed');
+  var TEXT_LIMIT = 60;
+
+  function initCollapsible(textId, btnId) {
+    var el  = document.getElementById(textId);
+    var btn = document.getElementById(btnId);
+    if (!el || !btn) return;
+    var full = el.dataset.full || '';
+    if (full.length <= TEXT_LIMIT) {
+      btn.style.display = 'none';
+    } else {
+      el.textContent  = full.slice(0, TEXT_LIMIT) + '…';
+    }
+  }
+
+  function toggleText(textId, btnId) {
+    var el   = document.getElementById(textId);
+    var btn  = document.getElementById(btnId);
+    var full = el.dataset.full || '';
+    if (btn.textContent === 'Читать полностью') {
+      el.textContent  = full;
       btn.textContent = 'Свернуть';
     } else {
-      el.classList.add('collapsed');
+      el.textContent  = full.slice(0, TEXT_LIMIT) + '…';
       btn.textContent = 'Читать полностью';
     }
   }
 
   /* Начальное состояние */
   document.addEventListener('DOMContentLoaded', function () {
+    initCollapsible('typeText',  'typeBtn');
+    initCollapsible('prescText', 'prescBtn');
+    initCollapsible('sideText',  'sideBtn');
     if (!HAS_NOTE) {
       showEmptyState();
     }

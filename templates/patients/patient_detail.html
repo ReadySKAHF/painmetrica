@@ -749,6 +749,33 @@
   .ht-filter-error.visible { display: flex; }
   .ht-filter-error .error-icon { width: 15px; height: 15px; flex-shrink: 0; }
   .ht-filter-error .error-text { font-size: 11px; color: #E43D3D; line-height: 1.4; }
+
+  /* ── No-results modal ── */
+  .nores-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: none; align-items: center; justify-content: center; z-index: 2000;
+  }
+  .nores-overlay.active { display: flex; }
+  .nores-card {
+    background: #FEFEFE; border-radius: 20px; padding: 48px 40px 40px;
+    max-width: 480px; width: calc(100% - 32px);
+    display: flex; flex-direction: column; align-items: center; gap: 20px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+  }
+  .nores-icon-wrap {
+    width: 84px; height: 84px; background: #FFF0F0;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+  .nores-title {
+    font-size: 20px; font-weight: 700; text-align: center;
+    color: #262626; line-height: 1.45;
+  }
+  .nores-ok-btn {
+    width: 100%; padding: 14px; background: #2E67F6; color: #FEFEFE;
+    border: none; border-radius: 33px; font-size: 16px; font-weight: 600;
+    font-family: inherit; cursor: pointer; transition: background 0.15s; margin-top: 32px;
+  }
+  .nores-ok-btn:hover { background: #1a57e0; }
 </style>
 </head>
 <body>
@@ -918,7 +945,7 @@
         </div>
 
         <div class="patient-actions">
-          {% if is_doctor %}<button class="btn-primary" disabled title="Скоро" style="cursor:not-allowed; opacity:0.65;">Скачать карточку</button>{% endif %}
+          <a class="btn-primary" id="btn-download-card" href="{% url 'patients:export_excel' patient.pk %}" style="text-decoration:none;">Скачать карточку</a>
           <button class="btn-outline" type="button" onclick="switchToEdit()">Редактировать</button>
         </div>
       </div>
@@ -1163,7 +1190,9 @@
             {% else %}
             <button class="btn-primary" disabled style="cursor:not-allowed;opacity:0.65;" title="Нужно минимум 2 теста одной категории">Сравнить результаты тестов</button>
             {% endif %}
-            <button class="btn-outline" disabled style="cursor:not-allowed;opacity:0.65;">Выгрузить в Excel</button>
+            <a class="btn-outline" id="btn-export-excel"
+               href="{% url 'patients:export_excel' patient.pk %}{% if filter_date_from or filter_date_to %}?{% if filter_date_from %}date_from={{ filter_date_from }}{% endif %}{% if filter_date_from and filter_date_to %}&{% endif %}{% if filter_date_to %}date_to={{ filter_date_to }}{% endif %}{% endif %}"
+               style="text-decoration:none;">Выгрузить в Excel</a>
             {% endif %}
           </div>
         </div>
@@ -1569,6 +1598,75 @@
       btn.textContent = 'Сохранить';
     }
   }
+</script>
+
+<!-- No-results modal -->
+<div class="nores-overlay" id="noresOverlay">
+  <div class="nores-card">
+    <div class="nores-icon-wrap">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M20 8L20 22" stroke="#E43D3D" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="20" cy="30" r="2" fill="#E43D3D"/>
+        <circle cx="20" cy="20" r="17" stroke="#E43D3D" stroke-width="2.5"/>
+      </svg>
+    </div>
+    <p class="nores-title" id="noresTitle"></p>
+    <button class="nores-ok-btn" type="button" onclick="document.getElementById('noresOverlay').classList.remove('active')">Хорошо</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const hasAnyResults   = {{ has_any_results|yesno:'true,false' }};
+  const exportHasResults = {{ export_has_results|yesno:'true,false' }};
+  const dateFrom = '{{ filter_date_from }}';
+  const dateTo   = '{{ filter_date_to }}';
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    var p = iso.split('-');
+    return p[2] + '.' + p[1] + '.' + p[0];
+  }
+
+  function showNoresModal(msg) {
+    document.getElementById('noresTitle').textContent = msg;
+    document.getElementById('noresOverlay').classList.add('active');
+  }
+
+  function buildPeriodMsg() {
+    var from = formatDate(dateFrom);
+    var to   = formatDate(dateTo);
+    if (from && to)  return 'Информация о тестированиях за указанный период ' + from + ' — ' + to + ' отсутствует';
+    if (from)        return 'Информация о тестированиях за указанный период с ' + from + ' отсутствует';
+    if (to)          return 'Информация о тестированиях за указанный период по ' + to + ' отсутствует';
+    return 'Информация о тестированиях отсутствует';
+  }
+
+  var btnCard  = document.getElementById('btn-download-card');
+  var btnExcel = document.getElementById('btn-export-excel');
+
+  if (btnCard) {
+    btnCard.addEventListener('click', function (e) {
+      if (!hasAnyResults) {
+        e.preventDefault();
+        showNoresModal('Информация о тестированиях отсутствует');
+      }
+    });
+  }
+
+  if (btnExcel) {
+    btnExcel.addEventListener('click', function (e) {
+      if (!exportHasResults) {
+        e.preventDefault();
+        showNoresModal(buildPeriodMsg());
+      }
+    });
+  }
+
+  document.getElementById('noresOverlay').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+}());
 </script>
 
 </body>

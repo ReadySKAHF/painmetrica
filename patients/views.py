@@ -1,10 +1,13 @@
 import json
+import os
 from datetime import datetime
+from io import BytesIO
 
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -12,7 +15,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 
 from accounts.mixins import DoctorRequiredMixin
 from patients.models import Patient
-from tests.views import _load_score_ranges, _match_score_range
+from tests.views import _load_score_ranges, _match_score_range, _get_pathotype_label
 
 
 class PatientListView(DoctorRequiredMixin, ListView):
@@ -124,6 +127,23 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
                 date_to_str = ''
         context['filter_date_from'] = date_from_str
         context['filter_date_to'] = date_to_str
+
+        # Наличие результатов: для кнопок скачивания
+        context['has_any_results'] = current_result is not None
+        export_qs = raw_results
+        if date_from_str:
+            try:
+                from datetime import date
+                export_qs = export_qs.filter(completed_at__date__gte=date.fromisoformat(date_from_str))
+            except ValueError:
+                pass
+        if date_to_str:
+            try:
+                from datetime import date
+                export_qs = export_qs.filter(completed_at__date__lte=date.fromisoformat(date_to_str))
+            except ValueError:
+                pass
+        context['export_has_results'] = export_qs.exists()
 
         # Пагинация истории (3 на страницу)
         paginator = Paginator(history_qs, 3)
@@ -326,3 +346,190 @@ class PatientMyProfileView(LoginRequiredMixin, View):
             return redirect('patients:detail', pk=patient.pk)
         except Exception:
             return redirect('core:dashboard')
+
+
+class PatientExportExcelView(LoginRequiredMixin, View):
+    """Выгрузка результатов тестов пациента в Excel.
+
+    GET-параметры date_from / date_to (YYYY-MM-DD) фильтруют период —
+    те же параметры, что используются на странице карточки пациента.
+    """
+
+    DURATION_LABELS = {
+        '1w': 'Менее 1 недели',
+        '1m': '1–4 недели',
+        '3m': '1–3 месяца',
+        '6m': '3–6 месяцев',
+        '1y': '6–12 месяцев',
+        '1y+': 'Более 1 года',
+    }
+
+    def _get_patient(self, user, pk):
+        """Возвращает пациента только если у пользователя есть права на просмотр."""
+        if user.user_type == 'doctor':
+            return get_object_or_404(
+                Patient.objects.select_related(
+                    'user', 'user__patient_profile', 'assigned_doctor'
+                ),
+                pk=pk, assigned_doctor=user,
+            )
+        if user.user_type == 'patient':
+            return get_object_or_404(
+                Patient.objects.select_related(
+                    'user', 'user__patient_profile', 'assigned_doctor'
+                ),
+                pk=pk, user=user,
+            )
+        from django.http import Http404
+        raise Http404
+
+    def get(self, request, pk):
+        import openpyxl
+        from datetime import date as date_type
+        from openpyxl.styles import Alignment
+
+        patient = self._get_patient(request.user, pk)
+
+        # ── Разбираем фильтр дат ──────────────────────────────────────────
+        date_from_str = request.GET.get('date_from', '').strip()
+        date_to_str   = request.GET.get('date_to',   '').strip()
+        date_from = date_to = None
+
+        if date_from_str:
+            try:
+                date_from = date_type.fromisoformat(date_from_str)
+            except ValueError:
+                date_from_str = ''
+
+        if date_to_str:
+            try:
+                date_to = date_type.fromisoformat(date_to_str)
+            except ValueError:
+                date_to_str = ''
+
+        # ── Строим queryset результатов ───────────────────────────────────
+        results_qs = (
+            patient.test_results
+            .filter(status='completed')
+            .select_related('test')
+            .prefetch_related('answers__question__stage')
+            .order_by('completed_at')
+        )
+        if date_from:
+            results_qs = results_qs.filter(completed_at__date__gte=date_from)
+        if date_to:
+            results_qs = results_qs.filter(completed_at__date__lte=date_to)
+
+        results = list(results_qs)
+
+        # ── Загружаем шаблон (read-only — объект не кешируется) ───────────
+        template_path = os.path.join(settings.BASE_DIR, 'test-result-template.xlsx')
+        wb = openpyxl.load_workbook(template_path)
+
+        # ── Лист 1: Личная информация ─────────────────────────────────────
+        ws_info = wb['Личная информация']
+
+        try:
+            dob = patient.user.patient_profile.date_of_birth
+            dob_str = dob.strftime('%d.%m.%Y') if dob else '—'
+        except Exception:
+            dob_str = '—'
+
+        doctor = patient.assigned_doctor
+        ws_info['B2'] = patient.user.last_name  or '—'
+        ws_info['B3'] = patient.user.first_name or '—'
+        ws_info['B4'] = getattr(patient.user, 'middle_name', '') or '—'
+        ws_info['B5'] = dob_str
+        ws_info['B6'] = patient.medical_history or '—'
+        ws_info['B7'] = patient.pain_location   or '—'
+        ws_info['B8'] = (
+            self.DURATION_LABELS.get(patient.pain_duration, '—')
+            if patient.pain_duration else '—'
+        )
+        ws_info['B9'] = doctor.get_full_name() if doctor else '—'
+
+        # ── Лист 2: Результаты тестов ─────────────────────────────────────
+        ws_res = wb['Результаты тестов']
+
+        # Переименовываем заголовок колонки C
+        ws_res['C2'] = 'Тест ВАШ (VAS), NCS-R, PAINAD'
+
+        # Строка 3 — пустая строка-пример из шаблона; убираем её
+        ws_res.delete_rows(3)
+
+        from openpyxl.styles import Border, Side
+
+        center      = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        thin_side   = Side(style='thin')
+        thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+
+        # Категории, которые не имеют отдельных шагов DN4/CSI/HADS
+        SINGLE_SCORE_CATEGORIES = {'ncsr', 'painad'}
+
+        for result in results:
+            # Считаем баллы по шагам сайдбара
+            step_scores: dict[int, int] = {}
+            for answer in result.answers.all():
+                stage = answer.question.stage
+                if stage is None:
+                    continue
+                step = stage.sidebar_step
+                step_scores[step] = step_scores.get(step, 0) + answer.score
+
+            pathotype = _get_pathotype_label(
+                result.test.category,
+                step_scores,
+                result.total_score,
+                result.conclusion_label,
+            )
+
+            is_single_score = result.test.category in SINGLE_SCORE_CATEGORIES
+            row = [
+                result.completed_at.strftime('%d.%m.%Y %H:%M'),
+                pathotype,
+                step_scores.get(1) if 1 in step_scores else '—',  # VAS / NCS-R / PAINAD
+                '—' if is_single_score else (step_scores.get(2) if 2 in step_scores else '—'),  # DN4
+                '—' if is_single_score else (step_scores.get(3) if 3 in step_scores else '—'),  # CSI
+                '—' if is_single_score else (step_scores.get(4) if 4 in step_scores else '—'),  # HADS
+            ]
+
+            row_idx = ws_res.max_row + 1
+            for col_idx, value in enumerate(row, 1):
+                cell = ws_res.cell(row=row_idx, column=col_idx, value=value)
+                cell.alignment = center
+                cell.border    = thin_border
+
+        # ── Границы на заголовочных строках обоих листов ──────────────────
+        for ws in (ws_info, ws_res):
+            for row in ws.iter_rows():
+                for cell in row:
+                    if cell.value is not None:
+                        cell.border = thin_border
+
+        # ── Авторазмер колонок (по длиннейшему значению) ──────────────────
+        for ws in (ws_info, ws_res):
+            for col_cells in ws.columns:
+                max_len = 0
+                col_letter = col_cells[0].column_letter
+                for cell in col_cells:
+                    if cell.value:
+                        max_len = max(max_len, len(str(cell.value)))
+                ws.column_dimensions[col_letter].width = max_len + 4
+
+        # ── Формируем имя файла: просто ФИО пациента ─────────────────────
+        safe_name = patient.user.get_full_name().replace(' ', '_')
+        filename  = f'{safe_name}.xlsx'
+
+        # ── Отдаём файл ───────────────────────────────────────────────────
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        from urllib.parse import quote
+        encoded = quote(filename, safe='')
+        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded}"
+        return response

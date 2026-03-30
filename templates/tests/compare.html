@@ -356,6 +356,7 @@
               <input type="checkbox" class="session-cb"
                      data-group="{{ forloop.parentloop.counter }}"
                      data-id="{{ group.result.session.pk }}_{{ sub.step }}"
+                     data-result="{{ group.result.pk }}"
                      data-session="{{ group.result.session.pk }}"
                      data-date="{{ group.result.completed_at|date:'d.m.Y, H:i:s' }}"
                      data-name="{{ sub.name }}"
@@ -505,7 +506,7 @@ const CHART_COLORS = [
 const STAGE_ORDER = ['Тест VAS', 'Тест DN4', 'Тест CSI', 'Тест HADS', 'Тест PAINAD', 'Тест NCS-R'];
 
 function formatStageName(name) {
-  if (name === 'Тест VAS') return 'Тест ВАШ (VAS)/PAINAD/NCS-R';
+  if (name === 'Тест VAS') return 'Тест ВАШ (VAS)';
   return name;
 }
 
@@ -526,7 +527,7 @@ function updateChart() {
   // Группируем по session PK; сохраняем порядок первого появления для цвета
   const sessionMap = new Map();
   checkedCbs.forEach(cb => {
-    const pk    = cb.dataset.session;
+    const pk    = cb.dataset.result;
     const date  = cb.dataset.date;
     const name  = cb.dataset.name;
     const score = parseFloat(cb.dataset.score);

@@ -424,6 +424,11 @@ class PatientExportExcelView(LoginRequiredMixin, View):
 
         # ── Загружаем шаблон (read-only — объект не кешируется) ───────────
         template_path = os.path.join(settings.BASE_DIR, 'test-result-template.xlsx')
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(
+                f'Файл шаблона Excel не найден: {template_path}\n'
+                'Скопируйте test-result-template.xlsx в корень проекта (рядом с manage.py).'
+            )
         wb = openpyxl.load_workbook(template_path)
 
         # ── Лист 1: Личная информация ─────────────────────────────────────

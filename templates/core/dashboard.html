@@ -643,12 +643,14 @@
   .m1 {
     padding: 48px 40px 44px;
     display: flex; gap: 18px;
-    max-width: 800px; width: calc(100vw - 48px);
+    width: 834px; height: 445px;
+    max-width: calc(100vw - 48px);
     animation: mSlideUp .28s cubic-bezier(.22,.68,0,1.2);
   }
   .m1-card {
     background: #FAFAFA; border-radius: 14px;
     padding: 28px 22px;
+    margin-top: 30px;
     display: flex; flex-direction: column; align-items: center; gap: 14px;
     flex: 1; transition: box-shadow .2s, transform .2s;
   }
@@ -1177,17 +1179,7 @@
     <!-- Карточка: ручная регистрация -->
     <div class="m1-card">
       <div class="m1-icon">
-        <svg viewBox="0 0 84 84" fill="none">
-          <circle cx="42" cy="42" r="42" fill="#EEF3FF"/>
-          <g transform="translate(18,14)">
-            <path d="M10 8C10 8 6 8 6 14L6 26C6 34 12 38 18 38C24 38 30 34 30 26V20" stroke="#555" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <circle cx="10" cy="7" r="4" stroke="#555" stroke-width="2.5" fill="white"/>
-            <circle cx="30" cy="7" r="4" stroke="#555" stroke-width="2.5" fill="white"/>
-            <path d="M30 20C36 20 38 26 38 26C40 32 36 38 30 38" stroke="#555" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <circle cx="30" cy="38" r="5" fill="#2E67F6"/>
-            <circle cx="30" cy="38" r="2.5" fill="white"/>
-          </g>
-        </svg>
+        <img src="{% static 'Stetoscope-nobg.svg' %}" alt="Регистрация с помощью врача" style="width:76px;height:76px;object-fit:contain;">
       </div>
       <div class="m1-card-title">Регистрация пациента<br>с помощью врача</div>
       <p class="m1-card-desc">Вы сами вводите данные пациента и полностью управляете его аккаунтом</p>
@@ -1197,17 +1189,7 @@
     <!-- Карточка: самостоятельная -->
     <div class="m1-card">
       <div class="m1-icon">
-        <svg viewBox="0 0 84 84" fill="none">
-          <circle cx="42" cy="42" r="42" fill="#EEF3FF"/>
-          <g transform="translate(14,22)">
-            <path d="M4 20C4 12 12 6 28 6C44 6 52 12 52 20C52 28 44 34 28 34C12 34 4 28 4 20Z" fill="#72C4E8" stroke="#5aafda" stroke-width="1.5"/>
-            <line x1="4" y1="16" x2="52" y2="16" stroke="#5aafda" stroke-width="1" opacity=".6"/>
-            <line x1="4" y1="20" x2="52" y2="20" stroke="#5aafda" stroke-width="1" opacity=".6"/>
-            <line x1="4" y1="24" x2="52" y2="24" stroke="#5aafda" stroke-width="1" opacity=".6"/>
-            <path d="M4 14C-4 14-4 26 4 26" stroke="#888" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <path d="M52 14C60 14 60 26 52 26" stroke="#888" stroke-width="2" fill="none" stroke-linecap="round"/>
-          </g>
-        </svg>
+        <img src="{% static 'Masker-nobg.svg' %}" alt="Самостоятельная регистрация" style="width:76px;height:76px;object-fit:contain;">
       </div>
       <div class="m1-card-title">Самостоятельная регистрация пациента</div>
       <p class="m1-card-desc">Пациенту будет отправлено письмо на почту со ссылкой для регистрации</p>

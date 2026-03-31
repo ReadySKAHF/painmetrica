@@ -39,7 +39,7 @@ def _get_pathotype_label(category, scores_by_step, total_score, conclusion_label
             return 'Смешанный вариант (нейропатический + дисфункциональный)'
         if dn4 >= 4 and csi < 30:
             return 'Преимущественно нейропатический вариант'
-        if dn4 < 4 and csi > 40 and hads >= 8:
+        if dn4 < 4 and csi >= 40 and hads >= 8:
             return 'Преимущественно дисфункциональный вариант'
         return 'Преимущественно ноцицептивный вариант'
     if category == 'painad':

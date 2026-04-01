@@ -495,9 +495,9 @@ class AfterTestResultView(LoginRequiredMixin, View):
             elif dn4 >= 4 and csi < 30:
                 pathotype_label = 'Преимущественно нейропатический вариант'
                 pathotype_text = 'DN4 ≥ 4 б., CSI < 30 б.'
-            elif dn4 < 4 and csi > 40 and hads >= 8:
+            elif dn4 < 4 and csi >= 40 and hads >= 8:
                 pathotype_label = 'Преимущественно дисфункциональный вариант'
-                pathotype_text = 'DN4 < 4 б., CSI > 40 б., HADS ≥ 8 б.'
+                pathotype_text = 'DN4 < 4 б., CSI ≥ 40 б., HADS ≥ 8 б.'
             else:
                 pathotype_label = 'Преимущественно ноцицептивный вариант'
                 pathotype_text = 'DN4 < 4 б., CSI < 30 б.'

@@ -16,6 +16,8 @@ from accounts.forms import (
     LoginForm,
     PatientManualCreateForm,
     PatientRegisterViaInviteForm,
+    PasswordResetRequestForm,
+    PasswordResetSetForm,
 )
 from accounts.models import DoctorProfile, PatientProfile
 from accounts.services.otp_service import OTPService
@@ -606,3 +608,112 @@ class PatientRegisterViaInviteVerifyView(View):
                 messages.error(request, error)
 
         return render(request, self.template_name, {'form': form, 'user': user})
+
+
+# ──────────────────────────────────────────────────────────────────────
+#  ВОССТАНОВЛЕНИЕ ПАРОЛЯ
+# ──────────────────────────────────────────────────────────────────────
+
+class PasswordResetRequestView(View):
+    """Страница 1: Ввод email для сброса пароля"""
+
+    template_name = 'accounts/password_reset_request.html'
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('core:dashboard')
+        form = PasswordResetRequestForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = PasswordResetRequestForm(request.POST)
+
+        if form.is_valid():
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            from accounts.models import PasswordResetToken
+
+            email = form.cleaned_data['email']
+            user = User.objects.get(email__iexact=email, is_email_verified=True)
+
+            # Инвалидируем старые токены
+            PasswordResetToken.objects.filter(user=user, is_used=False).update(is_used=True)
+
+            # Создаём новый токен
+            token = PasswordResetToken.objects.create(user=user)
+
+            # Формируем ссылку
+            reset_url = request.build_absolute_uri(
+                reverse('accounts:password_reset_set', kwargs={'token': token.token})
+            )
+
+            subject = 'Восстановление пароля от системы Painmetrica'
+            message = (
+                f'Мы получили запрос на сброс пароля для вашего аккаунта.\n'
+                f'Перейдите по этой ссылке для сброса пароля и создания нового: {reset_url}\n\n'
+                f'Система Painmetrica'
+            )
+
+            try:
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+            except Exception:
+                token.delete()
+                messages.error(request, 'Ошибка отправки письма. Попробуйте снова.')
+                return render(request, self.template_name, {'form': form})
+
+            return render(request, self.template_name, {
+                'form': PasswordResetRequestForm(),
+                'show_success_modal': True,
+            })
+
+        return render(request, self.template_name, {'form': form})
+
+
+class PasswordResetSetView(View):
+    """Страница 2: Ввод нового пароля по токену из письма"""
+
+    template_name = 'accounts/password_reset_set.html'
+    invalid_template = 'accounts/password_reset_invalid.html'
+
+    def _get_token(self, token_uuid):
+        from accounts.models import PasswordResetToken
+        try:
+            return PasswordResetToken.objects.select_related('user').get(token=token_uuid)
+        except PasswordResetToken.DoesNotExist:
+            return None
+
+    def get(self, request, token):
+        token_obj = self._get_token(token)
+        if not token_obj or not token_obj.is_valid():
+            return render(request, self.invalid_template)
+
+        form = PasswordResetSetForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, token):
+        token_obj = self._get_token(token)
+        if not token_obj or not token_obj.is_valid():
+            return render(request, self.invalid_template)
+
+        form = PasswordResetSetForm(request.POST)
+
+        if form.is_valid():
+            user = token_obj.user
+            user.set_password(form.cleaned_data['new_password'])
+            user.save()
+
+            token_obj.is_used = True
+            token_obj.save()
+
+            return render(request, self.template_name, {
+                'form': form,
+                'show_success_modal': True,
+            })
+
+        return render(request, self.template_name, {'form': form})

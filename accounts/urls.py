@@ -22,6 +22,10 @@ urlpatterns = [
     # API проверки email
     path('api/check-email/', views.CheckEmailView.as_view(), name='check_email'),
 
+    # Восстановление пароля
+    path('password-reset/', views.PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('password-reset/<uuid:token>/', views.PasswordResetSetView.as_view(), name='password_reset_set'),
+
     # Регистрация пациентов
     path('api/send-patient-invitation/', views.SendPatientInvitationView.as_view(), name='send_patient_invitation'),
     path('api/manual-patient-create/', views.ManualPatientCreateView.as_view(), name='manual_patient_create'),

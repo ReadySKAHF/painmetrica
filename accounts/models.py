@@ -153,6 +153,32 @@ class OTPCode(models.Model):
         super().save(*args, **kwargs)
 
 
+class PasswordResetToken(models.Model):
+    """Токен для сброса пароля"""
+
+    token = models.UUIDField('Токен', default=uuid.uuid4, unique=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')
+    is_used = models.BooleanField('Использован', default=False)
+    expires_at = models.DateTimeField('Истекает')
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Токен сброса пароля'
+        verbose_name_plural = 'Токены сброса пароля'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Сброс пароля для {self.user.email}'
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.expires_at = timezone.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)
+
+    def is_valid(self):
+        return not self.is_used and timezone.now() < self.expires_at
+
+
 class PatientInvitation(models.Model):
     """Приглашение пациента к самостоятельной регистрации"""
 

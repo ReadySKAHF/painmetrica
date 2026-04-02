@@ -136,6 +136,63 @@ class PatientManualCreateForm(forms.Form):
     pain_duration = forms.ChoiceField(label='Длительность', choices=DURATION_CHOICES, required=False)
 
 
+class PasswordResetRequestForm(forms.Form):
+    """Форма запроса сброса пароля — ввод email"""
+
+    email = forms.EmailField(
+        label='Электронная почта',
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if not email:
+            return email
+        if len(email) > 50:
+            raise forms.ValidationError('Электронная почта не должна превышать 50 символов.')
+        if not User.objects.filter(email__iexact=email, is_email_verified=True).exists():
+            raise forms.ValidationError('Пользователь с такой электронной почтой не зарегистрирован')
+        return email
+
+
+class PasswordResetSetForm(forms.Form):
+    """Форма создания нового пароля"""
+
+    new_password = forms.CharField(
+        label='Новый пароль',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        min_length=8,
+        max_length=20
+    )
+    confirm_password = forms.CharField(
+        label='Подтверждение пароля',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+
+    def clean_new_password(self):
+        import re
+        password = self.cleaned_data.get('new_password')
+        if not password:
+            return password
+        if re.search(r'[а-яА-ЯёЁ]', password):
+            raise forms.ValidationError('Пароль должен содержать только латинские буквы')
+        if not re.search(r'[A-Z]', password):
+            raise forms.ValidationError('Пароль должен содержать как минимум 1 заглавную букву')
+        if not re.search(r'\d', password):
+            raise forms.ValidationError('Пароль должен содержать как минимум 1 цифру')
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;\'`~]', password):
+            raise forms.ValidationError('Пароль должен содержать как минимум 1 спец. символ')
+        return password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get('new_password')
+        p2 = cleaned_data.get('confirm_password')
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError('Пароли не совпадают')
+        return cleaned_data
+
+
 class PatientRegisterViaInviteForm(forms.Form):
     """Форма регистрации пациента по ссылке-приглашению"""
 

@@ -92,3 +92,12 @@ POSTMAN.md
 tests.txt
 db_diagram.drawio
 NGINX_DEPLOY.md
+NGINX_PLAN.md
+
+# Логи приложения
+logs/
+*.log
+
+# Конфиги деплоя (содержат локальные пути, не нужны в репо)
+deploy/nginx/local.conf
+deploy/nginx/proxy_params

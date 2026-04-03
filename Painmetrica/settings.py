@@ -137,16 +137,102 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Папка с SVG иконками и логотипами
 STATICFILES_DIRS = [
     BASE_DIR / 'logo',
 ]
 
-# Медиафайлы (загружаемые пользователями изображения)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# ─── Медиафайлы ──────────────────────────────────────────────────────────────
+# Если заданы переменные Supabase Storage — используем облако,
+# иначе файлы хранятся локально (для разработки без облака)
+_SUPABASE_S3_ENDPOINT = os.environ.get('SUPABASE_S3_ENDPOINT', '')
+
+if _SUPABASE_S3_ENDPOINT:
+    # Облачное хранилище: Supabase Storage (S3-совместимый)
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+            'OPTIONS': {
+                'endpoint_url': _SUPABASE_S3_ENDPOINT,
+                'access_key': os.environ.get('SUPABASE_S3_ACCESS_KEY'),
+                'secret_key': os.environ.get('SUPABASE_S3_SECRET_KEY'),
+                'region_name': os.environ.get('SUPABASE_S3_REGION', 'eu-central-1'),
+                'bucket_name': os.environ.get('SUPABASE_STORAGE_BUCKET', 'media'),
+                # Публичный URL для раздачи файлов
+                'custom_domain': os.environ.get('SUPABASE_STORAGE_PUBLIC_DOMAIN'),
+                'default_acl': 'public-read',
+                'file_overwrite': False,
+                'signature_version': 's3v4',
+            },
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+    MEDIA_URL = f"https://{os.environ.get('SUPABASE_STORAGE_PUBLIC_DOMAIN')}/"
+    MEDIA_ROOT = ''
+else:
+    # Локальное хранилище (разработка)
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
+
+# ─── Redis Cache ─────────────────────────────────────────────────────────────
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'TIMEOUT': 300,
+        'KEY_PREFIX': 'painmetrica',
+    }
+}
+
+# Сессии через Redis
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# ─── Логирование ──────────────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+            'formatter': 'verbose',
+        },
+        'security': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+        'django.security': {
+            'handlers': ['security'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field

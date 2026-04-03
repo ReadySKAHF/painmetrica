@@ -5,19 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Системные зависимости для psycopg2 (компилированная версия для production)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Зависимости Python
+# Zavisimostu Python (psycopg2-binary — gotovy binarny paket, ne trebuet kompilacii)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    gunicorn==21.2.0 \
-    psycopg2==2.9.11
+RUN pip install --no-cache-dir -r requirements.txt gunicorn==21.2.0
 
-# Создаём необходимые директории
+# Sozdaem neobhodimye direktorii
 RUN mkdir -p logs staticfiles media
 
 COPY . .

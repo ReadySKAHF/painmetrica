@@ -27,3 +27,7 @@ urlpatterns = [
     path('medications/', include('medications.urls')),
     path('tests/', include('tests.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+    urlpatterns += debug_toolbar_urls()

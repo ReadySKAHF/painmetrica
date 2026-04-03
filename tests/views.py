@@ -63,10 +63,9 @@ def _match_score_range(ranges, sidebar_step, score):
     return None
 
 
-def _build_sidebar(test, current_order):
-    """Формирует список шагов для сайдбара.
+def _build_sidebar(stages, current_order):
+    """Формирует список шагов для сайдбара из уже загруженного списка этапов.
     Возвращает список dict с полями: step, name, description, status (done/active/inactive)."""
-    stages = list(Stage.objects.filter(test=test).order_by('order'))
     current_stage = next((s for s in stages if s.order == current_order), None)
     current_sidebar_step = current_stage.sidebar_step if current_stage else 1
 
@@ -250,19 +249,24 @@ class StageView(LoginRequiredMixin, View):
     """GET — показывает этап. POST — сохраняет ответы и переходит дальше."""
 
     def _get_stage_and_session(self, request, session_id, order):
-        session = get_object_or_404(TestSession, pk=session_id)
-        # Если сессия уже завершена — редирект на результат
+        session = get_object_or_404(
+            TestSession.objects.select_related('test', 'patient__user', 'taken_by'),
+            pk=session_id,
+        )
         if session.status == 'completed':
-            from django.http import HttpResponseRedirect
-            from django.urls import reverse
             raise _SessionCompleted(str(session_id))
         _authorize_session(request, session)
-        stage = get_object_or_404(Stage, test=session.test, order=order)
-        return session, stage
+        # Все этапы теста — один запрос вместо трёх отдельных (stage lookup + next_stage + sidebar)
+        all_stages = list(Stage.objects.filter(test=session.test).order_by('order'))
+        stage = next((s for s in all_stages if s.order == order), None)
+        if stage is None:
+            from django.http import Http404
+            raise Http404
+        return session, stage, all_stages
 
     def get(self, request, session_id, order):
         try:
-            session, stage = self._get_stage_and_session(request, session_id, order)
+            session, stage, all_stages = self._get_stage_and_session(request, session_id, order)
         except _SessionCompleted as e:
             return redirect('tests:result', session_id=e.session_id)
 
@@ -279,7 +283,8 @@ class StageView(LoginRequiredMixin, View):
             if key in saved_answers:
                 scale_saved_value = int(saved_answers[key])
 
-        next_stage = _get_next_stage(session.test, order)
+        # Следующий этап и сайдбар — из уже загруженного списка, без новых запросов
+        next_stage = next((s for s in all_stages if s.order > order), None)
         is_last_stage = next_stage is None
 
         return render(request, 'tests/session_stage.html', {
@@ -287,7 +292,7 @@ class StageView(LoginRequiredMixin, View):
             'stage': stage,
             'questions': questions,
             'saved_answers': saved_answers,
-            'sidebar_steps': _build_sidebar(session.test, order),
+            'sidebar_steps': _build_sidebar(all_stages, order),
             'is_scale_stage': is_scale_stage,
             'scale_saved_value': scale_saved_value,
             'is_last_stage': is_last_stage,
@@ -296,7 +301,7 @@ class StageView(LoginRequiredMixin, View):
 
     def post(self, request, session_id, order):
         try:
-            session, stage = self._get_stage_and_session(request, session_id, order)
+            session, stage, all_stages = self._get_stage_and_session(request, session_id, order)
         except _SessionCompleted as e:
             return redirect('tests:result', session_id=e.session_id)
         questions = stage.questions.order_by('order')
@@ -317,7 +322,7 @@ class StageView(LoginRequiredMixin, View):
                 vals = request.POST.getlist(key)
                 answers_data[key] = [int(v) for v in vals if v]
 
-        next_stage = _get_next_stage(session.test, order)
+        next_stage = next((s for s in all_stages if s.order > order), None)
 
         if next_stage:
             session.answers_data = answers_data
@@ -369,7 +374,10 @@ class ResultView(LoginRequiredMixin, View):
     """Показывает итоговый результат завершённой сессии."""
 
     def get(self, request, session_id):
-        session = get_object_or_404(TestSession, pk=session_id, status='completed')
+        session = get_object_or_404(
+            TestSession.objects.select_related('test', 'patient__user', 'taken_by'),
+            pk=session_id, status='completed',
+        )
 
         user = request.user
         if user.user_type == 'patient':
@@ -432,7 +440,10 @@ class AfterTestResultView(LoginRequiredMixin, View):
     """Страница результатов, которая открывается сразу после завершения теста."""
 
     def get(self, request, session_id):
-        session = get_object_or_404(TestSession, pk=session_id, status='completed')
+        session = get_object_or_404(
+            TestSession.objects.select_related('test', 'patient__user', 'taken_by'),
+            pk=session_id, status='completed',
+        )
 
         user = request.user
         if user.user_type == 'patient':
@@ -546,7 +557,10 @@ class ResultDetailView(LoginRequiredMixin, View):
     """Вопросы и ответы по одному sidebar_step."""
 
     def get(self, request, session_id, sidebar_step):
-        session = get_object_or_404(TestSession, pk=session_id, status='completed')
+        session = get_object_or_404(
+            TestSession.objects.select_related('test', 'patient__user', 'taken_by'),
+            pk=session_id, status='completed',
+        )
 
         user = request.user
         if user.user_type == 'patient':
@@ -731,6 +745,9 @@ class TestCompareView(DoctorRequiredMixin, View):
     COMPARABLE_CATEGORIES = ['complex', 'painad', 'ncsr']
 
     def get(self, request, patient_pk):
+        from datetime import date
+        from django.db.models import Prefetch
+
         patient = get_object_or_404(Patient, pk=patient_pk, assigned_doctor=request.user)
 
         qs = (
@@ -741,7 +758,14 @@ class TestCompareView(DoctorRequiredMixin, View):
                 test__category__in=self.COMPARABLE_CATEGORIES,
             )
             .select_related('test', 'session')
-            .prefetch_related('answers__question__stage', 'answers__selected_options')
+            .prefetch_related(
+                # select_related внутри Prefetch: один JOIN-запрос вместо трёх отдельных
+                Prefetch(
+                    'answers',
+                    queryset=Answer.objects.select_related('question__stage')
+                    .prefetch_related('selected_options'),
+                )
+            )
             .order_by('-completed_at')
         )
 
@@ -750,28 +774,31 @@ class TestCompareView(DoctorRequiredMixin, View):
         date_to_str   = request.GET.get('date_to',   '').strip()
         if date_from_str:
             try:
-                from datetime import date
                 qs = qs.filter(completed_at__date__gte=date.fromisoformat(date_from_str))
             except ValueError:
                 date_from_str = ''
         if date_to_str:
             try:
-                from datetime import date
                 qs = qs.filter(completed_at__date__lte=date.fromisoformat(date_to_str))
             except ValueError:
                 date_to_str = ''
 
-        # Кэшируем ScoreRange по test_id — один запрос на каждый уникальный тест
-        ranges_cache = {}
-        result_groups = []
-        for r in qs:
-            tid = r.test_id
-            if tid not in ranges_cache:
-                ranges_cache[tid] = _load_score_ranges(r.test)
-            result_groups.append({
+        results = list(qs)
+
+        # Один запрос на все ScoreRange для всех тестов
+        test_ids = {r.test_id for r in results}
+        score_ranges_by_test = {}
+        if test_ids:
+            for sr in ScoreRange.objects.filter(test_id__in=test_ids):
+                score_ranges_by_test.setdefault(sr.test_id, []).append(sr)
+
+        result_groups = [
+            {
                 'result': r,
-                'sub_results': self._build_sub_results(r, ranges_cache[tid]),
-            })
+                'sub_results': self._build_sub_results(r, score_ranges_by_test.get(r.test_id, [])),
+            }
+            for r in results
+        ]
 
         context = {
             'patient': patient,

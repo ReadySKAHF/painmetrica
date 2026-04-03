@@ -52,6 +52,11 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        from collections import Counter
+        from datetime import date
+        from django.db.models import Prefetch
+        from tests.models import Answer, ScoreRange, Test, TestSession
+
         DURATION_LABELS = {
             '1w': 'Менее 1 недели',
             '1m': '1–4 недели',
@@ -61,14 +66,31 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             '1y+': 'Более 1 года',
         }
 
-        def build_sub_results(result):
-            answers = (
-                result.answers
-                .select_related('question__stage')
+        # Один запрос: все результаты + все answers с вопросами и этапами
+        all_results = list(
+            self.object.test_results.filter(status='completed')
+            .select_related('test', 'session')
+            .prefetch_related(
+                Prefetch(
+                    'answers',
+                    queryset=Answer.objects.select_related('question__stage'),
+                )
             )
+            .order_by('-completed_at')
+        )
+
+        # Один запрос на все ScoreRange для всех тестов из результатов
+        test_ids = {r.test_id for r in all_results}
+        score_ranges_by_test = {}
+        if test_ids:
+            for sr in ScoreRange.objects.filter(test_id__in=test_ids):
+                score_ranges_by_test.setdefault(sr.test_id, []).append(sr)
+
+        def build_sub_results(result):
+            # Использует prefetch-кэш для answers и кэш score_ranges — без запросов к БД
             step_scores = {}
             step_stages = {}
-            for answer in answers:
+            for answer in result.answers.all():
                 stage = answer.question.stage
                 if stage is None:
                     continue
@@ -77,7 +99,7 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
                     step_scores[step] = 0
                     step_stages[step] = stage
                 step_scores[step] += answer.score
-            score_ranges = _load_score_ranges(result.test)
+            score_ranges = score_ranges_by_test.get(result.test_id, [])
             sub_results = []
             for step in sorted(step_scores.keys()):
                 score = step_scores[step]
@@ -90,63 +112,52 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
                 })
             return sub_results
 
-        raw_results = self.object.test_results.filter(
-            status='completed'
-        ).select_related('test', 'session').order_by('-completed_at')
-
         # Текущий статус — самый последний результат
-        current_result = raw_results.first()
+        current_result = all_results[0] if all_results else None
         if current_result:
             context['current_status'] = {
                 'result': current_result,
                 'sub_results': build_sub_results(current_result),
             }
-            history_qs = raw_results.exclude(pk=current_result.pk)
+            history_list = all_results[1:]
         else:
             context['current_status'] = None
-            history_qs = raw_results
+            history_list = all_results
 
-        # Фильтр по датам
+        # Фильтр по датам (в памяти — без лишних запросов)
         date_from_str = self.request.GET.get('date_from', '').strip()
         date_to_str = self.request.GET.get('date_to', '').strip()
+        date_from = date_to = None
         if date_from_str:
             try:
-                from datetime import date
-                history_qs = history_qs.filter(
-                    completed_at__date__gte=date.fromisoformat(date_from_str)
-                )
+                date_from = date.fromisoformat(date_from_str)
             except ValueError:
                 date_from_str = ''
         if date_to_str:
             try:
-                from datetime import date
-                history_qs = history_qs.filter(
-                    completed_at__date__lte=date.fromisoformat(date_to_str)
-                )
+                date_to = date.fromisoformat(date_to_str)
             except ValueError:
                 date_to_str = ''
         context['filter_date_from'] = date_from_str
         context['filter_date_to'] = date_to_str
 
-        # Наличие результатов: для кнопок скачивания
-        context['has_any_results'] = current_result is not None
-        export_qs = raw_results
-        if date_from_str:
-            try:
-                from datetime import date
-                export_qs = export_qs.filter(completed_at__date__gte=date.fromisoformat(date_from_str))
-            except ValueError:
-                pass
-        if date_to_str:
-            try:
-                from datetime import date
-                export_qs = export_qs.filter(completed_at__date__lte=date.fromisoformat(date_to_str))
-            except ValueError:
-                pass
-        context['export_has_results'] = export_qs.exists()
+        history_filtered = history_list
+        if date_from:
+            history_filtered = [r for r in history_filtered if r.completed_at.date() >= date_from]
+        if date_to:
+            history_filtered = [r for r in history_filtered if r.completed_at.date() <= date_to]
 
-        # Пагинация истории (3 на страницу)
-        paginator = Paginator(history_qs, 3)
+        # Наличие результатов для кнопок скачивания
+        context['has_any_results'] = bool(all_results)
+        export_list = all_results
+        if date_from:
+            export_list = [r for r in export_list if r.completed_at.date() >= date_from]
+        if date_to:
+            export_list = [r for r in export_list if r.completed_at.date() <= date_to]
+        context['export_has_results'] = bool(export_list)
+
+        # Пагинация истории (3 на страницу) — paginator работает со списком
+        paginator = Paginator(history_filtered, 3)
         history_page = paginator.get_page(self.request.GET.get('page', 1))
         context['history_page'] = history_page
         context['history_results'] = [
@@ -155,11 +166,10 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
         ]
 
         # Проверяем возможность сравнения: ≥2 завершённых теста одной категории
-        from collections import Counter
         COMPARABLE = ['complex', 'painad']
         category_counts = Counter(
             r.test.category
-            for r in raw_results
+            for r in all_results
             if r.test.category in COMPARABLE
         )
         context['can_compare'] = any(cnt >= 2 for cnt in category_counts.values())
@@ -173,8 +183,6 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             context['date_of_birth'] = self.object.user.patient_profile.date_of_birth
         except Exception:
             context['date_of_birth'] = None
-
-        from tests.models import Test, TestSession
 
         tests = list(Test.objects.filter(is_active=True).order_by('pk'))
         active_sessions_map = {}

@@ -674,69 +674,6 @@ class ScoreSubmitAPIView(LoginRequiredMixin, View):
 # Доктор: управление тестами
 # ─────────────────────────────────────────────
 
-from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-
-from tests.models import Question
-
-
-class MyResultsView(LoginRequiredMixin, View):
-    """История завершённых тестов пациента — редирект на его карточку."""
-
-    def get(self, request):
-        try:
-            patient = request.user.patient_record
-            from django.shortcuts import redirect as _redirect
-            return _redirect('patients:detail', pk=patient.pk)
-        except Exception:
-            return redirect('core:dashboard')
-
-
-class TestManageListView(DoctorRequiredMixin, ListView):
-    model = Test
-    template_name = 'tests/test_manage_list.html'
-    context_object_name = 'tests'
-    paginate_by = 20
-
-    def get_queryset(self):
-        return Test.objects.all().select_related('created_by')
-
-
-class TestCreateView(DoctorRequiredMixin, CreateView):
-    model = Test
-    template_name = 'tests/test_form.html'
-    fields = ['title', 'description', 'is_active']
-    success_url = reverse_lazy('tests:manage')
-
-    def form_valid(self, form):
-        form.instance.created_by = self.request.user
-        return super().form_valid(form)
-
-
-class TestUpdateView(DoctorRequiredMixin, UpdateView):
-    model = Test
-    template_name = 'tests/test_form.html'
-    fields = ['title', 'description', 'is_active']
-    success_url = reverse_lazy('tests:manage')
-
-
-class TestDeleteView(DoctorRequiredMixin, DeleteView):
-    model = Test
-    template_name = 'tests/test_confirm_delete.html'
-    success_url = reverse_lazy('tests:manage')
-    context_object_name = 'test'
-
-
-class AllResultsView(DoctorRequiredMixin, ListView):
-    model = TestResult
-    template_name = 'tests/all_results.html'
-    context_object_name = 'results'
-    paginate_by = 20
-
-    def get_queryset(self):
-        return TestResult.objects.filter(
-            patient__assigned_doctor=self.request.user,
-        ).select_related('test', 'patient__user', 'taken_by').order_by('-completed_at')
 
 
 class TestCompareView(DoctorRequiredMixin, View):

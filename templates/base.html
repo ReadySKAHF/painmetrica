@@ -200,9 +200,7 @@
                     <li><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
 
                     {% if user.user_type == 'doctor' %}
-                        <li><a href="{% url 'patients:list' %}">Пациенты</a></li>
                         <li><a href="{% url 'medications:list' %}">Лекарства</a></li>
-                        <li><a href="{% url 'tests:manage' %}">Тесты</a></li>
                     {% elif user.user_type == 'patient' %}
                         <li><a href="{% url 'patients:my_profile' %}">Моя карточка</a></li>
                     {% endif %}

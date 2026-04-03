@@ -9,26 +9,13 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import DetailView
 
 from accounts.mixins import DoctorRequiredMixin
 from patients.models import Patient
 from tests.views import _load_score_ranges, _match_score_range, _get_pathotype_label
 
-
-class PatientListView(DoctorRequiredMixin, ListView):
-    """Список пациентов доктора"""
-
-    model = Patient
-    template_name = 'patients/patient_list.html'
-    context_object_name = 'patients'
-    paginate_by = 20
-
-    def get_queryset(self):
-        # Показываем только пациентов текущего доктора
-        return Patient.objects.filter(assigned_doctor=self.request.user).select_related('user')
 
 
 class PatientDetailView(LoginRequiredMixin, DetailView):
@@ -199,65 +186,6 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
         ]
         return context
 
-
-class PatientCreateView(DoctorRequiredMixin, CreateView):
-    """Создание нового пациента"""
-
-    model = Patient
-    template_name = 'patients/patient_form.html'
-    fields = ['user', 'medical_history', 'notes']
-    success_url = reverse_lazy('patients:list')
-
-    def form_valid(self, form):
-        # Автоматически назначаем текущего доктора
-        form.instance.assigned_doctor = self.request.user
-        messages.success(self.request, 'Пациент успешно добавлен.')
-        return super().form_valid(form)
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        # Ограничиваем выбор только пользователями-пациентами без назначенного доктора
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        form.fields['user'].queryset = User.objects.filter(
-            user_type='patient',
-            patient_record__assigned_doctor__isnull=True
-        )
-        return form
-
-
-class PatientUpdateView(DoctorRequiredMixin, UpdateView):
-    """Редактирование пациента"""
-
-    model = Patient
-    template_name = 'patients/patient_form.html'
-    fields = ['medical_history', 'notes']
-    success_url = reverse_lazy('patients:list')
-
-    def get_queryset(self):
-        # Редактировать только своих пациентов
-        return Patient.objects.filter(assigned_doctor=self.request.user)
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Данные пациента обновлены.')
-        return super().form_valid(form)
-
-
-class PatientDeleteView(DoctorRequiredMixin, DeleteView):
-    """Удаление пациента"""
-
-    model = Patient
-    template_name = 'patients/patient_confirm_delete.html'
-    success_url = reverse_lazy('patients:list')
-    context_object_name = 'patient'
-
-    def get_queryset(self):
-        # Удалять только своих пациентов
-        return Patient.objects.filter(assigned_doctor=self.request.user)
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Пациент успешно удален.')
-        return super().delete(request, *args, **kwargs)
 
 
 class PatientUpdateAPIView(LoginRequiredMixin, View):

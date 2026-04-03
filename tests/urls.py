@@ -20,16 +20,6 @@ urlpatterns = [
     # Детальные ответы по шагу
     path('session/<uuid:session_id>/result/<int:sidebar_step>/', views.ResultDetailView.as_view(), name='result_detail'),
 
-    # ── Пациент: история результатов (редирект на карточку) ──
-    path('my-results/', views.MyResultsView.as_view(), name='my_results'),
-
-    # ── Управление тестами (доктора) ──
-    path('manage/', views.TestManageListView.as_view(), name='manage'),
-    path('manage/create/', views.TestCreateView.as_view(), name='create'),
-    path('manage/<int:pk>/edit/', views.TestUpdateView.as_view(), name='edit'),
-    path('manage/<int:pk>/delete/', views.TestDeleteView.as_view(), name='delete'),
-    path('results/', views.AllResultsView.as_view(), name='all_results'),
-
     # ── API: прямая отправка баллов ──
     path('api/submit-scores/', views.ScoreSubmitAPIView.as_view(), name='api_submit_scores'),
 

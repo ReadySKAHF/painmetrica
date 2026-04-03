@@ -9,6 +9,7 @@ class _SessionCompleted(Exception):
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,8 +26,13 @@ from tests.models import Answer, QuestionOption, ScoreRange, Stage, Test, TestRe
 # ─────────────────────────────────────────────
 
 def _load_score_ranges(test):
-    """Загружает все ScoreRange теста одним запросом."""
-    return list(ScoreRange.objects.filter(test=test))
+    """Загружает все ScoreRange теста, кэширует на 1 час."""
+    key = f'score_ranges:{test.pk}'
+    result = cache.get(key)
+    if result is None:
+        result = list(ScoreRange.objects.filter(test=test))
+        cache.set(key, result, 3600)
+    return result
 
 
 def _get_pathotype_label(category, scores_by_step, total_score, conclusion_label):
@@ -256,8 +262,12 @@ class StageView(LoginRequiredMixin, View):
         if session.status == 'completed':
             raise _SessionCompleted(str(session_id))
         _authorize_session(request, session)
-        # Все этапы теста — один запрос вместо трёх отдельных (stage lookup + next_stage + sidebar)
-        all_stages = list(Stage.objects.filter(test=session.test).order_by('order'))
+        # Структура теста кэшируется: меняется только при редактировании теста через админку
+        stages_key = f'test_stages:{session.test_id}'
+        all_stages = cache.get(stages_key)
+        if all_stages is None:
+            all_stages = list(Stage.objects.filter(test=session.test).order_by('order'))
+            cache.set(stages_key, all_stages, 3600)
         stage = next((s for s in all_stages if s.order == order), None)
         if stage is None:
             from django.http import Http404
@@ -270,7 +280,11 @@ class StageView(LoginRequiredMixin, View):
         except _SessionCompleted as e:
             return redirect('tests:result', session_id=e.session_id)
 
-        questions = list(stage.questions.prefetch_related('options').order_by('order'))
+        questions_key = f'stage_questions:{stage.pk}'
+        questions = cache.get(questions_key)
+        if questions is None:
+            questions = list(stage.questions.prefetch_related('options').order_by('order'))
+            cache.set(questions_key, questions, 3600)
         is_scale_stage = questions and questions[0].question_type == 'scale'
 
         # Предзаполненные ответы из сохранённого прогресса

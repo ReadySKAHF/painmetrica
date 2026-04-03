@@ -7,7 +7,6 @@ class Medication(models.Model):
 
     name = models.CharField('Название', max_length=200)
     medication_type = models.CharField('Тип', max_length=100, blank=True)
-    image = models.ImageField('Фото', upload_to='medications/', blank=True, null=True)
     prescription_scheme = models.TextField('Схема назначения', blank=True)
     side_effects = models.TextField('Побочные эффекты', blank=True)
 

@@ -122,35 +122,9 @@
     word-break: break-word;
   }
 
-  /* Photo block */
-  .medicine-photo {
-    position: absolute;
-    top: 33px;
-    right: 25px;
-    width: 311px;
-    height: 160px;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .medicine-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .photo-placeholder {
-    width: 100%;
-    height: 100%;
-    background: var(--gray-300);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .photo-placeholder svg { opacity: 0.4; }
-
   /* Notes block */
   .notes-block {
-    margin-top: 124px;
+    margin-top: 0;
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -350,7 +324,6 @@
     .main { padding-top: 180px; }
     .main-grid { flex-direction: column; }
     .left-card { width: 100%; }
-    .medicine-photo { position: static; width: 100%; height: 160px; margin-bottom: 24px; }
     .medicine-name-block { padding-right: 0; }
     .notes-block { margin-top: 16px; }
   }
@@ -407,21 +380,6 @@
       <div class="medicine-name-block">
         <span class="medicine-label">Название лекарственного препарата</span>
         <span class="medicine-title">{{ medication.name }}</span>
-      </div>
-
-      <!-- Photo (absolute, top-right) -->
-      <div class="medicine-photo">
-        {% if medication.image %}
-          <img src="{{ medication.image.url }}" alt="{{ medication.name }}">
-        {% else %}
-          <div class="photo-placeholder">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <rect x="6" y="10" width="36" height="28" rx="4" stroke="#AAAAAA" stroke-width="2"/>
-              <circle cx="18" cy="22" r="4" stroke="#AAAAAA" stroke-width="2"/>
-              <path d="M6 34L16 24L22 30L30 20L42 34" stroke="#AAAAAA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        {% endif %}
       </div>
 
       <!-- Notes -->

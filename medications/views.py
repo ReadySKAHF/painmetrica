@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.decorators import login_required
@@ -17,16 +18,21 @@ class MedicationListView(DoctorRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        qs = Medication.objects.all()
         q = self.request.GET.get('q', '').strip()
         if q:
-            qs = qs.filter(name__icontains=q)
-        return qs
+            return Medication.objects.filter(name__icontains=q)
+        cached = cache.get('medications_all')
+        if cached is None:
+            cached = list(Medication.objects.all())
+            cache.set('medications_all', cached, 1800)
+        return cached
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['search_query'] = self.request.GET.get('q', '').strip()
-        ctx['total_medications'] = self.get_queryset().count()
+        # object_list — либо list (кэш), либо QuerySet (поиск)
+        ol = self.object_list
+        ctx['total_medications'] = len(ol) if isinstance(ol, list) else ol.count()
         return ctx
 
 
@@ -36,6 +42,15 @@ class MedicationDetailView(DoctorRequiredMixin, DetailView):
     model = Medication
     template_name = 'medications/medication_detail.html'
     context_object_name = 'medication'
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs['pk']
+        key = f'medication:{pk}'
+        obj = cache.get(key)
+        if obj is None:
+            obj = super().get_object(queryset)
+            cache.set(key, obj, 1800)
+        return obj
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

@@ -8,6 +8,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 from accounts.forms import (
     RegisterStepOneForm,
@@ -305,6 +307,7 @@ class LogoutView(View):
         return redirect('core:home')
 
 
+@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
 class ResendOTPView(View):
     """API для повторной отправки OTP кода"""
 
@@ -341,6 +344,7 @@ class ResendOTPView(View):
             return JsonResponse({'success': False, 'message': 'Пользователь не найден.'}, status=404)
 
 
+@method_decorator(ratelimit(key='ip', rate='10/m', method='GET', block=True), name='get')
 class CheckEmailView(View):
     """AJAX: проверка существования email в системе"""
 
@@ -614,6 +618,7 @@ class PatientRegisterViaInviteVerifyView(View):
 #  ВОССТАНОВЛЕНИЕ ПАРОЛЯ
 # ──────────────────────────────────────────────────────────────────────
 
+@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
 class PasswordResetRequestView(View):
     """Страница 1: Ввод email для сброса пароля"""
 

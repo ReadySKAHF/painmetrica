@@ -14,7 +14,7 @@ class MedicationAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'medication_type', 'image')
+            'fields': ('name', 'medication_type')
         }),
         ('Подробности', {
             'fields': ('prescription_scheme', 'side_effects')

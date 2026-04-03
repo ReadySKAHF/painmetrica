@@ -5,6 +5,7 @@ from io import BytesIO
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -171,7 +172,10 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
         except Exception:
             context['date_of_birth'] = None
 
-        tests = list(Test.objects.filter(is_active=True).order_by('pk'))
+        tests = cache.get('active_tests')
+        if tests is None:
+            tests = list(Test.objects.filter(is_active=True).order_by('pk'))
+            cache.set('active_tests', tests, 3600)
         active_sessions_map = {}
         for session in TestSession.objects.filter(
             patient=self.object,
@@ -221,14 +225,14 @@ class PatientUpdateAPIView(LoginRequiredMixin, View):
         except Exception:
             return JsonResponse({'success': False, 'error': 'Неверный формат данных'}, status=400)
 
-        first_name = data.get('first_name', '').strip()
-        last_name = data.get('last_name', '').strip()
+        first_name = data.get('first_name', '')[:150].strip()
+        last_name = data.get('last_name', '')[:150].strip()
         if not first_name or not last_name:
             return JsonResponse({'success': False, 'error': 'Имя и фамилия обязательны'}, status=400)
 
         patient_user = patient.user
         patient_user.first_name = first_name
-        patient_user.middle_name = data.get('middle_name', '').strip()
+        patient_user.middle_name = data.get('middle_name', '')[:150].strip()
         patient_user.last_name = last_name
         patient_user.save(update_fields=['first_name', 'middle_name', 'last_name'])
 
@@ -251,8 +255,8 @@ class PatientUpdateAPIView(LoginRequiredMixin, View):
 
         # Доктор может обновлять медицинские поля
         if user.user_type == 'doctor':
-            patient.medical_history = data.get('diagnosis', '').strip()
-            patient.pain_location = data.get('pain_location', '').strip()
+            patient.medical_history = data.get('diagnosis', '')[:5000].strip()
+            patient.pain_location = data.get('pain_location', '')[:500].strip()
             duration = data.get('pain_duration', '').strip()
             valid_durations = ['', '1w', '1m', '3m', '6m', '1y', '1y+']
             patient.pain_duration = duration if duration in valid_durations else ''

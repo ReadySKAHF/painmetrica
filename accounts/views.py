@@ -5,8 +5,8 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.http import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import send_mail
 from django.conf import settings
+from accounts.services.email_service import send_email
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
@@ -404,13 +404,7 @@ class SendPatientInvitationView(LoginRequiredMixin, View):
         )
 
         try:
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False,
-            )
+            send_email(to=email, subject=subject, text=message)
         except Exception:
             invitation.delete()
             return JsonResponse({'success': False, 'message': 'Ошибка отправки письма. Проверьте email и попробуйте снова.'})
@@ -579,9 +573,10 @@ class PatientRegisterViaInviteVerifyView(View):
                     doctor = patient_record.assigned_doctor
                     if doctor and doctor.email:
                         full_name = ' '.join(filter(None, [user.last_name, user.first_name, user.middle_name]))
-                        send_mail(
+                        send_email(
+                            to=doctor.email,
                             subject='Ваш пациент успешно зарегистрировался в системе',
-                            message=(
+                            text=(
                                 f'Пациент {full_name} успешно зарегистрировался в системе Painmetrika '
                                 f'по вашему приглашению.\n\n'
                                 f'Обращаем ваше внимание, что для достоверности формирования заключения, '
@@ -593,9 +588,6 @@ class PatientRegisterViaInviteVerifyView(View):
                                 f'В появившихся полях заполняете поля, указанные выше -> '
                                 f'Нажимаете на кнопку "Сохранить"'
                             ),
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[doctor.email],
-                            fail_silently=True,
                         )
                 except Exception:
                     pass
@@ -660,13 +652,7 @@ class PasswordResetRequestView(View):
             )
 
             try:
-                send_mail(
-                    subject=subject,
-                    message=message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[email],
-                    fail_silently=False,
-                )
+                send_email(to=email, subject=subject, text=message)
             except Exception:
                 token.delete()
                 messages.error(request, 'Ошибка отправки письма. Попробуйте снова.')

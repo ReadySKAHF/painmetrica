@@ -1,7 +1,6 @@
-from django.core.mail import send_mail
-from django.conf import settings
 from django.utils import timezone
 from accounts.models import OTPCode
+from accounts.services.email_service import send_email
 
 
 class OTPService:
@@ -54,14 +53,7 @@ class OTPService:
 Система Painmetrica
         """.strip()
 
-        # Отправляем email
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+        send_email(to=user.email, subject=subject, text=message)
 
         return otp
 

@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'core',
     # Дополнительные
     'django_ratelimit',
-    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -252,12 +251,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Email настройки
-EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
-ANYMAIL = {
-    'RESEND_API_KEY': os.environ.get('RESEND_API_KEY', ''),
-}
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Painmetrica <onboarding@resend.dev>')
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Painmetrica <noreply@painmetrica.by>')
 
 # URLs для аутентификации
 LOGIN_URL = 'accounts:login'

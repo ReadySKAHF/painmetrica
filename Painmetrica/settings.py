@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'core',
     # Дополнительные
     'django_ratelimit',
+    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -250,15 +251,13 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# Email настройки (Production - реальная отправка через Gmail)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Painmetrica')
-SERVER_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
+# Email настройки
+EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
+ANYMAIL = {
+    'RESEND_API_KEY': os.environ.get('RESEND_API_KEY', ''),
+}
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Painmetrica <onboarding@resend.dev>')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # URLs для аутентификации
 LOGIN_URL = 'accounts:login'

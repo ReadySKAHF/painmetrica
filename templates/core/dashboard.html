@@ -286,10 +286,10 @@
   .btn-close:hover { opacity: 0.88; }
 
   .adv-inputs {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    align-items: center;
+    align-items: start;
   }
 
   .input-simple {
@@ -297,18 +297,64 @@
     align-items: center;
     padding: 16px;
     gap: 8px;
-    width: 424px;
+    width: 100%;
     height: 44px;
     background: var(--gray-200);
     border-radius: 10px;
-    border: none;
+    border: 1.5px solid transparent;
     font-size: 12px;
     color: var(--gray-550);
     font-family: inherit;
     outline: none;
+    transition: border-color 0.15s;
   }
-  .input-simple:focus { border: 1.5px solid var(--blue-400); }
+  .input-simple:focus { border-color: var(--blue-400); }
   .input-simple::placeholder { color: var(--gray-550); }
+  .input-simple.error { border-color: var(--red-400); }
+  .input-simple:not(:placeholder-shown) { color: var(--gray-950); }
+
+  /* Date input wrapper */
+  .adv-date-wrap { position: relative; width: 100%; }
+  .adv-date-wrap .input-simple { width: 100%; padding-right: 40px; }
+  .adv-date-icon {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; opacity: 0.55; cursor: pointer; pointer-events: none;
+  }
+
+  /* Field wrapper with label + error block */
+  .adv-field-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .adv-input-wrap { display: flex; flex-direction: column; gap: 4px; }
+
+  .adv-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-950);
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .adv-input-wrap:has(.input-simple:not(:placeholder-shown)) .adv-label,
+  .adv-label.visible {
+    opacity: 1;
+  }
+
+  /* Error block inside advanced search */
+  .adv-error-block {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px;
+    background: #FFF0F0;
+    border-radius: 8px;
+    height: 44px;
+  }
+  .adv-error-block.visible { display: flex; }
+  .adv-error-icon { width: 20px; height: 20px; flex-shrink: 0; color: #E43D3D; }
+  .adv-error-text { font-size: 13px; color: #E43D3D; line-height: 1.4; }
+
+  /* Button aligned to top of its grid cell */
+  .adv-btn-wrap { display: flex; align-self: end; }
+  .adv-btn-wrap .btn-primary { width: 100%; }
 
   /* ── CARDS ── */
   #cards-section {
@@ -863,6 +909,15 @@
       </span>
       <span class="nav-label">Лекарства</span>
     </a>
+    <!-- Реабилитационная терапия -->
+    <a class="nav-link" href="{% url 'therapy:list' %}">
+      <span class="nav-icon">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#262626"/>
+        </svg>
+      </span>
+      <span class="nav-label">Реабилитационная терапия</span>
+    </a>
   </nav>
   {% endif %}
 
@@ -902,9 +957,9 @@
     <h1 class="page-title">Мои пациенты</h1>
 
     <!-- TOOLBAR -->
-    <div class="toolbar">
+    <div class="toolbar" id="mainToolbar">
       <div class="toolbar-left">
-        <span class="patients-count">{% if search_query or adv_last_name or adv_first_name or adv_middle_name %}Найдено пациентов{% else %}Всего пациентов{% endif %}: {{ total_patients }}</span>
+        <span class="patients-count">{% if search_query or adv_last_name or adv_first_name or adv_middle_name or adv_dob or adv_diagnosis %}Найдено пациентов{% else %}Всего пациентов{% endif %}: {{ total_patients }}</span>
         <button type="button" class="btn-primary" onclick="openAddPatientModal()">Добавить пациента</button>
       </div>
       <form method="get" action="{% url 'core:dashboard' %}" id="simpleSearchForm">
@@ -935,7 +990,7 @@
     </div>
 
     <!-- ADVANCED SEARCH -->
-    <div class="advanced-search-panel{% if adv_last_name or adv_first_name or adv_middle_name %} open{% endif %}" id="advancedPanel">
+    <div class="advanced-search-panel{% if adv_last_name or adv_first_name or adv_middle_name or adv_dob or adv_diagnosis %} open{% endif %}" id="advancedPanel">
       <div class="adv-header">
         <span class="adv-title">Расширенный поиск пациентов</span>
         <button class="btn-close" onclick="toggleAdvanced()">
@@ -944,12 +999,61 @@
           </svg>
         </button>
       </div>
-      <form method="get" action="{% url 'core:dashboard' %}" id="advancedSearchForm">
+      <form method="get" action="{% url 'core:dashboard' %}" id="advancedSearchForm" onsubmit="return validateAdvSearch(event)">
         <div class="adv-inputs">
-          <input class="input-simple" name="last_name" placeholder="Введите фамилию" value="{{ adv_last_name }}">
-          <input class="input-simple" name="first_name" placeholder="Введите имя" value="{{ adv_first_name }}">
-          <input class="input-simple" name="middle_name" placeholder="Введите отчество" value="{{ adv_middle_name }}">
-          <button type="submit" class="btn-primary">Применить фильтры</button>
+          <!-- Строка 1: Фамилия, Имя, Отчество -->
+          <div class="adv-input-wrap">
+            <span class="adv-label">Фамилия</span>
+            <input class="input-simple" name="last_name" placeholder="Введите фамилию" value="{{ adv_last_name }}">
+          </div>
+          <div class="adv-input-wrap">
+            <span class="adv-label">Имя</span>
+            <input class="input-simple" name="first_name" placeholder="Введите имя" value="{{ adv_first_name }}">
+          </div>
+          <div class="adv-input-wrap">
+            <span class="adv-label">Отчество</span>
+            <input class="input-simple" name="middle_name" placeholder="Введите отчество" value="{{ adv_middle_name }}">
+          </div>
+
+          <!-- Строка 2: Дата рождения, Диагноз, Кнопка -->
+          <div class="adv-field-wrap">
+            <div class="adv-input-wrap">
+              <span class="adv-label">Дата рождения</span>
+              <div class="adv-date-wrap">
+                <input class="input-simple" id="adv-dob" name="dob" placeholder="Дата рождения (ДД.ММ.ГГГГ)" value="{{ adv_dob }}" maxlength="10" autocomplete="off">
+                <svg class="adv-date-icon" viewBox="0 0 18 18" fill="none">
+                  <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.3"/>
+                  <path d="M1 7h16" stroke="#919191" stroke-width="1.3"/>
+                  <path d="M5 1v4M13 1v4" stroke="#919191" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="adv-error-block" id="err-adv-dob">
+              <svg class="adv-error-icon" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+                <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="adv-error-text">Дата должна быть между 01.01.1890 и сегодняшним днём</span>
+            </div>
+          </div>
+
+          <div class="adv-field-wrap">
+            <div class="adv-input-wrap">
+              <span class="adv-label">Диагноз</span>
+              <input class="input-simple" id="adv-diagnosis" name="diagnosis" placeholder="Введите диагноз" value="{{ adv_diagnosis }}" maxlength="250">
+            </div>
+            <div class="adv-error-block" id="err-adv-diagnosis">
+              <svg class="adv-error-icon" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+                <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="adv-error-text" id="err-adv-diagnosis-text">Цифры и спец. символы запрещены</span>
+            </div>
+          </div>
+
+          <div class="adv-btn-wrap">
+            <button type="submit" class="btn-primary">Применить фильтры</button>
+          </div>
         </div>
       </form>
     </div>
@@ -992,7 +1096,7 @@
           </svg>
         </div>
         <div class="not-found-texts">
-          {% if search_query or adv_last_name or adv_first_name or adv_middle_name %}
+          {% if search_query or adv_last_name or adv_first_name or adv_middle_name or adv_dob or adv_diagnosis %}
           <p class="not-found-title">Пациент с такими данными не найден</p>
           <p class="not-found-sub">Попробуйте изменить поисковый запрос</p>
           {% else %}
@@ -1000,7 +1104,7 @@
           <p class="not-found-sub">Добавьте первого пациента, нажав кнопку «Добавить пациента»</p>
           {% endif %}
         </div>
-        {% if search_query or adv_last_name or adv_first_name or adv_middle_name %}
+        {% if search_query or adv_last_name or adv_first_name or adv_middle_name or adv_dob or adv_diagnosis %}
         <a href="{% url 'core:dashboard' %}" class="btn-outline-sm">Вернуться к списку пациентов</a>
         {% endif %}
       </div>
@@ -1143,24 +1247,114 @@
 
 <script>
   function toggleAdvanced() {
-    document.getElementById('advancedPanel').classList.toggle('open');
+    var panel = document.getElementById('advancedPanel');
+    var toolbar = document.getElementById('mainToolbar');
+    var isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open');
+    if (toolbar) toolbar.style.display = isOpen ? '' : 'none';
   }
 
-  /* Сброс page=... при новом поиске */
+  /* При загрузке — скрываем toolbar если поиск открыт */
   document.addEventListener('DOMContentLoaded', function () {
+    var panel = document.getElementById('advancedPanel');
+    var toolbar = document.getElementById('mainToolbar');
+    if (panel && panel.classList.contains('open') && toolbar) {
+      toolbar.style.display = 'none';
+    }
+
+    /* Автоформат даты: цифры → ДД.ММ.ГГГГ */
+    var dobInput = document.getElementById('adv-dob');
+    if (dobInput) {
+      dobInput.addEventListener('input', function () {
+        var raw = dobInput.value.replace(/\D/g, '').slice(0, 8);
+        var out = '';
+        if (raw.length > 4) out = raw.slice(0,2) + '.' + raw.slice(2,4) + '.' + raw.slice(4);
+        else if (raw.length > 2) out = raw.slice(0,2) + '.' + raw.slice(2);
+        else out = raw;
+        dobInput.value = out;
+        hideDobError();
+      });
+    }
+
+    /* Диагноз — сброс ошибки при вводе */
+    var diagInput = document.getElementById('adv-diagnosis');
+    if (diagInput) {
+      diagInput.addEventListener('input', function () { hideDiagError(); });
+    }
+
+    /* Сброс page=... при новом поиске */
     var simpleForm = document.getElementById('simpleSearchForm');
     var advForm = document.getElementById('advancedSearchForm');
-
     function stripPageParam(form) {
       form.addEventListener('submit', function () {
         var existing = form.querySelector('input[name="page"]');
         if (existing) existing.remove();
       });
     }
-
     if (simpleForm) stripPageParam(simpleForm);
     if (advForm) stripPageParam(advForm);
   });
+
+  function hideDobError() {
+    var el = document.getElementById('err-adv-dob');
+    var inp = document.getElementById('adv-dob');
+    if (el) el.classList.remove('visible');
+    if (inp) inp.classList.remove('error');
+  }
+  function hideDiagError() {
+    var el = document.getElementById('err-adv-diagnosis');
+    var inp = document.getElementById('adv-diagnosis');
+    if (el) el.classList.remove('visible');
+    if (inp) inp.classList.remove('error');
+  }
+
+  function validateAdvSearch(e) {
+    var valid = true;
+
+    /* Валидация даты рождения */
+    var dobInput = document.getElementById('adv-dob');
+    var dobErr = document.getElementById('err-adv-dob');
+    if (dobInput && dobInput.value.trim()) {
+      var parts = dobInput.value.trim().split('.');
+      var isValidFormat = parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4;
+      var dateObj = isValidFormat ? new Date(parts[2], parts[1] - 1, parts[0]) : null;
+      var minDate = new Date(1890, 0, 1);
+      var today = new Date();
+      today.setHours(0,0,0,0);
+      var isValidDate = dateObj && !isNaN(dateObj) &&
+        dateObj.getDate() == parseInt(parts[0]) &&
+        dateObj.getMonth() == parseInt(parts[1]) - 1 &&
+        dateObj >= minDate && dateObj <= today;
+      if (!isValidDate) {
+        dobInput.classList.add('error');
+        if (dobErr) dobErr.classList.add('visible');
+        valid = false;
+      }
+    }
+
+    /* Валидация диагноза */
+    var diagInput = document.getElementById('adv-diagnosis');
+    var diagErr = document.getElementById('err-adv-diagnosis');
+    var diagTextEl = document.getElementById('err-adv-diagnosis-text');
+    if (diagInput && diagInput.value.trim()) {
+      var diagVal = diagInput.value.trim();
+      var diagPattern = /^[a-zA-Zа-яА-ЯёЁ\s\-,.()]+$/;
+      if (!diagPattern.test(diagVal)) {
+        diagInput.classList.add('error');
+        if (diagTextEl) diagTextEl.textContent = 'Цифры и спец. символы запрещены';
+        if (diagErr) diagErr.classList.add('visible');
+        valid = false;
+      } else if (diagVal.length > 250) {
+        diagInput.classList.add('error');
+        if (diagTextEl) diagTextEl.textContent = 'Не более 250 символов';
+        if (diagErr) diagErr.classList.add('visible');
+        valid = false;
+      }
+    }
+
+    if (!valid) e.preventDefault();
+    return valid;
+  }
 </script>
 
 {% if is_doctor %}

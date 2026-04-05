@@ -1,10 +1,10 @@
-{% load static %}
+{% load static therapy_extras %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Методика расчёта тестов — Painmetrica</title>
+<title>Реабилитационная терапия — Painmetrica</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,6 +16,7 @@
     --gray-300: #EAEAEA;
     --gray-550: #919191;
     --gray-950: #262626;
+    --blue-350: #5391F2;
     --blue-400: #2E7CF6;
     --blue-500: #2E67F6;
   }
@@ -49,21 +50,59 @@
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
 
-  .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+  .logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
 
-  .nav-links { display: flex; flex-direction: row; align-items: center; gap: 42px; }
+  .nav-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 42px;
+  }
 
   .nav-link {
-    display: flex; flex-direction: row; align-items: center;
-    gap: 6px; cursor: pointer; text-decoration: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
   }
-  .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .nav-link .nav-label { font-size: 18px; line-height: 18px; font-weight: 400; color: var(--gray-950); }
+
+  .nav-link .nav-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .nav-link .nav-label {
+    font-size: 18px;
+    line-height: 18px;
+    font-weight: 400;
+    color: var(--gray-950);
+  }
+
   .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
 
-  .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
-  .user-avatar { width: 36px; height: 36px; flex-shrink: 0; }
-  .user-name { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    flex-shrink: 0;
+  }
+
+  .user-name {
+    font-size: 18px;
+    color: var(--gray-950);
+    white-space: nowrap;
+  }
 
   /* ── MAIN ── */
   .main {
@@ -77,89 +116,317 @@
     padding-right: 12px;
   }
 
-  /* ── BACK LINK ── */
-  .back-link {
-    display: inline-flex;
+  .page-title {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 30px;
+    color: var(--gray-950);
+    margin-bottom: 52px;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
-    gap: 6px;
-    color: var(--blue-500);
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
     margin-bottom: 24px;
   }
-  .back-link:hover { opacity: 0.75; }
-  .back-link svg { flex-shrink: 0; }
 
-  /* ── PAGE HEADING ── */
-  .page-heading { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
-  .page-heading h1 { font-size: 24px; font-weight: 700; line-height: 1.3; color: var(--gray-950); }
-  .page-heading p { font-size: 14px; font-weight: 400; line-height: 1.7; color: var(--gray-950); max-width: 860px; }
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
 
-  /* ── RESULTS LIST ── */
-  .results { display: flex; flex-direction: column; gap: 20px; }
+  .therapies-count {
+    font-size: 18px;
+    line-height: 22px;
+    color: var(--gray-950);
+  }
 
-  /* ── TEST METHOD CARD ── */
-  .test-method {
+  /* ── SEARCH ── */
+  .search-field {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    width: 420px;
+    max-width: 100%;
+    height: 46px;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 12px;
+    transition: border-color 0.15s;
+  }
+  .search-field:focus-within { border-color: var(--blue-400); }
+  .search-field input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: var(--gray-950);
+    font-family: inherit;
+    outline: none;
+  }
+  .search-field input::placeholder { color: var(--gray-550); }
+
+  /* ── CARDS ── */
+  #cards-section {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 24px;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 32px 28px;
+    gap: 27px;
     background: var(--white);
     border: 1px solid var(--gray-300);
-    border-radius: 16px;
+    border-radius: 24px;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    box-shadow: 0 4px 20px rgba(46,124,246,0.08);
+    transform: translateY(-1px);
   }
 
-  /* ── BLOCK ── */
-  .block { display: flex; flex-direction: column; gap: 12px; }
-  .block-title { font-size: 17px; font-weight: 700; color: var(--gray-950); }
-  .block-text { font-size: 14px; font-weight: 400; line-height: 1.9; color: var(--gray-950); }
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .card-note-display {
+    background: #F2EEFF;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--gray-950);
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
 
-  /* ── SUB-BLOCKS ── */
-  .sub-blocks { display: flex; flex-direction: column; gap: 20px; padding-left: 20px; border-left: 3px solid var(--gray-300); }
-  .sub-block { display: flex; flex-direction: column; gap: 8px; }
-  .sub-block-title { font-size: 14px; font-weight: 700; color: var(--gray-950); }
-  .sub-block-text { font-size: 14px; font-weight: 400; line-height: 1.8; color: var(--gray-950); }
+  .card-icon {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-  /* ── HT-CARD TABLE (таблица подтипов боли) ── */
-  .ht-results-list { display: flex; flex-direction: column; gap: 12px; }
+  .medical-icon {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+  }
 
-  .ht-card {
+  .card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .card-name {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 30px;
+    color: var(--gray-950);
+  }
+
+  .card-data-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .card-label {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 20px;
+    color: var(--gray-950);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .card-value {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 20px;
+    color: var(--gray-950);
+  }
+
+  /* ── BUTTONS ── */
+  .btn-outline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 22px;
     background: var(--white);
-    border: 1px solid var(--gray-300);
-    border-radius: 16px;
-    overflow: hidden;
+    border: 1px solid var(--gray-950);
+    border-radius: 33px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-950);
+    font-family: inherit;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
+  .btn-outline:hover { background: var(--gray-250); }
 
-  .ht-header-row {
-    display: flex; align-items: center;
-    background: var(--gray-250);
-    border-bottom: 1px solid var(--gray-300);
-  }
-
-  .ht-cell-left, .ht-cell-right {
-    display: flex; align-items: center;
-    padding: 14px 18px; gap: 10px; flex: 1;
-  }
-  .ht-cell-right { border-left: 1px solid var(--gray-300); }
-
-  .ht-test-title { font-size: 15px; font-weight: 700; color: var(--gray-950); }
-
-  .ht-data-row {
-    display: flex; align-items: center;
-    border-bottom: 1px solid var(--gray-300);
+  .btn-outline-sm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
     background: var(--white);
+    border: 1px solid var(--gray-950);
+    border-radius: 11px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-950);
+    font-family: inherit;
+    text-decoration: none;
+    transition: background 0.15s;
   }
-  .ht-data-row:last-child { border-bottom: none; }
+  .btn-outline-sm:hover { background: var(--gray-250); }
 
-  .ht-row-left, .ht-row-right {
-    display: flex; align-items: center;
-    padding: 12px 18px; gap: 10px; flex: 1;
+  /* ── NOT FOUND ── */
+  .not-found {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 80px 0 60px;
   }
-  .ht-row-right { border-left: 1px solid var(--gray-300); }
+  .not-found.show { display: flex; }
 
-  .ht-row-label { font-size: 13px; font-weight: 600; color: var(--gray-950); }
-  .ht-interpretation { font-size: 13px; color: var(--gray-950); }
+  .not-found-img {
+    width: 138px;
+    height: 109px;
+    background: var(--gray-300);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .not-found-texts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 572px;
+    text-align: center;
+  }
+
+  .not-found-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--gray-950);
+  }
+
+  .not-found-sub {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--gray-950);
+    line-height: 1.4;
+  }
+
+  /* ── PAGINATION ── */
+  .pagination-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 6px;
+    margin-bottom: 40px;
+  }
+
+  .pagination {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 24px;
+    gap: 12px;
+    background: var(--white);
+    border-radius: 24px;
+    user-select: none;
+  }
+
+  .pagination__btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 7px 12px;
+    gap: 4px;
+    height: 29px;
+    background: #F9F9F9;
+    border-radius: 17px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 15px;
+    color: var(--gray-950);
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .pagination__btn:hover { background: #EFEFEF; }
+  .pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .pagination__pages {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 8px;
+    min-width: 26px;
+    height: 27px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 19px;
+    color: var(--gray-950);
+    background: #F9F9F9;
+    transition: background 0.15s, color 0.15s;
+  }
+  .page:hover:not(.page--active) { background: #EFEFEF; }
+  .page--active { background: #5391F2; color: #FEFEFE; cursor: default; }
+  .page--dots { background: transparent; cursor: default; color: var(--gray-950); padding: 4px 2px; min-width: 16px; }
+  .page--dots:hover { background: transparent; }
+
+  /* ── MESSAGES ── */
+  .messages-wrap { margin-bottom: 20px; }
+  .msg { padding: 12px 16px; border-radius: 10px; font-size: 14px; margin-bottom: 8px; }
+  .msg.success { background: #E8F5E9; color: #2E7D32; }
+  .msg.error   { background: #FFEBEB; color: #E43D3D; }
 
   /* ── FOOTER ── */
   .footer {
@@ -174,9 +441,32 @@
     padding: 24px 0;
     gap: 8px;
   }
-  .footer-logo { display: flex; align-items: center; }
-  .footer-tagline { font-size: 14px; color: var(--gray-950); text-align: center; line-height: 1.5; padding: 0 24px; }
-  .footer-copy { font-size: 14px; color: var(--gray-950); text-align: center; }
+
+  .footer-tagline {
+    font-size: 14px;
+    color: var(--gray-950);
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 24px;
+  }
+
+  .footer-copy {
+    font-size: 14px;
+    color: var(--gray-950);
+    text-align: center;
+  }
+
+  @media (max-width: 1360px) {
+    .header { width: calc(100vw - 24px); }
+  }
+  @media (max-width: 768px) {
+    .header { padding: 20px 24px; height: auto; border-radius: 24px; flex-wrap: wrap; gap: 12px; }
+    .main { padding-top: 180px; padding-left: 12px; padding-right: 12px; }
+    .toolbar { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .search-field { width: 100%; }
+    .card { flex-direction: column; align-items: flex-start; }
+    .card-name { font-size: 20px; }
+  }
 </style>
 </head>
 <body>
@@ -189,13 +479,10 @@
     </svg>
   </a>
 
-  {% if is_doctor %}
   <nav class="nav-links">
-    <a class="nav-link active" href="{% url 'core:dashboard' %}" aria-current="page">
+    <a class="nav-link" href="{% url 'core:dashboard' %}">
       <span class="nav-icon">
-        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.9814 17.3938C18.208 17.3938 17.5489 17.1233 17.0039 16.5825C16.4597 16.0408 16.1876 15.3838 16.1876 14.6113C16.1876 13.8388 16.458 13.18 16.9989 12.635C17.5405 12.09 18.1976 11.8175 18.9701 11.8175C19.7426 11.8175 20.4014 12.0883 20.9464 12.63C21.4914 13.17 21.7639 13.8267 21.7639 14.6C21.7639 15.3733 21.493 16.0325 20.9514 16.5775C20.4114 17.1217 19.7547 17.3938 18.9814 17.3938ZM13.4464 23.9325C13.1605 23.9325 12.921 23.8358 12.7276 23.6425C12.5343 23.4492 12.4376 23.2092 12.4376 22.9225V22.5188C12.4376 22.2471 12.5055 21.9879 12.6414 21.7413C12.778 21.4954 12.9614 21.2979 13.1914 21.1488C14.0655 20.6504 14.9822 20.2688 15.9414 20.0038C16.8997 19.7388 17.911 19.6063 18.9751 19.6063C20.0393 19.6063 21.051 19.7388 22.0101 20.0038C22.9693 20.2688 23.886 20.6504 24.7601 21.1488C24.9901 21.2988 25.1735 21.4963 25.3101 21.7413C25.446 21.9879 25.5139 22.2471 25.5139 22.5188V22.9225C25.5139 23.2092 25.4172 23.4492 25.2239 23.6425C25.0305 23.8358 24.7905 23.9325 24.5039 23.9325H13.4464ZM12.1251 17.25H4.62512C4.44762 17.25 4.29887 17.19 4.17887 17.07C4.05971 16.95 4.00012 16.8013 4.00012 16.6238C4.00012 16.4463 4.05971 16.2979 4.17887 16.1788C4.29887 16.0596 4.44762 16 4.62512 16H12.1251C12.3018 16 12.4501 16.06 12.5701 16.18C12.6901 16.3 12.7501 16.4488 12.7501 16.6263C12.7501 16.8038 12.6901 16.9521 12.5701 17.0713C12.4501 17.1904 12.3018 17.25 12.1251 17.25ZM17.1251 7.25H4.62512C4.44762 7.25 4.29887 7.19 4.17887 7.07C4.05971 6.95 4.00012 6.80125 4.00012 6.62375C4.00012 6.44625 4.05971 6.29792 4.17887 6.17875C4.29887 6.05958 4.44762 6 4.62512 6H17.1251C17.3018 6 17.4501 6.06 17.5701 6.18C17.6901 6.3 17.7501 6.44875 17.7501 6.62625C17.7501 6.80375 17.6901 6.95208 17.5701 7.07125C17.4501 7.19042 17.3018 7.25 17.1251 7.25ZM13.7639 12.25H4.62512C4.44762 12.25 4.29887 12.19 4.17887 12.07C4.05971 11.95 4.00012 11.8012 4.00012 11.6238C4.00012 11.4462 4.05971 11.2979 4.17887 11.1788C4.29887 11.0596 4.44762 11 4.62512 11H14.4801C14.3326 11.1942 14.1985 11.3913 14.0776 11.5912C13.9568 11.7913 13.8514 12.0108 13.7639 12.25Z" fill="#2E7CF6"/>
-        </svg>
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M18.9814 17.3938C18.208 17.3938 17.5489 17.1233 17.0039 16.5825C16.4597 16.0408 16.1876 15.3838 16.1876 14.6113C16.1876 13.8388 16.458 13.18 16.9989 12.635C17.5405 12.09 18.1976 11.8175 18.9701 11.8175C19.7426 11.8175 20.4014 12.0883 20.9464 12.63C21.4914 13.17 21.7639 13.8267 21.7639 14.6C21.7639 15.3733 21.493 16.0325 20.9514 16.5775C20.4114 17.1217 19.7547 17.3938 18.9814 17.3938ZM13.4464 23.9325C13.1605 23.9325 12.921 23.8358 12.7276 23.6425C12.5343 23.4492 12.4376 23.2092 12.4376 22.9225V22.5188C12.4376 22.2471 12.5055 21.9879 12.6414 21.7413C12.778 21.4954 12.9614 21.2979 13.1914 21.1488C14.0655 20.6504 14.9822 20.2688 15.9414 20.0038C16.8997 19.7388 17.911 19.6063 18.9751 19.6063C20.0393 19.6063 21.051 19.7388 22.0101 20.0038C22.9693 20.2688 23.886 20.6504 24.7601 21.1488C24.9901 21.2988 25.1735 21.4963 25.3101 21.7413C25.446 21.9879 25.5139 22.2471 25.5139 22.5188V22.9225C25.5139 23.2092 25.4172 23.4492 25.2239 23.6425C25.0305 23.8358 24.7905 23.9325 24.5039 23.9325H13.4464ZM12.1251 17.25H4.62512C4.44762 17.25 4.29887 17.19 4.17887 17.07C4.05971 16.95 4.00012 16.8013 4.00012 16.6238C4.00012 16.4463 4.05971 16.2979 4.17887 16.1788C4.29887 16.0596 4.44762 16 4.62512 16H12.1251C12.3018 16 12.4501 16.06 12.5701 16.18C12.6901 16.3 12.7501 16.4488 12.7501 16.6263C12.7501 16.8038 12.6901 16.9521 12.5701 17.0713C12.4501 17.1904 12.3018 17.25 12.1251 17.25ZM17.1251 7.25H4.62512C4.44762 7.25 4.29887 7.19 4.17887 7.07C4.05971 6.95 4.00012 6.80125 4.00012 6.62375C4.00012 6.44625 4.05971 6.29792 4.17887 6.17875C4.29887 6.05958 4.44762 6 4.62512 6H17.1251C17.3018 6 17.4501 6.06 17.5701 6.18C17.6901 6.3 17.7501 6.44875 17.7501 6.62625C17.7501 6.80375 17.6901 6.95208 17.5701 7.07125C17.4501 7.19042 17.3018 7.25 17.1251 7.25ZM13.7639 12.25H4.62512C4.44762 12.25 4.29887 12.19 4.17887 12.07C4.05971 11.95 4.00012 11.8012 4.00012 11.6238C4.00012 11.4462 4.05971 11.2979 4.17887 11.1788C4.29887 11.0596 4.44762 11 4.62512 11H14.4801C14.3326 11.1942 14.1985 11.3913 14.0776 11.5912C13.9568 11.7913 13.8514 12.0108 13.7639 12.25Z" fill="#262626"/></svg>
       </span>
       <span class="nav-label">Мои пациенты</span>
     </a>
@@ -207,23 +494,18 @@
       </span>
       <span class="nav-label">Лекарства</span>
     </a>
-    <a class="nav-link" href="{% url 'therapy:list' %}">
+    <a class="nav-link active" href="{% url 'therapy:list' %}">
       <span class="nav-icon">
         <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#262626"/>
+          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#2E7CF6"/>
         </svg>
       </span>
       <span class="nav-label">Реабилитационная терапия</span>
     </a>
   </nav>
-  {% endif %}
 
-  {% if is_patient and patient_pk %}
-  <a href="{% url 'patients:detail' patient_pk %}" class="header-right" style="text-decoration:none; cursor:pointer;">
-  {% else %}
   <div class="header-right">
-  {% endif %}
-    <div class="user-avatar">
+    <div style="width:36px;height:36px;flex-shrink:0;">
       <svg width="36" height="36" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
         <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
@@ -231,143 +513,185 @@
       </svg>
     </div>
     <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
-  {% if is_patient and patient_pk %}
-  </a>
-  {% else %}
   </div>
-  {% endif %}
 </header>
 
 <!-- MAIN -->
 <main class="main">
 
-  <a href="javascript:history.back()" class="back-link">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M15 18l-6-6 6-6" stroke="#2E67F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Вернуться назад
-  </a>
-
-  <section class="page-heading">
-    <h1>Методика расчёта и интерпретация результатов тестов</h1>
-    <p>Система «Painmetrica» использует валидированные международные шкалы и опросники для комплексной оценки болевого синдрома. Итоговое заключение формируется на основе автоматизированного анализа нескольких этапов тестирования.</p>
-  </section>
-
-  <div class="results">
-
-    <!-- 1. ВАШ / VAS -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">1. Визуальная аналоговая шкала (ВАШ / VAS)</div>
-        <div class="block-text">
-          Используется для оценки субъективной интенсивности боли в момент осмотра.<br>
-          0 баллов — боль отсутствует.<br>
-          1–3 балла — лёгкий болевой синдром.<br>
-          4–6 баллов — умеренный болевой синдром.<br>
-          7–9 баллов — выраженный болевой синдром.<br>
-          10 баллов — нестерпимая боль.<br><br>
-          Также система предусматривает тестирование по специализированным шкалам PAINAD для пациентов с деменцией и NCS-R для пациентов в коме. В случае использования специализированных шкал система опирается только на результаты этих тестов и не требует проведения тестов DN4, CSI и HADS.
-        </div>
-      </div>
-      <div class="sub-blocks">
-        <div class="sub-block">
-          <div class="sub-block-title">1.1. Шкала NCS-R</div>
-          <div class="sub-block-text">
-            Оценка по 10-балльной шкале на основе наблюдения за поведением (дыхание, мимика, язык тела).<br>
-            Результат более 2 баллов является показанием к началу обезболивающей терапии.
-          </div>
-        </div>
-        <div class="sub-block">
-          <div class="sub-block-title">1.2. Шкала PAINAD</div>
-          <div class="sub-block-text">
-            Оценивает моторные, вербальные и мимические реакции пациента.<br>
-            Сумма ≥ 5 баллов указывает на выраженный некупированный болевой синдром, требующий немедленной коррекции.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. DN4 -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">2. Опросник DN4 (Диагностика нейропатической боли)</div>
-        <div class="block-text">
-          Используется для дифференциальной диагностики нейропатического компонента боли.<br>
-          0–3 балла — нейропатический компонент маловероятен.<br>
-          4 балла и выше — высокая вероятность нейропатической боли.<br><br>
-          Опросник включает два этапа: интервью с пациентом (7 вопросов) и неврологический осмотр (3 вопроса).
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. CSI -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">3. Опросник CSI (Центральная сенситизация)</div>
-        <div class="block-text">
-          Оценивает степень чувствительности нервной системы к раздражителям по шкале от 0 до 100 баллов.<br>
-          0–29 баллов — субклинический уровень / низкая вероятность.<br>
-          30–39 баллов — лёгкая степень сенситизации.<br>
-          40–49 баллов — умеренная степень.<br>
-          50–59 баллов — сильная степень.<br>
-          60–100 баллов — экстремальная степень центральной сенситизации.
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. HADS -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">4. Госпитальная шкала тревоги и депрессии (HADS)</div>
-        <div class="block-text">
-          Позволяет выявить сопутствующие эмоциональные нарушения, влияющие на восприятие боли. Результаты рассчитываются отдельно для подшкал Тревоги (А) и Депрессии (D).<br>
-          0–7 баллов — отсутствие достоверно выраженных симптомов.<br>
-          8–10 баллов — субклинически выраженная тревога/депрессия.<br>
-          11 баллов и выше — клинически выраженная тревога/депрессия.
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. Подтип боли -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">5. Определение патогенетического подтипа боли</div>
-        <div class="block-text">
-          Система автоматически сопоставляет результаты тестов DN4 и CSI для выделения ведущего механизма боли, что критично для назначения лечения.
-        </div>
-      </div>
-
-      <div class="ht-results-list">
-        <div class="ht-card">
-          <div class="ht-header-row">
-            <div class="ht-cell-left">
-              <span class="ht-test-title">Подтип боли</span>
-            </div>
-            <div class="ht-cell-right">
-              <span class="ht-test-title">Условие расчёта</span>
-            </div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Преимущественно ноцицептивный</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 &lt; 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Преимущественно нейропатический</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 ≥ 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Преимущественно дисфункциональный</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 &lt; 4 баллов И CSI ≥ 40 баллов И HADS ≥ 8 баллов</span></div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Смешанный вариант (нейропатический + ноцицептивный)</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 ≥ 4 баллов И CSI ≥ 30 баллов. Тест HADS не используется.</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+  {% if messages %}
+  <div class="messages-wrap">
+    {% for message in messages %}
+    <div class="msg {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
   </div>
+  {% endif %}
+
+  <h1 class="page-title">Реабилитационная терапия</h1>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="therapies-count">{% if search_query %}Найдено терапий{% else %}Всего терапий{% endif %}: {{ total_therapies }}</span>
+    </div>
+    <form method="get" action="{% url 'therapy:list' %}" id="searchForm">
+      <div class="search-field">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="10" cy="10" r="7" stroke="#919191" stroke-width="1.375"/>
+          <path d="M15.5 15.5L20 20" stroke="#919191" stroke-width="1.375" stroke-linecap="round"/>
+        </svg>
+        <input type="text" name="q" placeholder="Введите название терапии" value="{{ search_query }}">
+        {% if search_query %}
+        <a href="{% url 'therapy:list' %}" style="display:flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--gray-550);border-radius:50%;text-decoration:none;flex-shrink:0;">
+          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+            <path d="M1 1L7 7M7 1L1 7" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- CARDS SECTION -->
+  <div id="cards-section">
+    {% for therapy in therapies %}
+    <div class="card">
+      <div class="card-content">
+        <div class="card-top">
+          <div class="card-icon">
+            <img src="{% static 'icon-medicine-card.svg' %}" class="medical-icon" alt="">
+          </div>
+          <div class="card-info">
+            <span class="card-name">{{ therapy.name }}</span>
+            <div class="card-data-row">
+              <span class="card-label">Тип терапии</span>
+              <span class="card-value">{{ therapy.therapy_type|default:"—" }}</span>
+            </div>
+            {% with note_text=notes_by_therapy|get_item:therapy.pk %}
+            {% if note_text %}
+            <div class="card-note-display">{{ note_text }}</div>
+            {% endif %}
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'therapy:detail' therapy.pk %}" class="btn-outline">Карточка терапии</a>
+    </div>
+    {% empty %}
+    <div class="not-found show">
+      <div class="not-found-img">
+        <svg width="70" height="60" viewBox="0 0 70 60" fill="none">
+          <rect x="10" y="5" width="40" height="50" rx="5" fill="#EAEAEA"/>
+          <path d="M20 18H40" stroke="#919191" stroke-width="2" stroke-linecap="round"/>
+          <path d="M20 26H40" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M20 33H32" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="52" cy="46" r="12" fill="#F9F9F9" stroke="#EAEAEA" stroke-width="1.5"/>
+          <path d="M48 42L56 50M56 42L48 50" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="not-found-texts">
+        {% if search_query %}
+        <p class="not-found-title">Терапия с таким названием не найдена</p>
+        <p class="not-found-sub">Попробуйте изменить поисковый запрос</p>
+        {% else %}
+        <p class="not-found-title">Список терапий пуст</p>
+        <p class="not-found-sub">Терапии пока не добавлены в систему</p>
+        {% endif %}
+      </div>
+      {% if search_query %}
+      <a href="{% url 'therapy:list' %}" class="btn-outline-sm">Сбросить поиск</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- PAGINATION -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="pagination-wrap">
+    <nav class="pagination" id="pagination" aria-label="Навигация по страницам"></nav>
+  </div>
+  <script>
+    (function () {
+      var TOTAL_PAGES = {{ page_obj.paginator.num_pages }};
+      var CURRENT_PAGE = {{ page_obj.number }};
+
+      function getPageUrl(page) {
+        var params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        return window.location.pathname + '?' + params.toString();
+      }
+
+      function getVisiblePages(current, total) {
+        if (total <= 7) {
+          var all = [];
+          for (var i = 1; i <= total; i++) all.push(i);
+          return all;
+        }
+        var pages = [];
+        if (current <= 4) {
+          for (var i = 1; i <= 5; i++) pages.push(i);
+          pages.push('…');
+          pages.push(total);
+        } else if (current >= total - 3) {
+          pages.push(1);
+          pages.push('…');
+          for (var i = total - 4; i <= total; i++) pages.push(i);
+        } else {
+          pages.push(1);
+          pages.push('…');
+          pages.push(current - 1);
+          pages.push(current);
+          pages.push(current + 1);
+          pages.push('…');
+          pages.push(total);
+        }
+        return pages;
+      }
+
+      var nav = document.getElementById('pagination');
+
+      var prev = document.createElement('button');
+      prev.className = 'pagination__btn';
+      prev.innerHTML = '<svg width="7" height="11" viewBox="0 0 7 11" fill="none"><path d="M6 1L1.5 5.5L6 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Предыдущая';
+      prev.disabled = CURRENT_PAGE === 1;
+      if (CURRENT_PAGE > 1) {
+        prev.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE - 1); });
+      }
+      nav.appendChild(prev);
+
+      var pagesDiv = document.createElement('div');
+      pagesDiv.className = 'pagination__pages';
+      getVisiblePages(CURRENT_PAGE, TOTAL_PAGES).forEach(function (p) {
+        var btn = document.createElement('button');
+        if (p === '…') {
+          btn.className = 'page page--dots';
+          btn.textContent = '...';
+          btn.disabled = true;
+        } else {
+          btn.className = 'page' + (p === CURRENT_PAGE ? ' page--active' : '');
+          btn.textContent = p;
+          if (p !== CURRENT_PAGE) {
+            btn.addEventListener('click', function (page) {
+              return function () { window.location.href = getPageUrl(page); };
+            }(p));
+          }
+        }
+        pagesDiv.appendChild(btn);
+      });
+      nav.appendChild(pagesDiv);
+
+      var next = document.createElement('button');
+      next.className = 'pagination__btn';
+      next.innerHTML = 'Следующая <svg width="7" height="11" viewBox="0 0 7 11" fill="none"><path d="M1 1L5.5 5.5L1 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      next.disabled = CURRENT_PAGE === TOTAL_PAGES;
+      if (CURRENT_PAGE < TOTAL_PAGES) {
+        next.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE + 1); });
+      }
+      nav.appendChild(next);
+    })();
+  </script>
+  {% endif %}
+
 </main>
 
 <!-- FOOTER -->

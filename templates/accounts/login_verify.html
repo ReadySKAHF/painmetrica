@@ -83,7 +83,7 @@
     display: flex;
     justify-content: center;
     gap: 20px;
-    margin-bottom: 42px;
+    margin-bottom: 0;
   }
 
   .otp-input {
@@ -109,7 +109,9 @@
     flex-direction: column;
     align-items: center;
     gap: 26px;
+    margin-top: 42px;
   }
+  .error-banner.visible ~ .btns-col { margin-top: 0; }
 
   .btn-primary {
     display: flex;
@@ -173,7 +175,8 @@
     background: var(--red-bg);
     border: 1px solid var(--red-400);
     border-radius: 8px;
-    margin-top: 26px;
+    width: calc(4 * 57px + 3 * 20px);
+    margin: 8px auto 26px;
   }
   .error-banner.visible { display: flex; }
 
@@ -244,7 +247,7 @@
 
     <div>
       <p class="verify-text">
-        На почту <strong>{{ user.email }}</strong> был отправлен код подтверждения.
+        На почту <strong>{{ otp_user.email }}</strong> был отправлен код подтверждения.
       </p>
 
       <form method="post" id="otp-form">
@@ -259,23 +262,23 @@
 
         <input type="hidden" name="otp_code" id="otp_code_hidden">
 
-        <div class="btns-col">
-          <button type="submit" class="btn-primary" id="btn-verify" disabled>Войти</button>
-          <button type="button" class="btn-secondary muted" id="btn-resend" disabled>
-            <span id="resend-label">Получить новый код через <span id="timer-val">01:00</span></span>
-          </button>
-        </div>
-
         <div class="error-banner" id="error-banner">
           <svg class="error-banner-icon" viewBox="0 0 18 18" fill="none">
             <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
             <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <span class="error-banner-text" id="error-text">Введён неверный код!</span>
+          <span class="error-banner-text" id="error-text">Неверный код.</span>
           <button type="button" class="error-banner-close" id="btn-close-error">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M1 1L9 9M9 1L1 9" stroke="#262626" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
+          </button>
+        </div>
+
+        <div class="btns-col">
+          <button type="submit" class="btn-primary" id="btn-verify" disabled>Войти</button>
+          <button type="button" class="btn-secondary muted" id="btn-resend" disabled>
+            <span id="resend-label">Получить новый код через <span id="timer-val">01:00</span></span>
           </button>
         </div>
 
@@ -311,6 +314,7 @@ const otpCodeHidden = document.getElementById('otp_code_hidden');
     {% if message.tags == 'error' %}
       errText.textContent = '{{ message }}';
       errBanner.classList.add('visible');
+      otpInputs.forEach(o => o.classList.add('error'));
     {% endif %}
   {% endfor %}
 {% endif %}

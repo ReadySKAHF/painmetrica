@@ -223,6 +223,10 @@
     margin-bottom: 20px;
   }
   .error-banner.visible { display: flex; }
+  .error-banner.success {
+    background: #EEF5FF;
+    border-color: var(--blue-400);
+  }
 
   .error-banner-icon {
     width: 18px;
@@ -230,6 +234,7 @@
     flex-shrink: 0;
     color: var(--red-400);
   }
+  .error-banner.success .error-banner-icon { color: var(--blue-400); }
 
   .error-banner-text {
     flex: 1;
@@ -237,6 +242,7 @@
     color: var(--red-400);
     line-height: 1.4;
   }
+  .error-banner.success .error-banner-text { color: var(--blue-400); }
 
   /* ── FOOTER ──────────────────────────────────────────────────────── */
   .footer {
@@ -281,13 +287,18 @@
   <div class="content">
     <h1 class="page-title">Вход в аккаунт</h1>
 
-    <!-- Error messages from Django -->
+    <!-- Messages from Django -->
     {% if messages %}
       {% for message in messages %}
-        <div class="error-banner visible">
+        <div class="error-banner visible {% if message.tags == 'success' %}success{% endif %}">
           <svg class="error-banner-icon" viewBox="0 0 18 18" fill="none">
+            {% if message.tags == 'success' %}
+            <circle cx="9" cy="9" r="8.5" stroke="#2E7CF6"/>
+            <path d="M6 9l2 2 4-4" stroke="#2E7CF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            {% else %}
             <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
             <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            {% endif %}
           </svg>
           <span class="error-banner-text">{{ message }}</span>
         </div>

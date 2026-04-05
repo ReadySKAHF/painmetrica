@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'medications',
     'tests',
     'core',
+    'therapy',
     # Дополнительные
     'django_ratelimit',
 ]

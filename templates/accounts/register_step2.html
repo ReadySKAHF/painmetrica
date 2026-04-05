@@ -44,10 +44,19 @@
   .form-section { flex: 1; max-width: 424px; }
   .form-title { font-size: 30px; font-weight: 700; margin-bottom: 8px; }
   .form-subtitle { font-size: 18px; margin-bottom: 42px; }
-  .field-group { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
-  .field-wrap { display: flex; flex-direction: column; gap: 6px; }
-  .field-label { font-size: 12px; font-weight: 600; }
+  .field-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .field-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .field-label {
+    font-size: 12px; font-weight: 600;
+    opacity: 0; max-height: 0; overflow: hidden; margin-bottom: -4px;
+    transition: opacity 0.2s, max-height 0.2s, margin-bottom 0.2s;
+  }
   .field-label.error { color: var(--red-400); }
+  .field-label.visible,
+  .field-wrap:has(.field-input:not(:placeholder-shown)) .field-label,
+  .field-wrap:has(.custom-select-trigger.has-value) .field-label {
+    opacity: 1; max-height: 20px; margin-bottom: 0;
+  }
   .field-input { width: 100%; height: 48px; padding: 0 16px; background: var(--gray-200); border: 1px solid transparent;
     border-radius: 12px; font-family: var(--font); font-size: 12px; color: var(--gray-950); outline: none; }
   .field-input::placeholder { color: var(--gray-550); }
@@ -607,6 +616,17 @@ document.getElementById('step2-form').addEventListener('submit', (e) => {
   }
 
   if (hasError) e.preventDefault();
+});
+
+// Показываем лейблы для уже заполненных полей
+document.querySelectorAll('.field-input').forEach(function(input) {
+  var wrap = input.closest('.field-wrap');
+  if (!wrap) return;
+  var label = wrap.querySelector('.field-label');
+  if (label && input.value) label.classList.add('visible');
+  input.addEventListener('input', function() {
+    if (label) label.classList.toggle('visible', input.value !== '');
+  });
 });
 </script>
 

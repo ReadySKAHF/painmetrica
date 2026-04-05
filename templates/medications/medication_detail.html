@@ -127,7 +127,7 @@
     margin-top: 0;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
   }
   .notes-header {
     font-size: 20px;
@@ -135,86 +135,59 @@
     color: #000;
     line-height: 1;
   }
-
-  .note-item {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 10px;
-    gap: 10px;
-    background: var(--blue-100);
-    border-radius: 12px;
-  }
-  .note-text {
-    flex: 1;
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--gray-950);
-    line-height: 1.6;
-  }
-  .note-empty {
+  .note-empty-text {
     font-size: 14px;
     color: var(--gray-550);
     font-style: italic;
   }
-
-  .add-note-btn {
-    display: none;
-    padding: 10px 22px;
-    background: var(--blue-500);
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    border: none;
-    border-radius: 33px;
-    cursor: pointer;
-    width: fit-content;
-    transition: background 0.15s;
-  }
-
-  .add-note-btn:hover { background: #1a53e0; }
-
-  .note-actions {
+  .note-state {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    flex-direction: column;
+    gap: 24px;
   }
-  .note-btn {
-    width: 20px;
-    height: 20px;
-    background: var(--white);
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    transition: background 0.15s;
+  .note-state--noaction {
+    gap: 16px;
   }
-  .note-btn:hover { background: var(--gray-250); }
-
-  .note-edit-area {
+  .note-empty-text {
+    font-size: 14px;
+    color: var(--gray-550);
+  }
+  .note-input {
     width: 100%;
-    min-height: 80px;
-    padding: 10px 14px;
-    border: 1.5px solid #D0DFFF;
-    border-radius: 12px;
-    background: var(--white);
+    min-width: 424px;
+    height: 48px;
+    padding: 16px;
+    background: #F9F9F9;
+    border-radius: 10px;
+    border: none;
     font-family: 'Nunito', sans-serif;
     font-size: 14px;
     color: var(--gray-950);
     resize: none;
     outline: none;
-    line-height: 1.6;
-    display: none;
+    line-height: 1;
+    display: block;
   }
-  .note-edit-area:focus { border-color: var(--blue-500); }
-
-  .save-btn {
-    display: none;
+  .note-input::placeholder { color: var(--gray-550); }
+  .note-display {
+    width: 100%;
+    min-width: 424px;
+    min-height: 48px;
+    padding: 16px;
+    background: #F2EEFF;
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--gray-950);
+    line-height: 1.5;
+    display: block;
+  }
+  .note-btns-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-note-primary {
     padding: 10px 22px;
     background: var(--blue-500);
     color: #fff;
@@ -224,11 +197,67 @@
     border: none;
     border-radius: 33px;
     cursor: pointer;
-    width: fit-content;
     transition: background 0.15s;
   }
-  .save-btn:hover { background: #1a53e0; }
+  .btn-note-primary:hover { background: #1a53e0; }
+  .btn-note-delete {
+    padding: 10px 22px;
+    background: var(--white);
+    color: var(--gray-950);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--gray-950);
+    border-radius: 33px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-note-delete:hover { background: var(--gray-250); }
 
+  /* ── DELETE NOTE MODAL ── */
+  .del-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(30, 40, 70, 0.18);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    animation: delFadeIn .22s ease;
+  }
+  .del-modal-overlay.hidden { display: none !important; }
+  @keyframes delFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes delPopIn  { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: none; } }
+  .del-modal-box {
+    position: relative;
+    background: #FFFFFF;
+    border: 1px solid #F0F0F0;
+    box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    border-radius: 18px;
+    padding: 44px 60px;
+    display: flex; flex-direction: column; align-items: center; gap: 22px;
+    width: min(370px, calc(100vw - 48px));
+    animation: delPopIn .25s cubic-bezier(.22,.68,0,1.3);
+  }
+  .del-modal-title { font-weight: 700; font-size: 18px; color: var(--gray-950); text-align: center; line-height: 1.45; }
+  .del-modal-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .del-modal-confirm {
+    padding: 13px 22px; width: 100%;
+    background: var(--blue-500); color: #FFFFFF;
+    font-family: inherit; font-weight: 600; font-size: 15px;
+    border: none; border-radius: 33px; cursor: pointer;
+    transition: opacity .18s, transform .13s;
+    white-space: nowrap;
+  }
+  .del-modal-confirm:hover  { opacity: 0.88; }
+  .del-modal-confirm:active { transform: scale(.98); }
+  .del-modal-cancel {
+    padding: 13px 22px; width: 100%;
+    background: #FFFFFF; color: var(--gray-950);
+    font-family: inherit; font-weight: 600; font-size: 15px;
+    border: 1.5px solid var(--gray-950); border-radius: 33px; cursor: pointer;
+    transition: background .18s, transform .13s;
+    white-space: nowrap;
+  }
+  .del-modal-cancel:hover  { background: var(--gray-250); }
+  .del-modal-cancel:active { transform: scale(.98); }
   .note-status {
     font-size: 12px;
     color: var(--gray-550);
@@ -352,6 +381,14 @@
       </span>
       <span class="nav-label">Лекарства</span>
     </a>
+    <a class="nav-link" href="{% url 'therapy:list' %}">
+      <span class="nav-icon">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#262626"/>
+        </svg>
+      </span>
+      <span class="nav-label">Реабилитационная терапия</span>
+    </a>
   </nav>
 
   <div class="header-right">
@@ -386,32 +423,39 @@
       <div class="notes-block">
         <div class="notes-header">Примечания</div>
 
-        <!-- State: есть примечание (скрыт если примечания нет) -->
-        <div class="note-item" id="noteView" {% if not doctor_note %}style="display:none"{% endif %}>
-          <span class="note-text" id="noteTextDisplay">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</span>
-          <div class="note-actions">
-            <button class="note-btn" title="Редактировать" onclick="switchToEdit()">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="#262626" stroke-width="0.75" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <button class="note-btn" title="Удалить" onclick="deleteNote()">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M2 2L8 8M8 2L2 8" stroke="#262626" stroke-width="0.75" stroke-linecap="round"/>
-              </svg>
-            </button>
+        <!-- State 1: нет примечания -->
+        <div id="stateNoNote" class="note-state note-state--noaction" {% if doctor_note %}style="display:none"{% endif %}>
+          <span class="note-empty-text">Примечаний нет</span>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="startAdding()">Добавить примечание</button>
           </div>
         </div>
 
-        <!-- State: примечаний нет (скрыт если примечание есть) -->
-        <div id="noteEmpty" {% if doctor_note %}style="display:none"{% endif %}>
-          <p class="note-empty">Примечаний нет</p>
+        <!-- State 2: добавление примечания -->
+        <div id="stateAdding" class="note-state" style="display:none">
+          <textarea class="note-input" id="noteEditEmpty" placeholder="Введите текст примечания"></textarea>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="addNote()">Добавить примечание</button>
+          </div>
         </div>
 
-        <!-- Textarea (скрыта по умолчанию) -->
-        <textarea class="note-edit-area" id="noteEdit" placeholder="Введите примечание...">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</textarea>
-        <button class="save-btn" id="saveBtn" onclick="saveNote()">Сохранить</button>
-        <button class="add-note-btn" id="addNoteBtn" onclick="switchToEdit()">Добавить примечание</button>
+        <!-- State 3: есть примечание -->
+        <div id="stateView" class="note-state" {% if not doctor_note %}style="display:none"{% endif %}>
+          <div class="note-display" id="noteTextDisplay">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</div>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="switchToEdit()">Изменить примечание</button>
+            <button class="btn-note-delete" onclick="deleteNote()">Удалить примечание</button>
+          </div>
+        </div>
+
+        <!-- State 4: редактирование -->
+        <div id="stateEdit" class="note-state" style="display:none">
+          <textarea class="note-input" id="noteEditMode" placeholder="Введите текст примечания">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</textarea>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="saveNote()">Сохранить примечание</button>
+          </div>
+        </div>
+
         <span class="note-status" id="noteStatus"></span>
       </div>
 
@@ -487,111 +531,89 @@
     return document.querySelector('#csrfForm [name=csrfmiddlewaretoken]').value;
   }
 
-  /* Показать состояние "нет примечания" */
-  function showEmptyState() {
-    var noteView  = document.getElementById('noteView');
-    var noteEmpty = document.getElementById('noteEmpty');
-    var ta        = document.getElementById('noteEdit');
-    var saveBtn   = document.getElementById('saveBtn');
-    var addBtn    = document.getElementById('addNoteBtn');
-
-    if (noteView)  noteView.style.display  = 'none';
-    if (noteEmpty) noteEmpty.style.display = 'block';
-    ta.style.display      = 'none';
-    saveBtn.style.display = 'none';
-    addBtn.style.display  = 'block';
+  function showNoNoteState() {
+    document.getElementById('stateNoNote').style.display  = 'flex';
+    document.getElementById('stateAdding').style.display  = 'none';
+    document.getElementById('stateView').style.display    = 'none';
+    document.getElementById('stateEdit').style.display    = 'none';
   }
 
-  /* Показать режим редактирования */
+  function startAdding() {
+    document.getElementById('stateNoNote').style.display  = 'none';
+    document.getElementById('stateAdding').style.display  = 'flex';
+    document.getElementById('stateView').style.display    = 'none';
+    document.getElementById('stateEdit').style.display    = 'none';
+    document.getElementById('noteEditEmpty').value = '';
+    document.getElementById('noteEditEmpty').focus();
+  }
+
+  function showViewState(text) {
+    document.getElementById('noteTextDisplay').textContent = text;
+    document.getElementById('stateNoNote').style.display  = 'none';
+    document.getElementById('stateAdding').style.display  = 'none';
+    document.getElementById('stateView').style.display    = 'flex';
+    document.getElementById('stateEdit').style.display    = 'none';
+  }
+
   function switchToEdit() {
-    var noteView  = document.getElementById('noteView');
-    var noteEmpty = document.getElementById('noteEmpty');
-    var ta        = document.getElementById('noteEdit');
-    var saveBtn   = document.getElementById('saveBtn');
-    var addBtn    = document.getElementById('addNoteBtn');
-
-    if (noteView)  noteView.style.display  = 'none';
-    if (noteEmpty) noteEmpty.style.display = 'none';
-    ta.style.display      = 'block';
-    saveBtn.style.display = 'block';
-    addBtn.style.display  = 'none';
-    ta.focus();
+    var text = document.getElementById('noteTextDisplay').textContent;
+    document.getElementById('noteEditMode').value = text;
+    document.getElementById('stateNoNote').style.display  = 'none';
+    document.getElementById('stateAdding').style.display  = 'none';
+    document.getElementById('stateView').style.display    = 'none';
+    document.getElementById('stateEdit').style.display    = 'flex';
+    document.getElementById('noteEditMode').focus();
   }
 
-  /* Показать заполненное примечание */
-  function showNoteState(text) {
-    var noteView      = document.getElementById('noteView');
-    var noteEmpty     = document.getElementById('noteEmpty');
-    var noteTextEl    = document.getElementById('noteTextDisplay');
-    var ta            = document.getElementById('noteEdit');
-    var saveBtn       = document.getElementById('saveBtn');
-    var addBtn        = document.getElementById('addNoteBtn');
-
-    noteTextEl.textContent = text;
-    noteView.style.display  = 'flex';
-    if (noteEmpty) noteEmpty.style.display = 'none';
-    ta.style.display      = 'none';
-    saveBtn.style.display = 'none';
-    addBtn.style.display  = 'none';
+  function addNote() {
+    var val = document.getElementById('noteEditEmpty').value.trim();
+    if (!val) return;
+    sendNote(val);
   }
 
   function saveNote() {
-    var val    = document.getElementById('noteEdit').value.trim();
-    var btn    = document.getElementById('saveBtn');
-    var status = document.getElementById('noteStatus');
-    btn.disabled    = true;
-    btn.textContent = 'Сохранение...';
+    var val = document.getElementById('noteEditMode').value.trim();
+    sendNote(val);
+  }
 
+  function sendNote(val) {
+    var status = document.getElementById('noteStatus');
     fetch(UPDATE_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': getCsrf()
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrf() },
       body: 'notes=' + encodeURIComponent(val)
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      btn.disabled    = false;
-      btn.textContent = 'Сохранить';
       if (data.status === 'ok') {
-        if (val) {
-          showNoteState(val);
-          HAS_NOTE = true;
-        } else {
-          showEmptyState();
-          HAS_NOTE = false;
-        }
+        if (val) { showViewState(val);  HAS_NOTE = true; }
+        else     { showNoNoteState();   HAS_NOTE = false; }
         status.textContent = 'Сохранено';
         status.classList.add('show');
         setTimeout(function() { status.classList.remove('show'); }, 2000);
       }
     })
     .catch(function() {
-      btn.disabled    = false;
-      btn.textContent = 'Сохранить';
       status.textContent = 'Ошибка сохранения';
       status.classList.add('show');
     });
   }
 
   function deleteNote() {
+    document.getElementById('delNoteOverlay').classList.remove('hidden');
+  }
+
+  function confirmDeleteNote() {
+    document.getElementById('delNoteOverlay').classList.add('hidden');
     var status = document.getElementById('noteStatus');
     fetch(UPDATE_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': getCsrf()
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrf() },
       body: 'notes='
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.status === 'ok') {
-        document.getElementById('noteEdit').value = '';
-        showEmptyState();
-        HAS_NOTE = false;
-      }
+      if (data.status === 'ok') { showNoNoteState(); HAS_NOTE = false; }
     })
     .catch(function() {
       status.textContent = 'Ошибка удаления';
@@ -637,5 +659,15 @@
     /* noteView уже виден если HAS_NOTE — ничего не делаем */
   });
 </script>
+
+<div class="del-modal-overlay hidden" id="delNoteOverlay">
+  <div class="del-modal-box">
+    <p class="del-modal-title">Вы уверены, что хотите удалить примечание?</p>
+    <div class="del-modal-btns">
+      <button class="del-modal-confirm" onclick="confirmDeleteNote()">Удалить</button>
+      <button class="del-modal-cancel" onclick="document.getElementById('delNoteOverlay').classList.add('hidden')">Отмена</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

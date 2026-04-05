@@ -222,14 +222,14 @@
   .field-group {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
     margin-bottom: 42px;
   }
 
   .field-wrap {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     position: relative;
   }
 
@@ -238,8 +238,19 @@
     font-weight: 600;
     color: var(--gray-950);
     line-height: 1;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin-bottom: -4px;
+    transition: opacity 0.2s, max-height 0.2s, margin-bottom 0.2s;
   }
   .field-label.error { color: var(--red-400); }
+  .field-label.visible,
+  .field-wrap:has(.field-input:not(:placeholder-shown)) .field-label {
+    opacity: 1;
+    max-height: 20px;
+    margin-bottom: 0;
+  }
 
   .field-input, .field-select {
     width: 100%;
@@ -580,7 +591,7 @@
               <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span class="error-text">Пользователь с такой Электронной почтой уже зарегистрирован</span>
+            <span class="error-text">Пользователь с такой электронной почтой уже зарегистрирован</span>
           </div>
           <div class="error-block" id="error-email-empty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
@@ -964,6 +975,17 @@ document.getElementById('step1-form').addEventListener('submit', (e) => {
   }
 
   if (hasError) e.preventDefault();
+});
+
+// Показываем лейблы для уже заполненных полей (после ошибки формы)
+document.querySelectorAll('.field-input').forEach(function(input) {
+  var wrap = input.closest('.field-wrap');
+  if (!wrap) return;
+  var label = wrap.querySelector('.field-label');
+  if (label && input.value) label.classList.add('visible');
+  input.addEventListener('input', function() {
+    if (label) label.classList.toggle('visible', input.value !== '');
+  });
 });
 </script>
 

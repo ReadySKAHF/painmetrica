@@ -30,9 +30,16 @@ class MedicationListView(DoctorRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['search_query'] = self.request.GET.get('q', '').strip()
-        # object_list — либо list (кэш), либо QuerySet (поиск)
         ol = self.object_list
         ctx['total_medications'] = len(ol) if isinstance(ol, list) else ol.count()
+
+        # Примечания текущего доктора, индексированные по medication_id
+        medication_ids = [m.pk for m in ctx['medications']]
+        notes = MedicationNote.objects.filter(
+            doctor=self.request.user,
+            medication_id__in=medication_ids
+        )
+        ctx['notes_by_medication'] = {n.medication_id: n.text for n in notes}
         return ctx
 
 

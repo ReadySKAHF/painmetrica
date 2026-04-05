@@ -32,6 +32,8 @@ class DashboardView(LoginRequiredMixin, View):
             adv_last_name = request.GET.get('last_name', '').strip()
             adv_first_name = request.GET.get('first_name', '').strip()
             adv_middle_name = request.GET.get('middle_name', '').strip()
+            adv_dob = request.GET.get('dob', '').strip()
+            adv_diagnosis = request.GET.get('diagnosis', '').strip()
 
             patients_qs = Patient.objects.filter(
                 assigned_doctor=user
@@ -43,7 +45,7 @@ class DashboardView(LoginRequiredMixin, View):
                     Q(user__last_name__icontains=search_query) |
                     Q(user__middle_name__icontains=search_query)
                 )
-            elif adv_last_name or adv_first_name or adv_middle_name:
+            elif adv_last_name or adv_first_name or adv_middle_name or adv_dob or adv_diagnosis:
                 adv_filter = Q()
                 if adv_last_name:
                     adv_filter &= Q(user__last_name__icontains=adv_last_name)
@@ -51,6 +53,15 @@ class DashboardView(LoginRequiredMixin, View):
                     adv_filter &= Q(user__first_name__icontains=adv_first_name)
                 if adv_middle_name:
                     adv_filter &= Q(user__middle_name__icontains=adv_middle_name)
+                if adv_dob:
+                    from datetime import datetime
+                    try:
+                        dob_parsed = datetime.strptime(adv_dob, '%d.%m.%Y').date()
+                        adv_filter &= Q(user__patient_profile__date_of_birth=dob_parsed)
+                    except ValueError:
+                        pass
+                if adv_diagnosis:
+                    adv_filter &= Q(medical_history__icontains=adv_diagnosis)
                 patients_qs = patients_qs.filter(adv_filter)
 
             total_patients = patients_qs.count()
@@ -65,6 +76,8 @@ class DashboardView(LoginRequiredMixin, View):
             context['adv_last_name'] = adv_last_name
             context['adv_first_name'] = adv_first_name
             context['adv_middle_name'] = adv_middle_name
+            context['adv_dob'] = adv_dob
+            context['adv_diagnosis'] = adv_diagnosis
 
         elif user.user_type == 'patient':
             context['is_patient'] = True

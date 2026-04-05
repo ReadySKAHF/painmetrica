@@ -4,20 +4,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Методика расчёта тестов — Painmetrica</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<title>{{ therapy.name }} — Painmetrica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --white: #FEFEFE;
-    --gray-200: #F9F9F9;
-    --gray-250: #F5F5F5;
-    --gray-300: #EAEAEA;
-    --gray-550: #919191;
-    --gray-950: #262626;
     --blue-400: #2E7CF6;
     --blue-500: #2E67F6;
+    --blue-100: #EEF5FF;
+    --gray-950: #262626;
+    --gray-550: #919191;
+    --gray-300: #EAEAEA;
+    --gray-250: #F5F5F5;
+    --gray-200: #F9F9F9;
+    --white: #FEFEFE;
   }
 
   body {
@@ -48,21 +50,13 @@
     z-index: 100;
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
-
   .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
-
   .nav-links { display: flex; flex-direction: row; align-items: center; gap: 42px; }
-
-  .nav-link {
-    display: flex; flex-direction: row; align-items: center;
-    gap: 6px; cursor: pointer; text-decoration: none;
-  }
+  .nav-link { display: flex; flex-direction: row; align-items: center; gap: 6px; cursor: pointer; text-decoration: none; }
   .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .nav-link .nav-label { font-size: 18px; line-height: 18px; font-weight: 400; color: var(--gray-950); }
   .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
-
   .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
-  .user-avatar { width: 36px; height: 36px; flex-shrink: 0; }
   .user-name { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
 
   /* ── MAIN ── */
@@ -71,95 +65,253 @@
     width: 100%;
     max-width: 1320px;
     margin: 0 auto;
-    padding-top: 148px;
-    padding-bottom: 40px;
-    padding-left: 12px;
-    padding-right: 12px;
+    padding: 136px 12px 40px;
   }
 
   /* ── BACK LINK ── */
   .back-link {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    color: var(--blue-500);
-    font-size: 14px;
-    font-weight: 600;
+    gap: 8px;
     text-decoration: none;
+    color: var(--blue-500);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 20px;
+  }
+
+  /* ── PAGE TITLE ── */
+  .page-title {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 30px;
+    color: var(--gray-950);
     margin-bottom: 24px;
   }
-  .back-link:hover { opacity: 0.75; }
-  .back-link svg { flex-shrink: 0; }
 
-  /* ── PAGE HEADING ── */
-  .page-heading { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
-  .page-heading h1 { font-size: 24px; font-weight: 700; line-height: 1.3; color: var(--gray-950); }
-  .page-heading p { font-size: 14px; font-weight: 400; line-height: 1.7; color: var(--gray-950); max-width: 860px; }
+  /* ── MAIN GRID ── */
+  .main-grid {
+    display: flex;
+    gap: 26px;
+    width: 100%;
+  }
 
-  /* ── RESULTS LIST ── */
-  .results { display: flex; flex-direction: column; gap: 20px; }
+  /* ── LEFT CARD ── */
+  .left-card {
+    width: 648px;
+    min-height: 451px;
+    background: var(--white);
+    border-radius: 24px;
+    position: relative;
+    flex-shrink: 0;
+    padding: 49px 25px 30px;
+    font-family: 'Nunito', sans-serif;
+  }
 
-  /* ── TEST METHOD CARD ── */
-  .test-method {
+  /* Notes block */
+  .notes-block {
+    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .notes-header {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+  }
+  .note-empty-text {
+    font-size: 14px;
+    color: var(--gray-550);
+    font-style: italic;
+  }
+  .note-state {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .note-state--noaction {
+    gap: 16px;
+  }
+  .note-empty-text {
+    font-size: 14px;
+    color: var(--gray-550);
+  }
+  .note-input {
+    width: 100%;
+    min-width: 424px;
+    height: 48px;
+    padding: 16px;
+    background: #F9F9F9;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--gray-950);
+    resize: none;
+    outline: none;
+    line-height: 1;
+    display: block;
+  }
+  .note-input::placeholder { color: var(--gray-550); }
+  .note-display {
+    width: 100%;
+    min-width: 424px;
+    min-height: 48px;
+    padding: 16px;
+    background: #F2EEFF;
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--gray-950);
+    line-height: 1.5;
+    display: block;
+  }
+  .note-btns-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-note-primary {
+    padding: 10px 22px;
+    background: var(--blue-500);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 33px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-note-primary:hover { background: #1a53e0; }
+  .btn-note-delete {
+    padding: 10px 22px;
+    background: var(--white);
+    color: var(--gray-950);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--gray-950);
+    border-radius: 33px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-note-delete:hover { background: var(--gray-250); }
+
+  /* ── DELETE NOTE MODAL ── */
+  .del-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(30, 40, 70, 0.18);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    animation: delFadeIn .22s ease;
+  }
+  .del-modal-overlay.hidden { display: none !important; }
+  @keyframes delFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes delPopIn  { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: none; } }
+  .del-modal-box {
+    position: relative;
+    background: #FFFFFF;
+    border: 1px solid #F0F0F0;
+    box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    border-radius: 18px;
+    padding: 44px 60px;
+    display: flex; flex-direction: column; align-items: center; gap: 22px;
+    width: min(370px, calc(100vw - 48px));
+    animation: delPopIn .25s cubic-bezier(.22,.68,0,1.3);
+  }
+  .del-modal-title { font-weight: 700; font-size: 18px; color: var(--gray-950); text-align: center; line-height: 1.45; }
+  .del-modal-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .del-modal-confirm {
+    padding: 13px 22px; width: 100%;
+    background: var(--blue-500); color: #FFFFFF;
+    font-family: inherit; font-weight: 600; font-size: 15px;
+    border: none; border-radius: 33px; cursor: pointer;
+    transition: opacity .18s, transform .13s;
+    white-space: nowrap;
+  }
+  .del-modal-confirm:hover  { opacity: 0.88; }
+  .del-modal-confirm:active { transform: scale(.98); }
+  .del-modal-cancel {
+    padding: 13px 22px; width: 100%;
+    background: #FFFFFF; color: var(--gray-950);
+    font-family: inherit; font-weight: 600; font-size: 15px;
+    border: 1.5px solid var(--gray-950); border-radius: 33px; cursor: pointer;
+    transition: background .18s, transform .13s;
+    white-space: nowrap;
+  }
+  .del-modal-cancel:hover  { background: var(--gray-250); }
+  .del-modal-cancel:active { transform: scale(.98); }
+  .note-status {
+    font-size: 12px;
+    color: var(--gray-550);
+    display: none;
+  }
+  .note-status.show { display: block; }
+
+  /* ── RIGHT CARD ── */
+  .right-card {
+    flex: 1;
+    background: var(--white);
+    border-radius: 16px;
+    padding: 30px;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 24px;
-    background: var(--white);
-    border: 1px solid var(--gray-300);
-    border-radius: 16px;
+    font-family: 'Nunito', sans-serif;
   }
-
-  /* ── BLOCK ── */
-  .block { display: flex; flex-direction: column; gap: 12px; }
-  .block-title { font-size: 17px; font-weight: 700; color: var(--gray-950); }
-  .block-text { font-size: 14px; font-weight: 400; line-height: 1.9; color: var(--gray-950); }
-
-  /* ── SUB-BLOCKS ── */
-  .sub-blocks { display: flex; flex-direction: column; gap: 20px; padding-left: 20px; border-left: 3px solid var(--gray-300); }
-  .sub-block { display: flex; flex-direction: column; gap: 8px; }
-  .sub-block-title { font-size: 14px; font-weight: 700; color: var(--gray-950); }
-  .sub-block-text { font-size: 14px; font-weight: 400; line-height: 1.8; color: var(--gray-950); }
-
-  /* ── HT-CARD TABLE (таблица подтипов боли) ── */
-  .ht-results-list { display: flex; flex-direction: column; gap: 12px; }
-
-  .ht-card {
-    background: var(--white);
-    border: 1px solid var(--gray-300);
-    border-radius: 16px;
-    overflow: hidden;
+  .info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-950);
+    line-height: 1;
+  }
+  .section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .section-text {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-950);
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .section-empty {
+    font-size: 14px;
+    color: var(--gray-550);
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .read-more {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-550);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'Nunito', sans-serif;
+    text-align: left;
+  }
+  .read-more:hover { color: var(--blue-500); }
 
-  .ht-header-row {
-    display: flex; align-items: center;
+  .divider {
+    width: 100%;
+    height: 1px;
     background: var(--gray-250);
-    border-bottom: 1px solid var(--gray-300);
   }
-
-  .ht-cell-left, .ht-cell-right {
-    display: flex; align-items: center;
-    padding: 14px 18px; gap: 10px; flex: 1;
-  }
-  .ht-cell-right { border-left: 1px solid var(--gray-300); }
-
-  .ht-test-title { font-size: 15px; font-weight: 700; color: var(--gray-950); }
-
-  .ht-data-row {
-    display: flex; align-items: center;
-    border-bottom: 1px solid var(--gray-300);
-    background: var(--white);
-  }
-  .ht-data-row:last-child { border-bottom: none; }
-
-  .ht-row-left, .ht-row-right {
-    display: flex; align-items: center;
-    padding: 12px 18px; gap: 10px; flex: 1;
-  }
-  .ht-row-right { border-left: 1px solid var(--gray-300); }
-
-  .ht-row-label { font-size: 13px; font-weight: 600; color: var(--gray-950); }
-  .ht-interpretation { font-size: 13px; color: var(--gray-950); }
 
   /* ── FOOTER ── */
   .footer {
@@ -174,9 +326,16 @@
     padding: 24px 0;
     gap: 8px;
   }
-  .footer-logo { display: flex; align-items: center; }
   .footer-tagline { font-size: 14px; color: var(--gray-950); text-align: center; line-height: 1.5; padding: 0 24px; }
   .footer-copy { font-size: 14px; color: var(--gray-950); text-align: center; }
+
+  @media (max-width: 1360px) { .header { width: calc(100vw - 24px); } }
+  @media (max-width: 900px) {
+    .header { padding: 20px 24px; height: auto; border-radius: 24px; flex-wrap: wrap; gap: 12px; }
+    .main { padding-top: 180px; }
+    .main-grid { flex-direction: column; }
+    .left-card { width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -189,13 +348,10 @@
     </svg>
   </a>
 
-  {% if is_doctor %}
   <nav class="nav-links">
-    <a class="nav-link active" href="{% url 'core:dashboard' %}" aria-current="page">
+    <a class="nav-link" href="{% url 'core:dashboard' %}">
       <span class="nav-icon">
-        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.9814 17.3938C18.208 17.3938 17.5489 17.1233 17.0039 16.5825C16.4597 16.0408 16.1876 15.3838 16.1876 14.6113C16.1876 13.8388 16.458 13.18 16.9989 12.635C17.5405 12.09 18.1976 11.8175 18.9701 11.8175C19.7426 11.8175 20.4014 12.0883 20.9464 12.63C21.4914 13.17 21.7639 13.8267 21.7639 14.6C21.7639 15.3733 21.493 16.0325 20.9514 16.5775C20.4114 17.1217 19.7547 17.3938 18.9814 17.3938ZM13.4464 23.9325C13.1605 23.9325 12.921 23.8358 12.7276 23.6425C12.5343 23.4492 12.4376 23.2092 12.4376 22.9225V22.5188C12.4376 22.2471 12.5055 21.9879 12.6414 21.7413C12.778 21.4954 12.9614 21.2979 13.1914 21.1488C14.0655 20.6504 14.9822 20.2688 15.9414 20.0038C16.8997 19.7388 17.911 19.6063 18.9751 19.6063C20.0393 19.6063 21.051 19.7388 22.0101 20.0038C22.9693 20.2688 23.886 20.6504 24.7601 21.1488C24.9901 21.2988 25.1735 21.4963 25.3101 21.7413C25.446 21.9879 25.5139 22.2471 25.5139 22.5188V22.9225C25.5139 23.2092 25.4172 23.4492 25.2239 23.6425C25.0305 23.8358 24.7905 23.9325 24.5039 23.9325H13.4464ZM12.1251 17.25H4.62512C4.44762 17.25 4.29887 17.19 4.17887 17.07C4.05971 16.95 4.00012 16.8013 4.00012 16.6238C4.00012 16.4463 4.05971 16.2979 4.17887 16.1788C4.29887 16.0596 4.44762 16 4.62512 16H12.1251C12.3018 16 12.4501 16.06 12.5701 16.18C12.6901 16.3 12.7501 16.4488 12.7501 16.6263C12.7501 16.8038 12.6901 16.9521 12.5701 17.0713C12.4501 17.1904 12.3018 17.25 12.1251 17.25ZM17.1251 7.25H4.62512C4.44762 7.25 4.29887 7.19 4.17887 7.07C4.05971 6.95 4.00012 6.80125 4.00012 6.62375C4.00012 6.44625 4.05971 6.29792 4.17887 6.17875C4.29887 6.05958 4.44762 6 4.62512 6H17.1251C17.3018 6 17.4501 6.06 17.5701 6.18C17.6901 6.3 17.7501 6.44875 17.7501 6.62625C17.7501 6.80375 17.6901 6.95208 17.5701 7.07125C17.4501 7.19042 17.3018 7.25 17.1251 7.25ZM13.7639 12.25H4.62512C4.44762 12.25 4.29887 12.19 4.17887 12.07C4.05971 11.95 4.00012 11.8012 4.00012 11.6238C4.00012 11.4462 4.05971 11.2979 4.17887 11.1788C4.29887 11.0596 4.44762 11 4.62512 11H14.4801C14.3326 11.1942 14.1985 11.3913 14.0776 11.5912C13.9568 11.7913 13.8514 12.0108 13.7639 12.25Z" fill="#2E7CF6"/>
-        </svg>
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M18.9814 17.3938C18.208 17.3938 17.5489 17.1233 17.0039 16.5825C16.4597 16.0408 16.1876 15.3838 16.1876 14.6113C16.1876 13.8388 16.458 13.18 16.9989 12.635C17.5405 12.09 18.1976 11.8175 18.9701 11.8175C19.7426 11.8175 20.4014 12.0883 20.9464 12.63C21.4914 13.17 21.7639 13.8267 21.7639 14.6C21.7639 15.3733 21.493 16.0325 20.9514 16.5775C20.4114 17.1217 19.7547 17.3938 18.9814 17.3938ZM13.4464 23.9325C13.1605 23.9325 12.921 23.8358 12.7276 23.6425C12.5343 23.4492 12.4376 23.2092 12.4376 22.9225V22.5188C12.4376 22.2471 12.5055 21.9879 12.6414 21.7413C12.778 21.4954 12.9614 21.2979 13.1914 21.1488C14.0655 20.6504 14.9822 20.2688 15.9414 20.0038C16.8997 19.7388 17.911 19.6063 18.9751 19.6063C20.0393 19.6063 21.051 19.7388 22.0101 20.0038C22.9693 20.2688 23.886 20.6504 24.7601 21.1488C24.9901 21.2988 25.1735 21.4963 25.3101 21.7413C25.446 21.9879 25.5139 22.2471 25.5139 22.5188V22.9225C25.5139 23.2092 25.4172 23.4492 25.2239 23.6425C25.0305 23.8358 24.7905 23.9325 24.5039 23.9325H13.4464ZM12.1251 17.25H4.62512C4.44762 17.25 4.29887 17.19 4.17887 17.07C4.05971 16.95 4.00012 16.8013 4.00012 16.6238C4.00012 16.4463 4.05971 16.2979 4.17887 16.1788C4.29887 16.0596 4.44762 16 4.62512 16H12.1251C12.3018 16 12.4501 16.06 12.5701 16.18C12.6901 16.3 12.7501 16.4488 12.7501 16.6263C12.7501 16.8038 12.6901 16.9521 12.5701 17.0713C12.4501 17.1904 12.3018 17.25 12.1251 17.25ZM17.1251 7.25H4.62512C4.44762 7.25 4.29887 7.19 4.17887 7.07C4.05971 6.95 4.00012 6.80125 4.00012 6.62375C4.00012 6.44625 4.05971 6.29792 4.17887 6.17875C4.29887 6.05958 4.44762 6 4.62512 6H17.1251C17.3018 6 17.4501 6.06 17.5701 6.18C17.6901 6.3 17.7501 6.44875 17.7501 6.62625C17.7501 6.80375 17.6901 6.95208 17.5701 7.07125C17.4501 7.19042 17.3018 7.25 17.1251 7.25ZM13.7639 12.25H4.62512C4.44762 12.25 4.29887 12.19 4.17887 12.07C4.05971 11.95 4.00012 11.8012 4.00012 11.6238C4.00012 11.4462 4.05971 11.2979 4.17887 11.1788C4.29887 11.0596 4.44762 11 4.62512 11H14.4801C14.3326 11.1942 14.1985 11.3913 14.0776 11.5912C13.9568 11.7913 13.8514 12.0108 13.7639 12.25Z" fill="#262626"/></svg>
       </span>
       <span class="nav-label">Мои пациенты</span>
     </a>
@@ -207,164 +363,126 @@
       </span>
       <span class="nav-label">Лекарства</span>
     </a>
-    <a class="nav-link" href="{% url 'therapy:list' %}">
+    <a class="nav-link active" href="{% url 'therapy:list' %}">
       <span class="nav-icon">
         <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#262626"/>
+          <path d="M19.2233 13.4822C18.1125 13.4826 17.0218 13.7779 16.0626 14.338V9.53128C16.0626 8.06429 15.4798 6.65739 14.4425 5.62007C13.4052 4.58276 11.9983 4 10.5313 4C9.06429 4 7.65739 4.58276 6.62007 5.62007C5.58276 6.65739 5 8.06429 5 9.53128V20.5938C4.99972 21.7212 5.34396 22.8217 5.98661 23.7479C6.62926 24.6741 7.53962 25.3819 8.59572 25.7762C9.65183 26.1706 10.8032 26.2328 11.8957 25.9546C12.9881 25.6763 13.9695 25.0708 14.7082 24.2192C15.4369 24.9644 16.3386 25.5178 17.3331 25.8301C18.3275 26.1424 19.3837 26.2038 20.4076 26.009C21.4316 25.8141 22.3914 25.369 23.2016 24.7133C24.0118 24.0576 24.6472 23.2116 25.0513 22.2508C25.4553 21.29 25.6154 20.2442 25.5173 19.2065C25.4192 18.1688 25.0659 17.1715 24.489 16.3035C23.912 15.4354 23.1293 14.7235 22.2106 14.2313C21.2918 13.739 20.2656 13.4817 19.2233 13.4822ZM19.2233 15.0626C20.3427 15.0645 21.4253 15.4621 22.2799 16.1851C23.1345 16.908 23.7059 17.9099 23.8933 19.0135H14.5533C14.7406 17.9099 15.3121 16.908 16.1667 16.1851C17.0213 15.4621 18.1039 15.0645 19.2233 15.0626ZM6.58037 9.53128C6.58037 8.48343 6.99662 7.4785 7.73756 6.73756C8.4785 5.99662 9.48343 5.58037 10.5313 5.58037C11.5791 5.58037 12.5841 5.99662 13.325 6.73756C14.0659 7.4785 14.4822 8.48343 14.4822 9.53128V14.2724H6.58037V9.53128ZM10.5313 24.5447C9.48382 24.5435 8.47961 24.1268 7.73895 23.3862C6.99828 22.6455 6.58162 21.6413 6.58037 20.5938V15.8527H14.2965C13.5034 16.8355 13.0247 18.0344 12.9227 19.2931C12.8206 20.5519 13.1 21.8122 13.7244 22.9099C13.3594 23.4155 12.8797 23.8273 12.3246 24.1115C11.7695 24.3958 11.1549 24.5442 10.5313 24.5447ZM19.2233 24.5447C18.1039 24.5428 17.0213 24.1452 16.1667 23.4222C15.3121 22.6993 14.7406 21.6974 14.5533 20.5938H23.8933C23.7059 21.6974 23.1345 22.6993 22.2799 23.4222C21.4253 24.1452 20.3427 24.5428 19.2233 24.5447Z" fill="#2E7CF6"/>
         </svg>
       </span>
       <span class="nav-label">Реабилитационная терапия</span>
     </a>
   </nav>
-  {% endif %}
 
-  {% if is_patient and patient_pk %}
-  <a href="{% url 'patients:detail' patient_pk %}" class="header-right" style="text-decoration:none; cursor:pointer;">
-  {% else %}
   <div class="header-right">
-  {% endif %}
-    <div class="user-avatar">
-      <svg width="36" height="36" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
-        <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <div style="width:36px;height:36px;flex-shrink:0;">
+      <svg width="36" height="36" viewBox="0 0 30 29" fill="none"><rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/><path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
-  {% if is_patient and patient_pk %}
-  </a>
-  {% else %}
   </div>
-  {% endif %}
 </header>
 
 <!-- MAIN -->
 <main class="main">
 
-  <a href="javascript:history.back()" class="back-link">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M15 18l-6-6 6-6" stroke="#2E67F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <a class="back-link" href="{% url 'therapy:list' %}">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    Вернуться назад
+    Все терапии
   </a>
 
-  <section class="page-heading">
-    <h1>Методика расчёта и интерпретация результатов тестов</h1>
-    <p>Система «Painmetrica» использует валидированные международные шкалы и опросники для комплексной оценки болевого синдрома. Итоговое заключение формируется на основе автоматизированного анализа нескольких этапов тестирования.</p>
-  </section>
+  <h1 class="page-title">{{ therapy.name }}</h1>
 
-  <div class="results">
+  <div class="main-grid">
 
-    <!-- 1. ВАШ / VAS -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">1. Визуальная аналоговая шкала (ВАШ / VAS)</div>
-        <div class="block-text">
-          Используется для оценки субъективной интенсивности боли в момент осмотра.<br>
-          0 баллов — боль отсутствует.<br>
-          1–3 балла — лёгкий болевой синдром.<br>
-          4–6 баллов — умеренный болевой синдром.<br>
-          7–9 баллов — выраженный болевой синдром.<br>
-          10 баллов — нестерпимая боль.<br><br>
-          Также система предусматривает тестирование по специализированным шкалам PAINAD для пациентов с деменцией и NCS-R для пациентов в коме. В случае использования специализированных шкал система опирается только на результаты этих тестов и не требует проведения тестов DN4, CSI и HADS.
-        </div>
-      </div>
-      <div class="sub-blocks">
-        <div class="sub-block">
-          <div class="sub-block-title">1.1. Шкала NCS-R</div>
-          <div class="sub-block-text">
-            Оценка по 10-балльной шкале на основе наблюдения за поведением (дыхание, мимика, язык тела).<br>
-            Результат более 2 баллов является показанием к началу обезболивающей терапии.
+    <!-- LEFT CARD -->
+    <div class="left-card">
+
+      <!-- Notes -->
+      <div class="notes-block">
+        <div class="notes-header">Примечания</div>
+
+        <!-- State 1: нет примечания -->
+        <div id="stateNoNote" class="note-state note-state--noaction" {% if doctor_note %}style="display:none"{% endif %}>
+          <span class="note-empty-text">Примечаний нет</span>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="startAdding()">Добавить примечание</button>
           </div>
         </div>
-        <div class="sub-block">
-          <div class="sub-block-title">1.2. Шкала PAINAD</div>
-          <div class="sub-block-text">
-            Оценивает моторные, вербальные и мимические реакции пациента.<br>
-            Сумма ≥ 5 баллов указывает на выраженный некупированный болевой синдром, требующий немедленной коррекции.
+
+        <!-- State 2: добавление примечания -->
+        <div id="stateAdding" class="note-state" style="display:none">
+          <textarea class="note-input" id="noteEditEmpty" placeholder="Введите текст примечания"></textarea>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="addNote()">Добавить примечание</button>
           </div>
         </div>
+
+        <!-- State 3: есть примечание -->
+        <div id="stateView" class="note-state" {% if not doctor_note %}style="display:none"{% endif %}>
+          <div class="note-display" id="noteTextDisplay">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</div>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="switchToEdit()">Изменить примечание</button>
+            <button class="btn-note-delete" onclick="deleteNote()">Удалить примечание</button>
+          </div>
+        </div>
+
+        <!-- State 4: редактирование -->
+        <div id="stateEdit" class="note-state" style="display:none">
+          <textarea class="note-input" id="noteEditMode" placeholder="Введите текст примечания">{% if doctor_note %}{{ doctor_note.text }}{% endif %}</textarea>
+          <div class="note-btns-row">
+            <button class="btn-note-primary" onclick="saveNote()">Сохранить примечание</button>
+          </div>
+        </div>
+
+        <span class="note-status" id="noteStatus"></span>
       </div>
+
     </div>
 
-    <!-- 2. DN4 -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">2. Опросник DN4 (Диагностика нейропатической боли)</div>
-        <div class="block-text">
-          Используется для дифференциальной диагностики нейропатического компонента боли.<br>
-          0–3 балла — нейропатический компонент маловероятен.<br>
-          4 балла и выше — высокая вероятность нейропатической боли.<br><br>
-          Опросник включает два этапа: интервью с пациентом (7 вопросов) и неврологический осмотр (3 вопроса).
-        </div>
-      </div>
-    </div>
+    <!-- RIGHT CARD -->
+    <div class="right-card">
 
-    <!-- 3. CSI -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">3. Опросник CSI (Центральная сенситизация)</div>
-        <div class="block-text">
-          Оценивает степень чувствительности нервной системы к раздражителям по шкале от 0 до 100 баллов.<br>
-          0–29 баллов — субклинический уровень / низкая вероятность.<br>
-          30–39 баллов — лёгкая степень сенситизации.<br>
-          40–49 баллов — умеренная степень.<br>
-          50–59 баллов — сильная степень.<br>
-          60–100 баллов — экстремальная степень центральной сенситизации.
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. HADS -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">4. Госпитальная шкала тревоги и депрессии (HADS)</div>
-        <div class="block-text">
-          Позволяет выявить сопутствующие эмоциональные нарушения, влияющие на восприятие боли. Результаты рассчитываются отдельно для подшкал Тревоги (А) и Депрессии (D).<br>
-          0–7 баллов — отсутствие достоверно выраженных симптомов.<br>
-          8–10 баллов — субклинически выраженная тревога/депрессия.<br>
-          11 баллов и выше — клинически выраженная тревога/депрессия.
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. Подтип боли -->
-    <div class="test-method">
-      <div class="block">
-        <div class="block-title">5. Определение патогенетического подтипа боли</div>
-        <div class="block-text">
-          Система автоматически сопоставляет результаты тестов DN4 и CSI для выделения ведущего механизма боли, что критично для назначения лечения.
+      <div class="info-section">
+        <div class="section-title">Тип терапии</div>
+        <div class="section-body">
+          {% if therapy.therapy_type %}
+          <p class="section-text" id="typeText" data-full="{{ therapy.therapy_type }}">{{ therapy.therapy_type }}</p>
+          <button class="read-more" id="typeBtn" onclick="toggleText('typeText', 'typeBtn')">Читать полностью</button>
+          {% else %}
+          <p class="section-empty">Не указан</p>
+          {% endif %}
         </div>
       </div>
 
-      <div class="ht-results-list">
-        <div class="ht-card">
-          <div class="ht-header-row">
-            <div class="ht-cell-left">
-              <span class="ht-test-title">Подтип боли</span>
-            </div>
-            <div class="ht-cell-right">
-              <span class="ht-test-title">Условие расчёта</span>
-            </div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Преимущественно ноцицептивный</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 &lt; 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Преимущественно нейропатический</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 ≥ 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Преимущественно дисфункциональный</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 &lt; 4 баллов И CSI ≥ 40 баллов И HADS ≥ 8 баллов</span></div>
-          </div>
-          <div class="ht-data-row">
-            <div class="ht-row-left"><span class="ht-row-label">Смешанный вариант (нейропатический + ноцицептивный)</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 ≥ 4 баллов И CSI ≥ 30 баллов. Тест HADS не используется.</span></div>
-          </div>
+      <div class="divider"></div>
+
+      <div class="info-section">
+        <div class="section-title">Схема назначения</div>
+        <div class="section-body">
+          {% if therapy.prescription_scheme %}
+          <p class="section-text" id="prescText" data-full="{{ therapy.prescription_scheme }}">{{ therapy.prescription_scheme }}</p>
+          <button class="read-more" id="prescBtn" onclick="toggleText('prescText', 'prescBtn')">Читать полностью</button>
+          {% else %}
+          <p class="section-empty">Не указана</p>
+          {% endif %}
         </div>
       </div>
+
+      <div class="divider"></div>
+
+      <div class="info-section">
+        <div class="section-title">Клиническая цель</div>
+        <div class="section-body">
+          {% if therapy.clinical_goal %}
+          <p class="section-text" id="goalText" data-full="{{ therapy.clinical_goal }}">{{ therapy.clinical_goal }}</p>
+          <button class="read-more" id="goalBtn" onclick="toggleText('goalText', 'goalBtn')">Читать полностью</button>
+          {% else %}
+          <p class="section-empty">Не указана</p>
+          {% endif %}
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -381,5 +499,150 @@
   <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
 </footer>
 
+<!-- CSRF для AJAX -->
+<form id="csrfForm" style="display:none">{% csrf_token %}</form>
+
+<script>
+  var UPDATE_URL = "{% url 'therapy:update_notes' therapy.pk %}";
+  var HAS_NOTE = {{ doctor_note|yesno:"true,false" }};
+
+  function getCsrf() {
+    return document.querySelector('#csrfForm [name=csrfmiddlewaretoken]').value;
+  }
+
+  function showNoNoteState() {
+    document.getElementById('stateNoNote').style.display  = 'flex';
+    document.getElementById('stateAdding').style.display  = 'none';
+    document.getElementById('stateView').style.display    = 'none';
+    document.getElementById('stateEdit').style.display    = 'none';
+  }
+
+  function startAdding() {
+    document.getElementById('stateNoNote').style.display  = 'none';
+    document.getElementById('stateAdding').style.display  = 'flex';
+    document.getElementById('stateView').style.display    = 'none';
+    document.getElementById('stateEdit').style.display    = 'none';
+    document.getElementById('noteEditEmpty').value = '';
+    document.getElementById('noteEditEmpty').focus();
+  }
+
+  function showViewState(text) {
+    document.getElementById('noteTextDisplay').textContent = text;
+    document.getElementById('stateNoNote').style.display  = 'none';
+    document.getElementById('stateAdding').style.display  = 'none';
+    document.getElementById('stateView').style.display    = 'flex';
+    document.getElementById('stateEdit').style.display    = 'none';
+  }
+
+  function switchToEdit() {
+    var text = document.getElementById('noteTextDisplay').textContent;
+    document.getElementById('noteEditMode').value = text;
+    document.getElementById('stateNoNote').style.display  = 'none';
+    document.getElementById('stateAdding').style.display  = 'none';
+    document.getElementById('stateView').style.display    = 'none';
+    document.getElementById('stateEdit').style.display    = 'flex';
+    document.getElementById('noteEditMode').focus();
+  }
+
+  function addNote() {
+    var val = document.getElementById('noteEditEmpty').value.trim();
+    if (!val) return;
+    sendNote(val);
+  }
+
+  function saveNote() {
+    var val = document.getElementById('noteEditMode').value.trim();
+    sendNote(val);
+  }
+
+  function sendNote(val) {
+    var status = document.getElementById('noteStatus');
+    fetch(UPDATE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrf() },
+      body: 'notes=' + encodeURIComponent(val)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') {
+        if (val) { showViewState(val);  HAS_NOTE = true; }
+        else     { showNoNoteState();   HAS_NOTE = false; }
+        status.textContent = 'Сохранено';
+        status.classList.add('show');
+        setTimeout(function() { status.classList.remove('show'); }, 2000);
+      }
+    })
+    .catch(function() {
+      status.textContent = 'Ошибка сохранения';
+      status.classList.add('show');
+    });
+  }
+
+  function deleteNote() {
+    document.getElementById('delNoteOverlay').classList.remove('hidden');
+  }
+
+  function confirmDeleteNote() {
+    document.getElementById('delNoteOverlay').classList.add('hidden');
+    var status = document.getElementById('noteStatus');
+    fetch(UPDATE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrf() },
+      body: 'notes='
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') { showNoNoteState(); HAS_NOTE = false; }
+    })
+    .catch(function() {
+      status.textContent = 'Ошибка удаления';
+      status.classList.add('show');
+    });
+  }
+
+  var TEXT_LIMIT = 60;
+
+  function initCollapsible(textId, btnId) {
+    var el  = document.getElementById(textId);
+    var btn = document.getElementById(btnId);
+    if (!el || !btn) return;
+    var full = el.dataset.full || '';
+    if (full.length <= TEXT_LIMIT) {
+      btn.style.display = 'none';
+    } else {
+      el.textContent = full.slice(0, TEXT_LIMIT) + '…';
+    }
+  }
+
+  function toggleText(textId, btnId) {
+    var el   = document.getElementById(textId);
+    var btn  = document.getElementById(btnId);
+    var full = el.dataset.full || '';
+    if (btn.textContent === 'Читать полностью') {
+      el.textContent  = full;
+      btn.textContent = 'Свернуть';
+    } else {
+      el.textContent  = full.slice(0, TEXT_LIMIT) + '…';
+      btn.textContent = 'Читать полностью';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initCollapsible('typeText', 'typeBtn');
+    initCollapsible('prescText', 'prescBtn');
+    initCollapsible('goalText', 'goalBtn');
+    if (!HAS_NOTE) { showEmptyState(); }
+  });
+</script>
+
+<div class="del-modal-overlay hidden" id="delNoteOverlay">
+  <div class="del-modal-box">
+    <p class="del-modal-title">Вы уверены, что хотите удалить примечание?</p>
+    <div class="del-modal-btns">
+      <button class="del-modal-confirm" onclick="confirmDeleteNote()">Удалить</button>
+      <button class="del-modal-cancel" onclick="document.getElementById('delNoteOverlay').classList.add('hidden')">Отмена</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

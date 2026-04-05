@@ -503,8 +503,10 @@
 
     document.getElementById('stageForm').addEventListener('submit', function(e) {
       if (!vasInteracted) {
-        e.preventDefault();
-        showValModal('Вы не указали ответ');
+        // Если ползунок не трогали — считаем балл 0 (Нет боли)
+        range.value = 0;
+        vasInteracted = true;
+        updateSlider(0);
       }
     });
 

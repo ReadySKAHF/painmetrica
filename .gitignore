@@ -103,3 +103,4 @@ deploy/nginx/local.conf
 deploy/nginx/proxy_params
 
 SECURITY_AUDIT.md
+SETUP.md

@@ -113,6 +113,25 @@
     }
     .btn-secondary:hover { background: #f5f5f5; color: #262626; }
 
+    /* ── Layout ── */
+    .content-wrap { display: flex; gap: 28px; align-items: flex-start; }
+    .results-col  { flex: 1; min-width: 0; }
+
+    /* ── Sidebar ── */
+    .sidebar-col {
+      width: 340px; flex-shrink: 0;
+      position: sticky; top: 128px;
+    }
+    .summary-card {
+      background: #EEF5FF; border-radius: 16px; padding: 24px;
+    }
+    .summary-label { font-size: 18px; font-weight: 700; color: #262626; margin-bottom: 8px; }
+    .summary-text  { font-size: 14px; color: #4a5568; line-height: 1.6; }
+
+    @media (max-width: 860px) {
+      .content-wrap { flex-direction: column; }
+      .sidebar-col  { width: 100%; position: static; }
+    }
     @media (max-width: 700px) {
       body { padding: 128px 0 0; }
       .page-main { padding: 0 12px 40px; }
@@ -152,46 +171,62 @@
 
   <div class="page-title">Результаты: {{ result.test.title }}</div>
 
-  <!-- Итоговые баллы по каждому суб-тесту -->
-  {% for sub in sub_results %}
-  <a href="{% url 'tests:result_detail' session_id=session.pk sidebar_step=sub.sidebar_step %}" class="score-card">
-    <div class="score-circle">
-      <span class="score-number">{{ sub.score }} б.</span>
-    </div>
-    <div class="score-info">
-      <div class="score-sub-name">{{ sub.name }}</div>
-      {% if sub.label %}
-      <div class="score-conclusion-label">{{ sub.label }}</div>
-      {% endif %}
-      {% if sub.conclusion %}
-      <div class="score-conclusion-text">{{ sub.conclusion }}</div>
-      {% endif %}
-    </div>
-  </a>
-  {% endfor %}
+  <div class="content-wrap">
 
-  <!-- Мета-информация -->
-  <div class="meta-card">
-    <div class="meta-item">
-      <span class="meta-key">Пациент</span>
-      <span class="meta-value">{{ patient.user.get_full_name }}</span>
+    <div class="results-col">
+      <!-- Итоговые баллы по каждому суб-тесту -->
+      {% for sub in sub_results %}
+      <a href="{% url 'tests:result_detail' session_id=session.pk sidebar_step=sub.sidebar_step %}" class="score-card">
+        <div class="score-circle">
+          <span class="score-number">{{ sub.score }} б.</span>
+        </div>
+        <div class="score-info">
+          <div class="score-sub-name">{{ sub.name }}</div>
+          {% if sub.label %}
+          <div class="score-conclusion-label">{{ sub.label }}</div>
+          {% endif %}
+          {% if sub.conclusion %}
+          <div class="score-conclusion-text">{{ sub.conclusion }}</div>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+
+      <!-- Мета-информация -->
+      <div class="meta-card">
+        <div class="meta-item">
+          <span class="meta-key">Пациент</span>
+          <span class="meta-value">{{ patient.user.get_full_name }}</span>
+        </div>
+        {% if result.taken_by and result.taken_by != patient.user %}
+        <div class="meta-item">
+          <span class="meta-key">Проводил тест</span>
+          <span class="meta-value">{{ result.taken_by.get_full_name }}</span>
+        </div>
+        {% endif %}
+        <div class="meta-item">
+          <span class="meta-key">Дата прохождения</span>
+          <span class="meta-value">{{ result.completed_at|date:"d.m.Y в H:i" }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">Общий балл</span>
+          <span class="meta-value">{{ result.total_score }}</span>
+        </div>
+      </div>
     </div>
-    {% if result.taken_by and result.taken_by != patient.user %}
-    <div class="meta-item">
-      <span class="meta-key">Проводил тест</span>
-      <span class="meta-value">{{ result.taken_by.get_full_name }}</span>
+
+    {% if pathotype_label %}
+    <div class="sidebar-col">
+      <div class="summary-card">
+        <div class="summary-label">{{ pathotype_label }}</div>
+        {% if pathotype_text %}
+        <div class="summary-text">{{ pathotype_text }}</div>
+        {% endif %}
+      </div>
     </div>
     {% endif %}
-    <div class="meta-item">
-      <span class="meta-key">Дата прохождения</span>
-      <span class="meta-value">{{ result.completed_at|date:"d.m.Y в H:i" }}</span>
-    </div>
-    <div class="meta-item">
-      <span class="meta-key">Общий балл</span>
-      <span class="meta-value">{{ result.total_score }}</span>
-    </div>
-  </div>
 
+  </div>
 
 </main>
 

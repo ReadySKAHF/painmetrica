@@ -164,18 +164,18 @@ class RegisterVerifyOTPView(View):
             messages.error(request, 'Сначала завершите регистрацию.')
             return redirect('accounts:register_step_one')
 
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(id=request.session['registration_user_id'])
+        except User.DoesNotExist:
+            messages.error(request, 'Пользователь не найден.')
+            return redirect('accounts:register_step_one')
+
         form = OTPVerificationForm(request.POST)
 
         if form.is_valid():
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-
-            try:
-                user = User.objects.get(id=request.session['registration_user_id'])
-            except User.DoesNotExist:
-                messages.error(request, 'Пользователь не найден.')
-                return redirect('accounts:register_step_one')
-
             # Проверяем OTP
             success, error = OTPService.verify_otp(
                 user,
@@ -203,7 +203,7 @@ class RegisterVerifyOTPView(View):
             else:
                 messages.error(request, error)
 
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': form, 'user': user})
 
 
 class LoginView(View):
@@ -248,34 +248,39 @@ class LoginVerifyOTPView(View):
 
     template_name = 'accounts/login_verify.html'
 
+    def _get_otp_user(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        try:
+            return User.objects.get(id=request.session['login_user_id'])
+        except User.DoesNotExist:
+            return None
+
     def get(self, request):
         if 'login_user_id' not in request.session:
             messages.error(request, 'Сначала введите email и пароль.')
             return redirect('accounts:login')
 
+        otp_user = self._get_otp_user(request)
         form = OTPVerificationForm()
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': form, 'otp_user': otp_user})
 
     def post(self, request):
         if 'login_user_id' not in request.session:
             messages.error(request, 'Сначала введите email и пароль.')
             return redirect('accounts:login')
 
+        otp_user = self._get_otp_user(request)
         form = OTPVerificationForm(request.POST)
 
         if form.is_valid():
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-
-            try:
-                user = User.objects.get(id=request.session['login_user_id'])
-            except User.DoesNotExist:
+            if otp_user is None:
                 messages.error(request, 'Пользователь не найден.')
                 return redirect('accounts:login')
 
             # Проверяем OTP
             success, error = OTPService.verify_otp(
-                user,
+                otp_user,
                 form.cleaned_data['otp_code'],
                 purpose='login'
             )
@@ -285,17 +290,17 @@ class LoginVerifyOTPView(View):
                 request.session.pop('login_user_id', None)
 
                 # Устанавливаем бэкенд для аутентификации
-                user.backend = 'accounts.backends.EmailBackend'
+                otp_user.backend = 'accounts.backends.EmailBackend'
 
                 # Авторизуем пользователя
-                login(request, user)
+                login(request, otp_user)
 
-                messages.success(request, f'Добро пожаловать, {user.first_name}!')
+                messages.success(request, f'Добро пожаловать, {otp_user.first_name}!')
                 return redirect('core:dashboard')
             else:
                 messages.error(request, error)
 
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': form, 'otp_user': otp_user})
 
 
 class LogoutView(View):

@@ -53,8 +53,8 @@ def _get_pathotype_label(category, scores_by_step, total_score, conclusion_label
             return 'Ноцицептивный вариант'
         return conclusion_label or '—'
     if category == 'ncsr':
-        if total_score >= 5:
-            return 'Критический уровень'
+        if total_score > 5:
+            return 'Выраженный ноцицептивный ответ.'
         if total_score >= 3:
             return 'Рекомендуется усилить текущую анальгезию'
         return conclusion_label or '—'
@@ -437,12 +437,29 @@ class ResultView(LoginRequiredMixin, View):
                 'conclusion': score_range.conclusion if score_range else '',
             })
 
+        category = session.test.category if hasattr(session.test, 'category') else ''
+        scores_by_step = {step: step_scores[step] for step in step_scores}
+        pathotype_label = _get_pathotype_label(
+            category, scores_by_step, result.total_score,
+            sub_results[0]['label'] if sub_results else '',
+        )
+        pathotype_text = ''
+        if category == 'ncsr':
+            if result.total_score > 5:
+                pathotype_text = 'Требуется немедленная коррекция обезболивающей терапии (болюсное введение анальгетика, титрация инфузии) и диагностический поиск причины боли (новое повреждение, осложнение).'
+            else:
+                pathotype_text = sub_results[0]['conclusion'] if sub_results else ''
+        elif sub_results:
+            pathotype_text = sub_results[0]['conclusion']
+
         return render(request, 'tests/session_result.html', {
             'session': session,
             'result': result,
             'answers': answers,
             'patient': session.patient,
             'sub_results': sub_results,
+            'pathotype_label': pathotype_label,
+            'pathotype_text': pathotype_text,
         })
 
 
@@ -538,9 +555,9 @@ class AfterTestResultView(LoginRequiredMixin, View):
 
         elif category == 'ncsr':
             total = result.total_score
-            if total >= 5:
-                pathotype_label = 'Критический уровень'
-                pathotype_text = 'Требуется немедленно найти причины боли и скорректировать терапию'
+            if total > 5:
+                pathotype_label = 'Выраженный ноцицептивный ответ.'
+                pathotype_text = 'Требуется немедленная коррекция обезболивающей терапии (болюсное введение анальгетика, титрация инфузии) и диагностический поиск причины боли (новое повреждение, осложнение).'
             elif total >= 3:
                 pathotype_label = 'Рекомендуется усилить текущую анальгезию'
                 pathotype_text = result.conclusion_text

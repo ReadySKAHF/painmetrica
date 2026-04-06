@@ -5,41 +5,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Регистрация — Шаг 2 — Painmetrica</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --blue-500: #2E67F6; --blue-400: #2E7CF6; --blue-350: #5391F2; --blue-200: #D4E6FF; --blue-100: #EEF5FF;
     --gray-950: #262626; --gray-550: #919191; --gray-500: #C8C8C8; --gray-300: #EAEAEA; --gray-250: #F5F5F5; --gray-200: #F9F9F9;
-    --white: #FEFEFE; --red-400: #E43D3D; --red-bg: #FFEBEB; --font: 'Nunito Sans', sans-serif;
+    --white: #FEFEFE; --red-400: #E43D3D; --red-bg: #FFEBEB; --font: 'Proxima Nova', sans-serif;
   }
   body { font-family: var(--font); background: var(--white); color: var(--gray-950); min-height: 100vh; display: flex; flex-direction: column; }
-  header { display: flex; justify-content: space-between; align-items: center; padding: 28px 52px; max-width: 1320px; width: 100%; margin: 0 auto; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 28px 26px; max-width: 1320px; width: 100%; margin: 0 auto; }
   .logo { display: flex; align-items: center; text-decoration: none; }
   .header-right { display: flex; align-items: center; gap: 10px; }
   .header-hint { font-size: 14px; color: var(--gray-550); font-weight: 400; }
   .btn-outline-sm { display: flex; align-items: center; justify-content: center; padding: 9px 18px; border: 1px solid var(--gray-950); border-radius: 11px; background: var(--white); font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--gray-950); cursor: pointer; text-decoration: none; white-space: nowrap; transition: background .15s; }
   .btn-outline-sm:hover { background: var(--gray-250); }
-  main { flex: 1; max-width: 1320px; margin: 0 auto; padding: 40px 52px 60px; display: flex; gap: 100px; align-items: flex-start; }
-  .stepper-panel { width: 466px; flex-shrink: 0; background: var(--gray-200); border-radius: 25px; padding: 32px 20px; }
-  .steps-list { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 0 16px; }
-  .steps-list::before { content: ''; position: absolute; left: 35px; top: 50px; width: 2px; height: calc(33% - 20px);
-    background: var(--blue-350); border-radius: 2px; }
-  .steps-list::after { content: ''; position: absolute; left: 35px; top: calc(33% + 50px); width: 2px; height: calc(33% - 20px);
-    background: var(--gray-300); border-radius: 2px; }
-  .step-item { display: flex; gap: 12px; z-index: 1; }
-  .step-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; }
+  main { flex: 1; width: 1320px; max-width: calc(100vw - 24px); margin: 0 auto; padding: 40px 52px 60px 0; display: flex; gap: 136px; align-items: flex-start; }
+  .stepper-panel { width: 424px; height: 440px; flex-shrink: 0; background: var(--gray-200); border-radius: 25px; padding: 24px 20px; display: flex; flex-direction: column; }
+  .steps-list { display: flex; flex-direction: column; padding: 0 16px; flex: 1; }
+  .step-item { display: flex; gap: 12px; flex: 1; }
+  .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 40px; }
+  .step-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .step-circle.active { background: var(--blue-400); border: 2px solid var(--blue-200); }
   .step-circle.done { background: var(--blue-400); }
   .step-circle .check-icon { display: none; }
   .step-circle.done .check-icon { display: block; }
-  .step-text { padding: 6px 0; }
-  .step-label { font-size: 18px; font-weight: 600; color: var(--gray-500); margin-bottom: 10px; }
+  .step-connector { flex: 1; min-height: 8px; width: 2px; background: var(--gray-300); border-radius: 2px; }
+  .step-connector.done { background: var(--blue-350); }
+  .step-text { flex: 1; padding: 2px 0 0; }
+  .step-label { font-size: 14px; font-weight: 600; color: var(--gray-500); margin-bottom: 3px; line-height: 1; }
   .step-label.active { color: var(--blue-400); }
   .step-label.done { color: var(--gray-950); }
-  .step-desc { font-size: 20px; color: var(--gray-500); line-height: 1.4; }
+  .step-desc { font-size: 14px; color: var(--gray-500); line-height: 1.35; }
   .step-desc.active, .step-desc.done { color: #000; }
   .form-section { flex: 1; max-width: 424px; }
   .form-title { font-size: 30px; font-weight: 700; margin-bottom: 8px; }
@@ -148,10 +151,9 @@
   <aside class="stepper-panel">
     <div class="steps-list">
       <div class="step-item">
-        <div class="step-circle done">
-          <svg class="check-icon" width="18" height="18" fill="none">
-            <path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+        <div class="step-left">
+          <div class="step-circle done"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="step-connector done"></div>
         </div>
         <div class="step-text">
           <div class="step-label done">ШАГ 1</div>
@@ -159,17 +161,42 @@
         </div>
       </div>
       <div class="step-item">
-        <div class="step-circle active"></div>
+        <div class="step-left">
+          <div class="step-circle active"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="step-connector"></div>
+        </div>
         <div class="step-text">
           <div class="step-label active">ШАГ 2</div>
           <div class="step-desc active">Введите данные о вашей профессиональной деятельности</div>
         </div>
       </div>
       <div class="step-item">
-        <div class="step-circle"></div>
+        <div class="step-left">
+          <div class="step-circle"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="step-connector"></div>
+        </div>
         <div class="step-text">
           <div class="step-label">ШАГ 3</div>
-          <div class="step-desc">Подтвердите адрес электронной почты</div>
+          <div class="step-desc">Ознакомление с пользовательским соглашением</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-left">
+          <div class="step-circle"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">ШАГ 4</div>
+          <div class="step-desc">Ознакомление с политикой обработки персональных данных</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-left">
+          <div class="step-circle"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">ШАГ 5</div>
+          <div class="step-desc">Подтверждение адреса электронной почты</div>
         </div>
       </div>
     </div>
@@ -465,16 +492,10 @@
 
       </div>
 
-      <!-- Checkbox -->
-      <label class="cb-wrap">
-        <input type="checkbox" id="cb-terms">
-        <span class="cb-label">Нажимая зарегистрироваться, вы соглашаетесь на <a href="#">обработку личных данных</a></span>
-      </label>
-
       <!-- Buttons -->
       <div class="btns-row">
         <a href="{% url 'accounts:register_step_one' %}" class="btn-secondary">Назад</a>
-        <button type="submit" class="btn-primary" id="btn-submit" disabled>Получить код</button>
+        <button type="submit" class="btn-primary" id="btn-submit">Продолжить</button>
       </div>
 
     </form>
@@ -547,18 +568,8 @@ const interestsSelect = initCustomSelect('trigger-interests', 'dropdown-interest
 
 const inpPosition = document.getElementById('id_position');
 const inpWorkplace = document.getElementById('id_workplace');
-const cbTerms = document.getElementById('cb-terms');
-const btnSubmit = document.getElementById('btn-submit');
 
-function checkForm() {
-  const specialtyOk = document.getElementById('id_specialty').value !== '';
-  const cityOk = document.getElementById('id_city').value !== '';
-  const interestsOk = document.getElementById('id_area_of_interest').value !== '';
-  const positionOk = inpPosition.value.trim() !== '';
-  const workplaceOk = inpWorkplace.value.trim() !== '';
-  const termsOk = cbTerms.checked;
-  btnSubmit.disabled = !(specialtyOk && cityOk && interestsOk && positionOk && workplaceOk && termsOk);
-}
+function checkForm() {}
 
 const positionErrorEmpty = document.getElementById('error-position-empty');
 const workplaceErrorEmpty = document.getElementById('error-workplace-empty');
@@ -577,7 +588,6 @@ inpWorkplace.addEventListener('input', () => {
   }
   checkForm();
 });
-cbTerms.addEventListener('change', checkForm);
 
 document.getElementById('step2-form').addEventListener('submit', (e) => {
   let hasError = false;

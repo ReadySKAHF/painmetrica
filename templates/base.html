@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Painmetrica{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
         :root {
             --primary-blue: #2E67F6;
             --dark-gray: #262626;
@@ -23,7 +29,7 @@
         }
 
         body {
-            font-family: 'Nunito Sans', sans-serif;
+            font-family: 'Proxima Nova', sans-serif;
             background-color: var(--light-gray);
             color: var(--dark-gray);
             line-height: 1.6;
@@ -179,7 +185,7 @@
             border: 1px solid var(--medium-gray);
             border-radius: 7px;
             font-size: 1rem;
-            font-family: 'Nunito Sans', sans-serif;
+            font-family: 'Proxima Nova', sans-serif;
         }
 
         .form-control:focus {

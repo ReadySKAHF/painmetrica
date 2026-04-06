@@ -5,8 +5,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Детальные ответы — PainMetrika</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -20,7 +26,7 @@
     }
 
     body {
-      font-family: 'Proxima Nova', 'Nunito', 'Manrope', sans-serif;
+      font-family: 'Proxima Nova', sans-serif;
       background: var(--gray-200);
       color: var(--gray-950);
       min-height: 100vh;
@@ -39,7 +45,7 @@
     }
     .site-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
     .site-header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
-    .site-user-name { font-family: 'Manrope', sans-serif; font-size: 18px; color: var(--gray-950); white-space: nowrap; }
+    .site-user-name { font-family: 'Proxima Nova', sans-serif; font-size: 18px; color: var(--gray-950); white-space: nowrap; }
 
     /* ── Main ── */
     .page-main { flex: 1; width: 100%; max-width: 1320px; margin: 0 auto; padding: 0 12px 60px; }

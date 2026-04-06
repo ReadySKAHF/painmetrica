@@ -4,9 +4,11 @@ from accounts import views
 app_name = 'accounts'
 
 urlpatterns = [
-    # Регистрация (3 шага)
+    # Регистрация (5 шагов)
     path('register/', views.RegisterStepOneView.as_view(), name='register_step_one'),
     path('register/professional/', views.RegisterStepTwoView.as_view(), name='register_step_two'),
+    path('register/agreement/', views.RegisterStepThreeView.as_view(), name='register_step_three'),
+    path('register/privacy/', views.RegisterStepFourView.as_view(), name='register_step_four'),
     path('register/verify/', views.RegisterVerifyOTPView.as_view(), name='register_verify'),
 
     # Вход (2 экрана)

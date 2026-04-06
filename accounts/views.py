@@ -131,9 +131,41 @@ class RegisterStepTwoView(View):
             OTPService.generate_and_send_otp(user, purpose='registration')
 
             messages.success(request, 'Код подтверждения отправлен на ваш email.')
-            return redirect('accounts:register_verify')
+            return redirect('accounts:register_step_three')
 
         return render(request, self.template_name, {'form': form})
+
+
+class RegisterStepThreeView(View):
+    """Шаг 3: Ознакомление с пользовательским соглашением"""
+
+    template_name = 'accounts/register_step3.html'
+
+    def get(self, request):
+        if 'registration_user_id' not in request.session:
+            return redirect('accounts:register_step_one')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        if 'registration_user_id' not in request.session:
+            return redirect('accounts:register_step_one')
+        return redirect('accounts:register_step_four')
+
+
+class RegisterStepFourView(View):
+    """Шаг 4: Ознакомление с политикой обработки персональных данных"""
+
+    template_name = 'accounts/register_step4.html'
+
+    def get(self, request):
+        if 'registration_user_id' not in request.session:
+            return redirect('accounts:register_step_one')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        if 'registration_user_id' not in request.session:
+            return redirect('accounts:register_step_one')
+        return redirect('accounts:register_verify')
 
 
 class RegisterVerifyOTPView(View):

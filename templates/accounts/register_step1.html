@@ -370,7 +370,7 @@
             required
           >
           {% if form.last_name.errors %}
-            <div class="error-block visible">
+            <div class="error-block visible" id="error-last-name-server">
               <svg class="error-icon" viewBox="0 0 18 18" fill="none">
                 <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
                 <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
@@ -384,6 +384,13 @@
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
+          </div>
+          <div class="error-block" id="error-last-name-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text" id="error-last-name-length-text"></span>
           </div>
           <div class="error-block" id="error-last-name-empty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
@@ -406,7 +413,7 @@
             required
           >
           {% if form.first_name.errors %}
-            <div class="error-block visible">
+            <div class="error-block visible" id="error-first-name-server">
               <svg class="error-icon" viewBox="0 0 18 18" fill="none">
                 <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
                 <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
@@ -420,6 +427,13 @@
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
+          </div>
+          <div class="error-block" id="error-first-name-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text" id="error-first-name-length-text"></span>
           </div>
           <div class="error-block" id="error-first-name-empty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
@@ -446,6 +460,13 @@
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
+          </div>
+          <div class="error-block" id="error-middle-name-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="error-text" id="error-middle-name-length-text"></span>
           </div>
         </div>
 
@@ -620,48 +641,121 @@ function validateNameField(input, errorBlock) {
 // Фамилия
 const lastNameInput = document.getElementById('inp-last-name');
 const lastNameError = document.getElementById('error-last-name');
+const lastNameErrorLength = document.getElementById('error-last-name-length');
+const lastNameErrorLengthText = document.getElementById('error-last-name-length-text');
 const lastNameErrorEmpty = document.getElementById('error-last-name-empty');
+const lastNameErrorServer = document.getElementById('error-last-name-server');
+
+function clearLastNameErrors() {
+  lastNameError.classList.remove('visible');
+  lastNameErrorLength.classList.remove('visible');
+  lastNameErrorEmpty.classList.remove('visible');
+  if (lastNameErrorServer) lastNameErrorServer.classList.remove('visible');
+  lastNameInput.classList.remove('error-state');
+}
+
+function validateLastName() {
+  const value = lastNameInput.value;
+  clearLastNameErrors();
+  if (value === '') return;
+  if (value.length > 150) {
+    lastNameInput.classList.add('error-state');
+    lastNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${value.length})`;
+    lastNameErrorLength.classList.add('visible');
+    return;
+  }
+  if (!namePattern.test(value)) {
+    lastNameInput.classList.add('error-state');
+    lastNameError.classList.add('visible');
+  }
+}
 
 lastNameInput.addEventListener('input', () => {
-  lastNameErrorEmpty.classList.remove('visible');
-  validateNameField(lastNameInput, lastNameError);
+  validateLastName();
 });
 lastNameInput.addEventListener('blur', () => {
   if (lastNameInput.value.trim() === '') {
+    clearLastNameErrors();
     lastNameInput.classList.add('error-state');
     lastNameErrorEmpty.classList.add('visible');
   }
 });
 lastNameInput.addEventListener('focus', () => {
-  if (lastNameInput.value.trim() !== '') lastNameInput.classList.remove('error-state');
   lastNameErrorEmpty.classList.remove('visible');
+  if (lastNameInput.value.trim() !== '') lastNameInput.classList.remove('error-state');
+  if (lastNameErrorServer) lastNameErrorServer.classList.remove('visible');
 });
 
 // Имя
 const firstNameInput = document.getElementById('inp-first-name');
 const firstNameError = document.getElementById('error-first-name');
+const firstNameErrorLength = document.getElementById('error-first-name-length');
+const firstNameErrorLengthText = document.getElementById('error-first-name-length-text');
 const firstNameErrorEmpty = document.getElementById('error-first-name-empty');
+const firstNameErrorServer = document.getElementById('error-first-name-server');
+
+function clearFirstNameErrors() {
+  firstNameError.classList.remove('visible');
+  firstNameErrorLength.classList.remove('visible');
+  firstNameErrorEmpty.classList.remove('visible');
+  if (firstNameErrorServer) firstNameErrorServer.classList.remove('visible');
+  firstNameInput.classList.remove('error-state');
+}
+
+function validateFirstName() {
+  const value = firstNameInput.value;
+  clearFirstNameErrors();
+  if (value === '') return;
+  if (value.length > 150) {
+    firstNameInput.classList.add('error-state');
+    firstNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${value.length})`;
+    firstNameErrorLength.classList.add('visible');
+    return;
+  }
+  if (!namePattern.test(value)) {
+    firstNameInput.classList.add('error-state');
+    firstNameError.classList.add('visible');
+  }
+}
 
 firstNameInput.addEventListener('input', () => {
-  firstNameErrorEmpty.classList.remove('visible');
-  validateNameField(firstNameInput, firstNameError);
+  validateFirstName();
 });
 firstNameInput.addEventListener('blur', () => {
   if (firstNameInput.value.trim() === '') {
+    clearFirstNameErrors();
     firstNameInput.classList.add('error-state');
     firstNameErrorEmpty.classList.add('visible');
   }
 });
 firstNameInput.addEventListener('focus', () => {
-  if (firstNameInput.value.trim() !== '') firstNameInput.classList.remove('error-state');
   firstNameErrorEmpty.classList.remove('visible');
+  if (firstNameInput.value.trim() !== '') firstNameInput.classList.remove('error-state');
+  if (firstNameErrorServer) firstNameErrorServer.classList.remove('visible');
 });
 
 // Отчество (необязательное)
 const middleNameInput = document.getElementById('inp-middle-name');
 const middleNameError = document.getElementById('error-middle-name');
+const middleNameErrorLength = document.getElementById('error-middle-name-length');
+const middleNameErrorLengthText = document.getElementById('error-middle-name-length-text');
+
 middleNameInput.addEventListener('input', () => {
-  validateNameField(middleNameInput, middleNameError);
+  const value = middleNameInput.value;
+  middleNameError.classList.remove('visible');
+  middleNameErrorLength.classList.remove('visible');
+  middleNameInput.classList.remove('error-state');
+  if (value === '') return;
+  if (value.length > 150) {
+    middleNameInput.classList.add('error-state');
+    middleNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${value.length})`;
+    middleNameErrorLength.classList.add('visible');
+    return;
+  }
+  if (!namePattern.test(value)) {
+    middleNameInput.classList.add('error-state');
+    middleNameError.classList.add('visible');
+  }
 });
 
 // ============================================
@@ -802,15 +896,37 @@ document.getElementById('step1-form').addEventListener('submit', (e) => {
 
   // Фамилия
   if (lastNameInput.value.trim() === '') {
+    clearLastNameErrors();
     lastNameInput.classList.add('error-state');
     lastNameErrorEmpty.classList.add('visible');
+    hasError = true;
+  } else if (lastNameInput.value.length > 150) {
+    clearLastNameErrors();
+    lastNameInput.classList.add('error-state');
+    lastNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${lastNameInput.value.length})`;
+    lastNameErrorLength.classList.add('visible');
     hasError = true;
   }
 
   // Имя
   if (firstNameInput.value.trim() === '') {
+    clearFirstNameErrors();
     firstNameInput.classList.add('error-state');
     firstNameErrorEmpty.classList.add('visible');
+    hasError = true;
+  } else if (firstNameInput.value.length > 150) {
+    clearFirstNameErrors();
+    firstNameInput.classList.add('error-state');
+    firstNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${firstNameInput.value.length})`;
+    firstNameErrorLength.classList.add('visible');
+    hasError = true;
+  }
+
+  // Отчество (только длина)
+  if (middleNameInput.value.length > 150) {
+    middleNameInput.classList.add('error-state');
+    middleNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${middleNameInput.value.length})`;
+    middleNameErrorLength.classList.add('visible');
     hasError = true;
   }
 

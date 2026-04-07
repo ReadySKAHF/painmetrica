@@ -206,7 +206,7 @@
     <h1 class="form-title">Профессиональные данные</h1>
     <p class="form-subtitle">Расскажите о вашей работе</p>
 
-    <form method="post" id="step2-form">
+    <form method="post" id="step2-form" novalidate>
       {% csrf_token %}
 
       <div class="field-group">
@@ -264,40 +264,33 @@
         <!-- Должность -->
         <div class="field-wrap">
           <label class="field-label" for="id_position" id="label-position">Должность</label>
-          <input class="field-input" type="text" id="id_position" name="position" placeholder="Введите должность" maxlength="50" required>
+          <input class="field-input" type="text" id="id_position" name="position" placeholder="Введите должность" maxlength="50" required value="{{ step2_data.position|default:'' }}">
           <div class="error-block" id="error-position-empty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
               <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span class="error-text">Вы не ввели Должность</span>
+            <span class="error-text">Вы не ввели должность</span>
           </div>
-          <div class="error-block" id="error-position-length">
+          <div class="error-block" id="error-position-chars">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
               <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span class="error-text">Должность не должна превышать 50 символов</span>
+            <span class="error-text">Цифры и спец. символы запрещены</span>
           </div>
         </div>
 
         <!-- Место работы -->
         <div class="field-wrap">
           <label class="field-label" for="id_workplace" id="label-workplace">Место работы</label>
-          <input class="field-input" type="text" id="id_workplace" name="workplace" placeholder="Введите место работы" maxlength="50" required>
+          <input class="field-input" type="text" id="id_workplace" name="workplace" placeholder="Введите место работы" maxlength="50" required value="{{ step2_data.workplace|default:'' }}">
           <div class="error-block" id="error-workplace-empty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none">
               <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
               <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span class="error-text">Вы не ввели Место работы</span>
-          </div>
-          <div class="error-block" id="error-workplace-length">
-            <svg class="error-icon" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
-              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <span class="error-text">Место работы не должна превышать 50 символов</span>
+            <span class="error-text">Вы не ввели место работы</span>
           </div>
         </div>
 
@@ -453,7 +446,7 @@
           <label class="field-label" id="label-interests">Сфера интересов</label>
           <div class="custom-select-wrap" id="wrap-interests">
             <button type="button" class="custom-select-trigger" id="trigger-interests" aria-haspopup="listbox">
-              <span class="trigger-text" id="trigger-interests-text">Выберите сферу</span>
+              <span class="trigger-text" id="trigger-interests-text">Выберите сферу интересов</span>
               <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
                 <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
@@ -514,7 +507,9 @@
 </footer>
 
 <script>
-// Custom dropdown logic
+// ============================================
+// CUSTOM DROPDOWN LOGIC
+// ============================================
 function initCustomSelect(triggerId, dropdownId, hiddenInputId, labelId, errorBlockId) {
   const trigger = document.getElementById(triggerId);
   const dropdown = document.getElementById(dropdownId);
@@ -544,7 +539,6 @@ function initCustomSelect(triggerId, dropdownId, hiddenInputId, labelId, errorBl
       option.classList.add('selected');
       if (label) label.classList.remove('error');
       if (errorBlock) errorBlock.classList.remove('visible');
-      checkForm();
     });
   });
 
@@ -557,68 +551,127 @@ function closeAllDropdowns() {
 }
 
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.custom-select-wrap')) {
-    closeAllDropdowns();
-  }
+  if (!e.target.closest('.custom-select-wrap')) closeAllDropdowns();
 });
 
 const specialtySelect = initCustomSelect('trigger-specialty', 'dropdown-specialty', 'id_specialty', 'label-specialty', 'error-specialty');
-const citySelect = initCustomSelect('trigger-city', 'dropdown-city', 'id_city', 'label-city', 'error-city');
+const citySelect      = initCustomSelect('trigger-city',      'dropdown-city',      'id_city',      'label-city',      'error-city');
 const interestsSelect = initCustomSelect('trigger-interests', 'dropdown-interests', 'id_area_of_interest', 'label-interests', 'error-interests');
 
-const inpPosition = document.getElementById('id_position');
-const inpWorkplace = document.getElementById('id_workplace');
+// ============================================
+// ВАЛИДАЦИЯ ПОЛЯ «ДОЛЖНОСТЬ»
+// ============================================
+const namePattern = /^[a-zA-Zа-яА-ЯёЁ\s\-]*$/;
 
-function checkForm() {}
+const inpPosition       = document.getElementById('id_position');
+const positionErrEmpty  = document.getElementById('error-position-empty');
+const positionErrChars  = document.getElementById('error-position-chars');
 
-const positionErrorEmpty = document.getElementById('error-position-empty');
-const workplaceErrorEmpty = document.getElementById('error-workplace-empty');
+function clearPositionErrors() {
+  inpPosition.classList.remove('error-state');
+  positionErrEmpty.classList.remove('visible');
+  positionErrChars.classList.remove('visible');
+}
+
+function validatePosition() {
+  const val = inpPosition.value;
+  clearPositionErrors();
+  if (val === '') return;
+  if (!namePattern.test(val)) {
+    inpPosition.classList.add('error-state');
+    positionErrChars.classList.add('visible');
+  }
+}
 
 inpPosition.addEventListener('input', () => {
-  if (inpPosition.value.trim()) {
-    inpPosition.classList.remove('error-state');
-    positionErrorEmpty.classList.remove('visible');
-  }
-  checkForm();
+  validatePosition();
 });
-inpWorkplace.addEventListener('input', () => {
-  if (inpWorkplace.value.trim()) {
-    inpWorkplace.classList.remove('error-state');
-    workplaceErrorEmpty.classList.remove('visible');
+inpPosition.addEventListener('blur', () => {
+  if (inpPosition.value.trim() === '') {
+    clearPositionErrors();
+    inpPosition.classList.add('error-state');
+    positionErrEmpty.classList.add('visible');
+  } else {
+    validatePosition();
   }
-  checkForm();
+});
+inpPosition.addEventListener('focus', () => {
+  positionErrEmpty.classList.remove('visible');
+  if (inpPosition.value.trim() !== '') inpPosition.classList.remove('error-state');
 });
 
+// ============================================
+// ВАЛИДАЦИЯ ПОЛЯ «МЕСТО РАБОТЫ»
+// ============================================
+const inpWorkplace      = document.getElementById('id_workplace');
+const workplaceErrEmpty = document.getElementById('error-workplace-empty');
+
+function clearWorkplaceErrors() {
+  inpWorkplace.classList.remove('error-state');
+  workplaceErrEmpty.classList.remove('visible');
+}
+
+inpWorkplace.addEventListener('input', () => {
+  if (inpWorkplace.value.trim() !== '') clearWorkplaceErrors();
+});
+inpWorkplace.addEventListener('blur', () => {
+  if (inpWorkplace.value.trim() === '') {
+    inpWorkplace.classList.add('error-state');
+    workplaceErrEmpty.classList.add('visible');
+  } else {
+    clearWorkplaceErrors();
+  }
+});
+inpWorkplace.addEventListener('focus', () => {
+  workplaceErrEmpty.classList.remove('visible');
+  if (inpWorkplace.value.trim() !== '') inpWorkplace.classList.remove('error-state');
+});
+
+// ============================================
+// ВАЛИДАЦИЯ ПРИ ОТПРАВКЕ ФОРМЫ
+// ============================================
 document.getElementById('step2-form').addEventListener('submit', (e) => {
   let hasError = false;
 
-  if (!document.getElementById('id_specialty').value) {
+  // Специальность
+  if (!specialtySelect.hiddenInput.value) {
     specialtySelect.trigger.classList.add('error-state');
     specialtySelect.errorBlock.classList.add('visible');
     specialtySelect.label.classList.add('error');
     hasError = true;
   }
 
-  if (!inpPosition.value.trim()) {
+  // Должность — пустое поле
+  if (inpPosition.value.trim() === '') {
+    clearPositionErrors();
     inpPosition.classList.add('error-state');
-    positionErrorEmpty.classList.add('visible');
+    positionErrEmpty.classList.add('visible');
+    hasError = true;
+  // Должность — недопустимые символы
+  } else if (!namePattern.test(inpPosition.value)) {
+    clearPositionErrors();
+    inpPosition.classList.add('error-state');
+    positionErrChars.classList.add('visible');
     hasError = true;
   }
 
-  if (!inpWorkplace.value.trim()) {
+  // Место работы
+  if (inpWorkplace.value.trim() === '') {
     inpWorkplace.classList.add('error-state');
-    workplaceErrorEmpty.classList.add('visible');
+    workplaceErrEmpty.classList.add('visible');
     hasError = true;
   }
 
-  if (!document.getElementById('id_city').value) {
+  // Город
+  if (!citySelect.hiddenInput.value) {
     citySelect.trigger.classList.add('error-state');
     citySelect.errorBlock.classList.add('visible');
     citySelect.label.classList.add('error');
     hasError = true;
   }
 
-  if (!document.getElementById('id_area_of_interest').value) {
+  // Сфера интересов
+  if (!interestsSelect.hiddenInput.value) {
     interestsSelect.trigger.classList.add('error-state');
     interestsSelect.errorBlock.classList.add('visible');
     interestsSelect.label.classList.add('error');
@@ -628,7 +681,7 @@ document.getElementById('step2-form').addEventListener('submit', (e) => {
   if (hasError) e.preventDefault();
 });
 
-// Показываем лейблы для уже заполненных полей
+// Показываем лейблы для уже заполненных полей (после ошибки сервера)
 document.querySelectorAll('.field-input').forEach(function(input) {
   var wrap = input.closest('.field-wrap');
   if (!wrap) return;
@@ -638,6 +691,23 @@ document.querySelectorAll('.field-input').forEach(function(input) {
     if (label) label.classList.toggle('visible', input.value !== '');
   });
 });
+
+// ============================================
+// ВОССТАНОВЛЕНИЕ ДРОПДАУНОВ ПРИ ВОЗВРАТЕ НАЗАД
+// ============================================
+function restoreSelect(select, value) {
+  if (!value) return;
+  const option = select.dropdown.querySelector(`.custom-select-option[data-value="${CSS.escape(value)}"]`);
+  if (!option) return;
+  select.hiddenInput.value = value;
+  select.trigger.querySelector('.trigger-text').textContent = value;
+  select.trigger.classList.add('has-value');
+  option.classList.add('selected');
+}
+
+restoreSelect(specialtySelect, '{{ step2_data.specialty|default:""|escapejs }}');
+restoreSelect(citySelect,      '{{ step2_data.city|default:""|escapejs }}');
+restoreSelect(interestsSelect, '{{ step2_data.area_of_interest|default:""|escapejs }}');
 </script>
 
 </body>

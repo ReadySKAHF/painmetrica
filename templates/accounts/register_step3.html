@@ -60,8 +60,8 @@
   .pdf-canvas-wrap::-webkit-scrollbar { width: 6px; }
   .pdf-canvas-wrap::-webkit-scrollbar-track { background: transparent; }
   .pdf-canvas-wrap::-webkit-scrollbar-thumb { background: var(--blue-400); border-radius: 4px; }
-  .pdf-pages { display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; }
-  .pdf-pages canvas { box-shadow: 0 2px 10px rgba(0,0,0,.25); display: block; max-width: 100%; }
+  .pdf-pages { display: flex; flex-direction: column; align-items: flex-start; padding: 16px; gap: 12px; min-width: max-content; }
+  .pdf-pages canvas { box-shadow: 0 2px 10px rgba(0,0,0,.25); display: block; }
   .pdf-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .pdf-spinner-ring { width: 32px; height: 32px; border: 3px solid var(--gray-300); border-top-color: var(--blue-400); border-radius: 50%; animation: spin .7s linear infinite; }
   .pdf-spinner-text { font-size: 13px; color: var(--gray-550); }
@@ -70,7 +70,10 @@
   .cb-agree-wrap.visible { display: flex; }
   .cb-agree-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--blue-500); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
   .cb-agree-label { font-size: 14px; color: var(--gray-950); line-height: 1.5; }
-  .btn-continue { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px; background: var(--blue-500); border-radius: 48px; border: none; font-size: 18px; font-weight: 600; color: var(--gray-250); cursor: pointer; transition: opacity .15s; width: 160px; margin: 0 auto; }
+  .btns-row { display: flex; align-items: center; justify-content: center; gap: 24px; }
+  .btn-secondary { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px; background: var(--white); border: 1px solid var(--gray-950); border-radius: 48px; font-family: var(--font); font-size: 18px; font-weight: 600; color: var(--gray-950); cursor: pointer; transition: background .15s; text-decoration: none; width: 99px; }
+  .btn-secondary:hover { background: var(--gray-250); }
+  .btn-continue { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px; background: var(--blue-500); border-radius: 48px; border: none; font-family: var(--font); font-size: 18px; font-weight: 600; color: var(--gray-250); cursor: pointer; transition: opacity .15s; width: 160px; }
   .btn-continue:hover { opacity: .9; }
   .btn-continue:disabled { background: var(--gray-300); color: var(--gray-550); cursor: not-allowed; opacity: 1; }
   .footer { width: 1320px; max-width: calc(100vw - 24px); margin: 40px auto 0; background: var(--white); border-radius: 28px 28px 0 0; display: flex; flex-direction: column; align-items: center; padding: 24px 0; gap: 8px; }
@@ -154,7 +157,7 @@
 
   <section class="content-section">
     <h1 class="page-title">Ознакомление с пользовательским соглашением</h1>
-    <p class="page-subtitle">Прочитайте соглашение об обработке персональных данных, прокрутите текст до конца и поставьте галочку, чтобы продолжить регистрацию.</p>
+    <p class="page-subtitle">Прочитайте пользовательское соглашение, прокрутите текст до конца и поставьте галочку, чтобы продолжить регистрацию.</p>
 
     <div class="pdf-viewer">
       <div class="pdf-toolbar">
@@ -182,9 +185,12 @@
       {% csrf_token %}
       <label class="cb-agree-wrap">
         <input type="checkbox" id="cb-agree" name="agreed">
-        <span class="cb-agree-label">Я согласен с Пользовательским соглашением и Политикой обработки персональных данных программного средства Painmetrica, понимаю их содержание и выражаю своё свободное, конкретное, информированное и сознательное согласие на обработку моих персональных данных в целях, указанных в Политике обработки персональных данных.</span>
+        <span class="cb-agree-label">Я ознакомился(-ась) с Политикой обработки персональных данных программного средства Painmetrica, понимаю её содержание и выражаю своё свободное, конкретное, информированное и сознательное согласие на обработку моих персональных данных в целях, указанных в Политике.</span>
       </label>
-      <button type="submit" class="btn-continue" id="btn-continue" disabled>Продолжить</button>
+      <div class="btns-row">
+        <a href="{% url 'accounts:register_step_two' %}" class="btn-secondary">Назад</a>
+        <button type="submit" class="btn-continue" id="btn-continue" disabled>Продолжить</button>
+      </div>
     </form>
   </section>
 </main>
@@ -292,9 +298,11 @@ async function applyZoom() {
   if (!pdfDoc) return;
   zoomDisplay.textContent = '…';
   btnZoomIn.disabled = btnZoomOut.disabled = true;
-  const scrollRatio = canvasWrap.scrollTop / canvasWrap.scrollHeight;
+  const scrollTopRatio  = canvasWrap.scrollTop  / (canvasWrap.scrollHeight || 1);
+  const scrollLeftRatio = canvasWrap.scrollLeft / (canvasWrap.scrollWidth  || 1);
   await renderAllPages();
-  canvasWrap.scrollTop = scrollRatio * canvasWrap.scrollHeight;
+  canvasWrap.scrollTop  = scrollTopRatio  * canvasWrap.scrollHeight;
+  canvasWrap.scrollLeft = scrollLeftRatio * canvasWrap.scrollWidth;
 }
 
 btnZoomIn.addEventListener('click', async () => {

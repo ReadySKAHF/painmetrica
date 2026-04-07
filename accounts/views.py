@@ -36,7 +36,18 @@ class RegisterStepOneView(View):
         if request.user.is_authenticated:
             return redirect('core:dashboard')
 
-        form = RegisterStepOneForm()
+        # Подставляем ранее введённые данные при возврате с шага 2
+        initial = {}
+        if 'registration_data' in request.session:
+            d = request.session['registration_data']
+            initial = {
+                'first_name':  d.get('first_name', ''),
+                'middle_name': d.get('middle_name', ''),
+                'last_name':   d.get('last_name', ''),
+                'email':       d.get('email', ''),
+            }
+
+        form = RegisterStepOneForm(initial=initial)
         return render(request, self.template_name, {'form': form})
 
     def post(self, request):
@@ -100,8 +111,10 @@ class RegisterStepTwoView(View):
         if request.session['registration_data'].get('user_type') != 'doctor':
             return redirect('accounts:register_verify')
 
-        form = DoctorProfileForm()
-        return render(request, self.template_name, {'form': form})
+        # Подставляем ранее введённые данные при возврате с шага 3
+        step2_data = request.session.get('registration_step2_data', {})
+        form = DoctorProfileForm(initial=step2_data)
+        return render(request, self.template_name, {'form': form, 'step2_data': step2_data})
 
     def post(self, request):
         # Проверяем наличие данных первого шага
@@ -112,25 +125,15 @@ class RegisterStepTwoView(View):
         form = DoctorProfileForm(request.POST)
 
         if form.is_valid():
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
+            # Сохраняем данные шага 2 в сессию (пользователь создаётся только на шаге 4)
+            request.session['registration_step2_data'] = {
+                'specialty':        form.cleaned_data.get('specialty', ''),
+                'position':         form.cleaned_data.get('position', ''),
+                'workplace':        form.cleaned_data.get('workplace', ''),
+                'city':             form.cleaned_data.get('city', ''),
+                'area_of_interest': form.cleaned_data.get('area_of_interest', ''),
+            }
 
-            # Удаляем незавершённую регистрацию с тем же email (если есть)
-            email = request.session['registration_data']['email']
-            User.objects.filter(email__iexact=email, is_email_verified=False).delete()
-
-            # Создаем пользователя с профилем доктора
-            user = RegisterStepOneView()._create_user_and_profile(
-                request.session['registration_data'],
-                doctor_profile_data=form.cleaned_data
-            )
-
-            request.session['registration_user_id'] = user.id
-
-            # Отправляем OTP
-            OTPService.generate_and_send_otp(user, purpose='registration')
-
-            messages.success(request, 'Код подтверждения отправлен на ваш email.')
             return redirect('accounts:register_step_three')
 
         return render(request, self.template_name, {'form': form})
@@ -142,12 +145,12 @@ class RegisterStepThreeView(View):
     template_name = 'accounts/register_step3.html'
 
     def get(self, request):
-        if 'registration_user_id' not in request.session:
+        if 'registration_step2_data' not in request.session:
             return redirect('accounts:register_step_one')
         return render(request, self.template_name)
 
     def post(self, request):
-        if 'registration_user_id' not in request.session:
+        if 'registration_step2_data' not in request.session:
             return redirect('accounts:register_step_one')
         return redirect('accounts:register_step_four')
 
@@ -158,13 +161,32 @@ class RegisterStepFourView(View):
     template_name = 'accounts/register_step4.html'
 
     def get(self, request):
-        if 'registration_user_id' not in request.session:
+        if 'registration_step2_data' not in request.session:
             return redirect('accounts:register_step_one')
         return render(request, self.template_name)
 
     def post(self, request):
-        if 'registration_user_id' not in request.session:
+        if 'registration_step2_data' not in request.session or 'registration_data' not in request.session:
             return redirect('accounts:register_step_one')
+
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        # Удаляем незавершённую регистрацию с тем же email (если вдруг есть)
+        email = request.session['registration_data']['email']
+        User.objects.filter(email__iexact=email, is_email_verified=False).delete()
+
+        # Создаём пользователя с профилем доктора только после принятия обеих политик
+        user = RegisterStepOneView()._create_user_and_profile(
+            request.session['registration_data'],
+            doctor_profile_data=request.session['registration_step2_data'],
+        )
+
+        request.session['registration_user_id'] = user.id
+
+        # Отправляем OTP
+        OTPService.generate_and_send_otp(user, purpose='registration')
+        messages.success(request, 'Код подтверждения отправлен на ваш email.')
         return redirect('accounts:register_verify')
 
 

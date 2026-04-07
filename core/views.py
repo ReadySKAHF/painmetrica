@@ -89,4 +89,6 @@ class DashboardView(LoginRequiredMixin, View):
                 context['assigned_doctor'] = None
                 context['patient_pk'] = None
 
+        from datetime import date
+        context['today_iso'] = date.today().isoformat()
         return render(request, self.template_name, context)

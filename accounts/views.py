@@ -147,11 +147,13 @@ class RegisterStepThreeView(View):
     def get(self, request):
         if 'registration_step2_data' not in request.session:
             return redirect('accounts:register_step_one')
-        return render(request, self.template_name)
+        agreed = request.session.get('step3_agreed', False)
+        return render(request, self.template_name, {'agreed': agreed})
 
     def post(self, request):
         if 'registration_step2_data' not in request.session:
             return redirect('accounts:register_step_one')
+        request.session['step3_agreed'] = True
         return redirect('accounts:register_step_four')
 
 

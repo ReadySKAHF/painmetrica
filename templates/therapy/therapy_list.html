@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Реабилитационная терапия — Painmetrica</title>
+<title>Реабилитационные мероприятия — Painmetrica</title>
 <style>
 @font-face {
     font-family: 'Proxima Nova';
@@ -511,7 +511,7 @@
 <path d="M10.2797 4.9043V7.0543M10.2797 7.0543V9.2043M10.2797 7.0543H8.12974M10.2797 7.0543H12.4297M5.97974 13.5043H14.5797M7.05474 17.8043H13.5047" stroke="currentColor" stroke-width="1.20938" stroke-linecap="round"/>
 </svg>
       </span>
-      <span class="nav-label">Реабилитационная терапия</span>
+      <span class="nav-label">Реабилитационные мероприятия</span>
     </a>
   </nav>
 
@@ -538,12 +538,12 @@
   </div>
   {% endif %}
 
-  <h1 class="page-title">Реабилитационная терапия</h1>
+  <h1 class="page-title">Реабилитационные мероприятия </h1>
 
   <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="toolbar-left">
-      <span class="therapies-count">{% if search_query %}Найдено терапий{% else %}Всего терапий{% endif %}: {{ total_therapies }}</span>
+      <span class="therapies-count">{% if search_query %}Найдено мероприятий{% else %}Всего мероприятий{% endif %}: {{ total_therapies }}</span>
     </div>
     <form method="get" action="{% url 'therapy:list' %}" id="searchForm">
       <div class="search-field">
@@ -551,7 +551,7 @@
           <circle cx="10" cy="10" r="7" stroke="#919191" stroke-width="1.375"/>
           <path d="M15.5 15.5L20 20" stroke="#919191" stroke-width="1.375" stroke-linecap="round"/>
         </svg>
-        <input type="text" name="q" placeholder="Введите название терапии" value="{{ search_query }}">
+        <input type="text" name="q" placeholder="Введите название мероприятия" value="{{ search_query }}">
         {% if search_query %}
         <a href="{% url 'therapy:list' %}" style="display:flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--gray-550);border-radius:50%;text-decoration:none;flex-shrink:0;">
           <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -575,7 +575,7 @@
           <div class="card-info">
             <span class="card-name">{{ therapy.name }}</span>
             <div class="card-data-row">
-              <span class="card-label">Тип терапии</span>
+              <span class="card-label">Тип мероприятия</span>
               <span class="card-value">{{ therapy.therapy_type|default:"—" }}</span>
             </div>
             {% with note_text=notes_by_therapy|get_item:therapy.pk %}
@@ -586,7 +586,7 @@
           </div>
         </div>
       </div>
-      <a href="{% url 'therapy:detail' therapy.pk %}" class="btn-outline">Карточка терапии</a>
+      <a href="{% url 'therapy:detail' therapy.pk %}" class="btn-outline">Карточка мероприятия</a>
     </div>
     {% empty %}
     <div class="not-found show">

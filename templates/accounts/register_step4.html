@@ -70,7 +70,10 @@
   .cb-agree-wrap.visible { display: flex; }
   .cb-agree-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--blue-500); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
   .cb-agree-label { font-size: 14px; color: var(--gray-950); line-height: 1.5; }
-  .btn-continue { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px; background: var(--blue-500); border-radius: 48px; border: none; font-size: 18px; font-weight: 600; color: var(--gray-250); cursor: pointer; transition: opacity .15s; width: 160px; margin: 0 auto; }
+  .btns-row { display: flex; align-items: center; justify-content: center; gap: 24px; }
+  .btn-secondary { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px; background: var(--white); border: 1px solid var(--gray-950); border-radius: 48px; font-family: var(--font); font-size: 18px; font-weight: 600; color: var(--gray-950); cursor: pointer; transition: background .15s; text-decoration: none; width: 99px; }
+  .btn-secondary:hover { background: var(--gray-250); }
+  .btn-continue { display: flex; justify-content: center; align-items: center; padding: 13px 24px; height: 46px; background: var(--blue-500); border-radius: 48px; border: none; font-size: 18px; font-weight: 600; color: var(--gray-250); cursor: pointer; transition: opacity .15s; width: 160px; }
   .btn-continue:hover { opacity: .9; }
   .btn-continue:disabled { background: var(--gray-300); color: var(--gray-550); cursor: not-allowed; opacity: 1; }
   .footer { width: 1320px; max-width: calc(100vw - 24px); margin: 40px auto 0; background: var(--white); border-radius: 28px 28px 0 0; display: flex; flex-direction: column; align-items: center; padding: 24px 0; gap: 8px; }
@@ -182,9 +185,12 @@
       {% csrf_token %}
       <label class="cb-agree-wrap">
         <input type="checkbox" id="cb-agree" name="agreed">
-        <span class="cb-agree-label">Я ознакомился(-ась) с Пользовательским соглашением программного средства Painmetrica, понимаю его содержание и принимаю его условия в полном объёме.</span>
+        <span class="cb-agree-label">Я ознакомился(-ась) с Политикой обработки персональных данных программного средства Painmetrica, понимаю её содержание и выражаю своё свободное, конкретное, информированное и сознательное согласие на обработку моих персональных данных в целях, указанных в Политике.</span>
       </label>
-      <button type="submit" class="btn-continue" id="btn-continue" disabled>Продолжить</button>
+      <div class="btns-row">
+        <a href="{% url 'accounts:register_step_three' %}" class="btn-secondary">Назад</a>
+        <button type="submit" class="btn-continue" id="btn-continue" disabled>Продолжить</button>
+      </div>
     </form>
   </section>
 </main>

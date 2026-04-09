@@ -32,5 +32,7 @@ urlpatterns = [
     path('api/send-patient-invitation/', views.SendPatientInvitationView.as_view(), name='send_patient_invitation'),
     path('api/manual-patient-create/', views.ManualPatientCreateView.as_view(), name='manual_patient_create'),
     path('register/patient/invite/<uuid:token>/', views.PatientRegisterViaInviteStep1View.as_view(), name='patient_register_invite'),
+    path('register/patient/agreement/', views.PatientRegisterAgreementView.as_view(), name='patient_register_agreement'),
+    path('register/patient/policy/', views.PatientRegisterPolicyView.as_view(), name='patient_register_policy'),
     path('register/patient/verify/', views.PatientRegisterViaInviteVerifyView.as_view(), name='patient_register_invite_verify'),
 ]

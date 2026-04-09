@@ -534,7 +534,23 @@ class PatientRegisterViaInviteStep1View(View):
         if not invitation or not invitation.is_valid():
             return render(request, 'accounts/patient_invite_invalid.html')
 
-        form = PatientRegisterViaInviteForm()
+        initial = {}
+        if 'patient_invite_user_id' in request.session:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                existing = User.objects.get(id=request.session['patient_invite_user_id'])
+                initial = {
+                    'first_name': existing.first_name,
+                    'last_name': existing.last_name,
+                    'middle_name': existing.middle_name,
+                }
+                if hasattr(existing, 'patient_profile') and existing.patient_profile.date_of_birth:
+                    initial['date_of_birth'] = existing.patient_profile.date_of_birth.strftime('%Y-%m-%d')
+            except User.DoesNotExist:
+                pass
+
+        form = PatientRegisterViaInviteForm(initial=initial)
         return render(request, self.template_name, {'form': form, 'invitation': invitation})
 
     def post(self, request, token):
@@ -574,15 +590,60 @@ class PatientRegisterViaInviteStep1View(View):
             request.session['patient_invite_user_id'] = user.id
             request.session['patient_invite_token'] = str(token)
 
-            OTPService.generate_and_send_otp(user, purpose='registration')
-
-            return redirect('accounts:patient_register_invite_verify')
+            return redirect('accounts:patient_register_agreement')
 
         return render(request, self.template_name, {'form': form, 'invitation': invitation})
 
 
+class PatientRegisterAgreementView(View):
+    """Шаг 2: пациент читает пользовательское соглашение"""
+
+    template_name = 'accounts/patient_register_invite_agreement.html'
+
+    def get(self, request):
+        if 'patient_invite_user_id' not in request.session:
+            return redirect('core:home')
+        back_token = request.session.get('patient_invite_token')
+        return render(request, self.template_name, {'back_token': back_token})
+
+    def post(self, request):
+        if 'patient_invite_user_id' not in request.session:
+            return redirect('core:home')
+        if request.POST.get('agreed'):
+            return redirect('accounts:patient_register_policy')
+        back_token = request.session.get('patient_invite_token')
+        return render(request, self.template_name, {'agreed': False, 'back_token': back_token})
+
+
+class PatientRegisterPolicyView(View):
+    """Шаг 3: пациент читает политику обработки персональных данных"""
+
+    template_name = 'accounts/patient_register_invite_policy.html'
+
+    def get(self, request):
+        if 'patient_invite_user_id' not in request.session:
+            return redirect('core:home')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        if 'patient_invite_user_id' not in request.session:
+            return redirect('core:home')
+
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        try:
+            user = User.objects.get(id=request.session['patient_invite_user_id'])
+        except User.DoesNotExist:
+            return redirect('core:home')
+
+        if request.POST.get('agreed'):
+            OTPService.generate_and_send_otp(user, purpose='registration')
+            return redirect('accounts:patient_register_invite_verify')
+        return render(request, self.template_name, {'agreed': False})
+
+
 class PatientRegisterViaInviteVerifyView(View):
-    """Шаг 2: пациент подтверждает email через OTP"""
+    """Шаг 4: пациент подтверждает email через OTP"""
 
     template_name = 'accounts/patient_register_invite_verify.html'
 

@@ -854,6 +854,37 @@
   }
   .f-select:focus { border-color: #2E7CF6; box-shadow: 0 0 0 3px rgba(46,124,246,.12); }
 
+  /* ── Custom duration dropdown ── */
+  .f-dur-wrap { position: relative; }
+  .f-dur-trigger {
+    width: 100%; height: 44px; padding: 0 40px 0 14px;
+    background: #F9F9F9; border: 1.5px solid transparent; border-radius: 12px;
+    font-family: inherit; font-size: 13px; color: var(--gray-550);
+    outline: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    text-align: left; transition: border-color .18s, box-shadow .18s;
+  }
+  .f-dur-trigger.has-value { color: var(--gray-950); }
+  .f-dur-trigger.open { border-color: #2E7CF6; box-shadow: 0 0 0 3px rgba(46,124,246,.12); }
+  .f-dur-trigger.f-error { border-color: #E43D3D !important; box-shadow: 0 0 0 3px rgba(228,61,61,.12); }
+  .f-dur-trigger .trigger-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .f-dur-trigger .trigger-arrow { flex-shrink: 0; color: var(--gray-550); transition: transform .2s; margin-left: 8px; }
+  .f-dur-trigger.open .trigger-arrow { transform: rotate(180deg); }
+  .f-dur-dropdown {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #FEFEFE; border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.10);
+    padding: 6px; z-index: 200;
+  }
+  .f-dur-dropdown.open { display: flex; flex-direction: column; gap: 2px; }
+  .f-dur-option {
+    display: flex; align-items: center; padding: 12px 8px; gap: 8px;
+    border-radius: 8px; cursor: pointer; font-size: 13px; color: #262626;
+    background: #FEFEFE; transition: background .12s;
+  }
+  .f-dur-option:hover { background: #EEF3FE; }
+  .f-dur-option.selected { background: #EEF3FE; color: #2E7CF6; font-weight: 600; }
+
   .btn-row { display: flex; gap: 25px; justify-content: center; align-items: center; }
   .m-btn-outline {
     padding: 13px 22px; background: var(--white); color: var(--gray-950);
@@ -978,7 +1009,7 @@
             <circle cx="10" cy="10" r="7" stroke="#919191" stroke-width="1.375"/>
             <path d="M15.5 15.5L20 20" stroke="#919191" stroke-width="1.375" stroke-linecap="round"/>
           </svg>
-          <input type="text" name="q" id="searchInput" placeholder="Введите ФИО пациента" value="{{ search_query }}">
+          <input type="text" name="q" id="searchInput" placeholder="Введите ФИО пациента" value="{{ search_query }}" maxlength="150" autocomplete="off">
           <div class="search-right-icons">
             {% if search_query %}
             <a href="{% url 'core:dashboard' %}" style="display:flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--gray-550);border-radius:50%;text-decoration:none;">
@@ -1014,15 +1045,15 @@
           <!-- Строка 1: Фамилия, Имя, Отчество -->
           <div class="adv-input-wrap">
             <span class="adv-label">Фамилия</span>
-            <input class="input-simple" name="last_name" placeholder="Введите фамилию" value="{{ adv_last_name }}">
+            <input class="input-simple" id="adv-last-name" name="last_name" placeholder="Введите фамилию" value="{{ adv_last_name }}" maxlength="150" autocomplete="off">
           </div>
           <div class="adv-input-wrap">
             <span class="adv-label">Имя</span>
-            <input class="input-simple" name="first_name" placeholder="Введите имя" value="{{ adv_first_name }}">
+            <input class="input-simple" id="adv-first-name" name="first_name" placeholder="Введите имя" value="{{ adv_first_name }}" maxlength="150" autocomplete="off">
           </div>
           <div class="adv-input-wrap">
             <span class="adv-label">Отчество</span>
-            <input class="input-simple" name="middle_name" placeholder="Введите отчество" value="{{ adv_middle_name }}">
+            <input class="input-simple" id="adv-middle-name" name="middle_name" placeholder="Введите отчество" value="{{ adv_middle_name }}" maxlength="150" autocomplete="off">
           </div>
 
           <!-- Строка 2: Дата рождения, Диагноз, Кнопка -->
@@ -1274,6 +1305,32 @@
       toolbar.style.display = 'none';
     }
 
+    /* Запрет цифр и спецсимволов в полях ФИО */
+    var nameOnlyPattern = /[^a-zA-Zа-яА-ЯёЁ\s\-]/g;
+    ['searchInput', 'adv-last-name', 'adv-first-name', 'adv-middle-name'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', function () {
+          var pos = el.selectionStart;
+          var cleaned = el.value.replace(nameOnlyPattern, '');
+          if (cleaned !== el.value) {
+            el.value = cleaned;
+            el.setSelectionRange(pos - 1, pos - 1);
+          }
+        });
+      }
+    });
+
+    /* Гарантируем, что max у скрытого date-picker всегда = сегодня */
+    var advDobPickerEl = document.getElementById('adv-dob-picker');
+    if (advDobPickerEl) {
+      var _now = new Date();
+      var _y = _now.getFullYear();
+      var _m = String(_now.getMonth() + 1).padStart(2, '0');
+      var _d = String(_now.getDate()).padStart(2, '0');
+      advDobPickerEl.max = _y + '-' + _m + '-' + _d;
+    }
+
     /* Автоформат даты: цифры → ДД.ММ.ГГГГ */
     var dobInput = document.getElementById('adv-dob');
     if (dobInput) {
@@ -1436,11 +1493,15 @@
     <p class="m-title">Самостоятельная регистрация пациента</p>
     <p class="m-desc">На введённую вами почту будет отправлено сообщение со ссылкой на регистрацию вашего пациента в системе «Painmetrica».</p>
     <div class="m-input-wrap">
-      <input class="m-input" id="inviteEmail" type="email" placeholder="user@gmail.com" autocomplete="email">
+      <input class="m-input" id="inviteEmail" type="email" placeholder="user@gmail.com" autocomplete="email" maxlength="50">
+    </div>
+    <div class="error-block" id="inviteErrEmpty">
+      <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="error-text">Вы не ввели электронную почту</span>
     </div>
     <div class="error-block" id="inviteErrFormat">
       <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <span class="error-text">Некорректный адрес Электронной почты</span>
+      <span class="error-text">Некорректный адрес электронной почты</span>
     </div>
     <div class="error-block" id="inviteErrExists">
       <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -1473,7 +1534,7 @@
       <div class="f-inputs">
         <div class="f-field">
           <label class="f-label">Фамилия пациента</label>
-          <input class="f-input" id="fSurname" type="text" placeholder="Введите фамилию пациента" autocomplete="off" maxlength="50">
+          <input class="f-input" id="fSurname" type="text" placeholder="Введите фамилию пациента" autocomplete="off" maxlength="150">
           <div class="error-block" id="fSurnameErr">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text"></span>
@@ -1481,7 +1542,7 @@
         </div>
         <div class="f-field">
           <label class="f-label">Имя пациента</label>
-          <input class="f-input" id="fName" type="text" placeholder="Введите имя пациента" autocomplete="off" maxlength="50">
+          <input class="f-input" id="fName" type="text" placeholder="Введите имя пациента" autocomplete="off" maxlength="150">
           <div class="error-block" id="fNameErr">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text"></span>
@@ -1489,7 +1550,7 @@
         </div>
         <div class="f-field">
           <label class="f-label">Отчество пациента <span style="font-weight:400;color:#919191">(необязательно)</span></label>
-          <input class="f-input" id="fPatronymic" type="text" placeholder="Введите отчество пациента" autocomplete="off" maxlength="50">
+          <input class="f-input" id="fPatronymic" type="text" placeholder="Введите отчество пациента" autocomplete="off" maxlength="150">
           <div class="error-block" id="fPatronymicErr">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text"></span>
@@ -1547,15 +1608,20 @@
         </div>
         <div class="f-field">
           <label class="f-label">Длительность боли</label>
-          <select class="f-select" id="fDuration">
-            <option value="">Длительность не указана</option>
-            <option value="1w">Менее 1 недели</option>
-            <option value="1m">1–4 недели</option>
-            <option value="3m">1–3 месяца</option>
-            <option value="6m">3–6 месяцев</option>
-            <option value="1y">6–12 месяцев</option>
-            <option value="1y+">Более 1 года</option>
-          </select>
+          <div class="f-dur-wrap" id="fDurationWrap">
+            <button type="button" class="f-dur-trigger" id="fDurationTrigger" aria-haspopup="listbox">
+              <span class="trigger-text" id="fDurationText">Укажите длительность боли пациента</span>
+              <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="f-dur-dropdown" id="fDurationDropdown" role="listbox">
+              <div class="f-dur-option" data-value="acute">Острая (до 1 месяца)</div>
+              <div class="f-dur-option" data-value="subacute">Подострая (1 - 3 месяца)</div>
+              <div class="f-dur-option" data-value="chronic">Хроническая (более 3 месяцев)</div>
+            </div>
+            <input type="hidden" id="fDuration">
+          </div>
           <div class="error-block" id="fDurationErr">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text"></span>
@@ -1565,6 +1631,7 @@
       <p class="m-error" id="formBError"></p>
       <div class="btn-row">
         <button class="m-btn" style="min-width:129px" id="addPatientBtn" onclick="submitManualPatient()">Добавить</button>
+        <button class="m-btn-outline" onclick="showModal('formA')">Назад</button>
         <button class="m-btn-outline" onclick="clearFormB()">Очистить</button>
       </div>
     </div>
@@ -1658,13 +1725,43 @@
       if (document.getElementById(errId)) clearFieldError(id, errId);
     });
   });
-  document.getElementById('fDuration').addEventListener('change', () => {
-    clearFieldError('fDuration', 'fDurationErr');
-  });
+  // ── Custom dropdown: Длительность боли ──
+  (function() {
+    var trigger  = document.getElementById('fDurationTrigger');
+    var dropdown = document.getElementById('fDurationDropdown');
+    var hidden   = document.getElementById('fDuration');
+    var text     = document.getElementById('fDurationText');
+
+    trigger.addEventListener('click', function() {
+      var isOpen = dropdown.classList.contains('open');
+      dropdown.classList.toggle('open', !isOpen);
+      trigger.classList.toggle('open', !isOpen);
+    });
+
+    dropdown.querySelectorAll('.f-dur-option').forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        hidden.value = opt.dataset.value;
+        text.textContent = opt.textContent.trim();
+        trigger.classList.add('has-value');
+        trigger.classList.remove('open', 'f-error');
+        dropdown.classList.remove('open');
+        dropdown.querySelectorAll('.f-dur-option').forEach(function(o) { o.classList.remove('selected'); });
+        opt.classList.add('selected');
+        clearFieldError('fDurationTrigger', 'fDurationErr');
+      });
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#fDurationWrap')) {
+        dropdown.classList.remove('open');
+        trigger.classList.remove('open');
+      }
+    });
+  })();
 
   // ── Вспомогательные для email-блока ──
   function hideInviteErrors() {
-    ['inviteErrFormat','inviteErrExists','inviteErrOther'].forEach(id =>
+    ['inviteErrEmpty','inviteErrFormat','inviteErrExists','inviteErrOther'].forEach(id =>
       document.getElementById(id).classList.remove('visible')
     );
     document.getElementById('inviteEmail').classList.remove('input-error');
@@ -1680,7 +1777,13 @@
 
     hideInviteErrors();
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email) {
+      emailEl.classList.add('input-error');
+      document.getElementById('inviteErrEmpty').classList.add('visible');
+      emailEl.focus();
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       emailEl.classList.add('input-error');
       document.getElementById('inviteErrFormat').classList.add('visible');
       emailEl.focus();
@@ -1792,7 +1895,12 @@
       document.getElementById(id).classList.remove('f-error');
     });
     document.getElementById('fDuration').value = '';
-    document.getElementById('fDuration').classList.remove('f-error');
+    var durTrigger = document.getElementById('fDurationTrigger');
+    var durText    = document.getElementById('fDurationText');
+    durTrigger.classList.remove('has-value', 'open', 'f-error');
+    durText.textContent = 'Укажите длительность боли пациента';
+    document.getElementById('fDurationDropdown').classList.remove('open');
+    document.querySelectorAll('#fDurationDropdown .f-dur-option').forEach(function(o) { o.classList.remove('selected'); });
     ['fDiagnosisErr','fPainLocErr','fDurationErr'].forEach(id => {
       const blk = document.getElementById(id);
       if (blk) { blk.querySelector('.error-text').textContent = ''; blk.classList.remove('visible'); }
@@ -1808,9 +1916,9 @@
     const pain_location = document.getElementById('fPainLoc').value.trim();
     const pain_duration = document.getElementById('fDuration').value;
 
-    clearFieldError('fDiagnosis', 'fDiagnosisErr');
-    clearFieldError('fPainLoc',   'fPainLocErr');
-    clearFieldError('fDuration',  'fDurationErr');
+    clearFieldError('fDiagnosis',      'fDiagnosisErr');
+    clearFieldError('fPainLoc',        'fPainLocErr');
+    clearFieldError('fDurationTrigger','fDurationErr');
 
     let valid = true;
 
@@ -1825,7 +1933,7 @@
     }
 
     if (!pain_duration) {
-      setFieldError('fDuration', 'fDurationErr', 'Вы не указали длительность боли');
+      setFieldError('fDurationTrigger', 'fDurationErr', 'Вы не указали длительность боли');
       valid = false;
     }
 

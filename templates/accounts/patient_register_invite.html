@@ -18,6 +18,7 @@
   :root {
     --blue-500: #2E67F6;
     --blue-400: #2E7CF6;
+    --blue-350: #5391F2;
     --blue-200: #D4E6FF;
     --blue-100: #EEF5FF;
     --gray-950: #262626;
@@ -40,45 +41,29 @@
   }
   .logo { display: flex; align-items: center; text-decoration: none; }
 
-  main {
-    flex: 1;
-    max-width: 1320px; margin: 0 auto;
-    padding: 40px 52px 60px;
-    display: flex; gap: 100px; align-items: flex-start;
-  }
+  main { flex: 1; width: 1320px; max-width: calc(100vw - 24px); margin: 0 auto; padding: 40px 52px 60px 0; display: flex; gap: 136px; align-items: flex-start; }
 
   /* STEPPER */
-  .stepper-panel {
-    width: 466px; flex-shrink: 0;
-    background: var(--gray-200); border-radius: 25px; padding: 32px 20px;
-  }
-  .steps-list {
-    position: relative; display: flex; flex-direction: column; gap: 16px; padding: 0 16px;
-  }
-  .steps-list::before {
-    content: ''; position: absolute; left: 35px; top: 50px;
-    width: 2px; height: calc(50% - 30px);
-    background: var(--gray-300); border-radius: 2px;
-  }
-  .step-item { display: flex; align-items: flex-start; gap: 12px; position: relative; z-index: 1; }
-  .step-circle {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: var(--gray-300); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .stepper-panel { width: 424px; height: 282px; flex-shrink: 0; background: var(--gray-200); border-radius: 25px; padding: 24px 20px; display: flex; flex-direction: column; }
+  .steps-list { display: flex; flex-direction: column; padding: 0 16px; flex: 1; }
+  .step-item { display: flex; gap: 12px; flex: 1; }
+  .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 40px; }
+  .step-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .step-circle.active { background: var(--blue-400); border: 2px solid var(--blue-200); }
-  .step-circle.done   { background: var(--blue-400); }
+  .step-circle.done { background: var(--blue-400); }
   .step-circle .check-icon { display: none; }
   .step-circle.done .check-icon { display: block; }
-  .step-text { padding: 6px 0; }
-  .step-label { font-size: 18px; font-weight: 600; color: var(--gray-500); margin-bottom: 10px; }
+  .step-connector { flex: 1; min-height: 8px; width: 2px; background: var(--gray-300); border-radius: 2px; }
+  .step-connector.done { background: var(--blue-350); }
+  .step-text { flex: 1; padding: 2px 0 0; }
+  .step-label { font-size: 14px; font-weight: 600; color: var(--gray-500); margin-bottom: 3px; line-height: 1; }
   .step-label.active { color: var(--blue-400); }
-  .step-label.done   { color: var(--gray-950); }
-  .step-desc { font-size: 20px; color: var(--gray-500); line-height: 1.4; }
+  .step-label.done { color: var(--gray-950); }
+  .step-desc { font-size: 14px; color: var(--gray-500); line-height: 1.35; }
   .step-desc.active, .step-desc.done { color: #000; }
 
   /* FORM */
-  .form-section { flex: 1; min-width: 0; max-width: 424px; }
+  .form-section { width: 424px; flex-shrink: 0; min-height: 552px; }
   .form-title { font-size: 30px; font-weight: 700; color: var(--gray-950); margin-bottom: 8px; }
   .form-subtitle { font-size: 18px; color: #000; margin-bottom: 16px; }
   .invite-info {
@@ -172,21 +157,42 @@
   <aside class="stepper-panel">
     <div class="steps-list">
       <div class="step-item">
-        <div class="step-circle active"></div>
+        <div class="step-left">
+          <div class="step-circle active"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="step-connector"></div>
+        </div>
         <div class="step-text">
           <div class="step-label active">ШАГ 1</div>
           <div class="step-desc active">Введите данные для вашей учётной записи</div>
         </div>
       </div>
       <div class="step-item">
-        <div class="step-circle">
-          <svg class="check-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+        <div class="step-left">
+          <div class="step-circle"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="step-connector"></div>
         </div>
         <div class="step-text">
           <div class="step-label">ШАГ 2</div>
-          <div class="step-desc">Подтвердите адрес электронной почты</div>
+          <div class="step-desc">Ознакомление с пользовательским соглашением</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-left">
+          <div class="step-circle"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">ШАГ 3</div>
+          <div class="step-desc">Ознакомление с политикой обработки персональных данных</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-left">
+          <div class="step-circle"><svg class="check-icon" width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M4 9L7.5 12.5L14 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">ШАГ 4</div>
+          <div class="step-desc">Подтверждение адреса электронной почты</div>
         </div>
       </div>
     </div>
@@ -214,7 +220,7 @@
             value="{{ form.last_name.value|default:'' }}"
             placeholder="Введите фамилию" required>
           {% if form.last_name.errors %}
-          <div class="error-block visible">
+          <div class="error-block visible" id="error-last-name-server">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text">{{ form.last_name.errors.0 }}</span>
           </div>
@@ -222,6 +228,10 @@
           <div class="error-block" id="error-last-name">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
+          </div>
+          <div class="error-block" id="error-last-name-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text" id="error-last-name-length-text"></span>
           </div>
           <div class="error-block" id="error-last-name-empty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -236,7 +246,7 @@
             value="{{ form.first_name.value|default:'' }}"
             placeholder="Введите имя" required>
           {% if form.first_name.errors %}
-          <div class="error-block visible">
+          <div class="error-block visible" id="error-first-name-server">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text">{{ form.first_name.errors.0 }}</span>
           </div>
@@ -244,6 +254,10 @@
           <div class="error-block" id="error-first-name">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
+          </div>
+          <div class="error-block" id="error-first-name-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text" id="error-first-name-length-text"></span>
           </div>
           <div class="error-block" id="error-first-name-empty">
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -260,6 +274,10 @@
             <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="error-text">Цифры и спец. символы запрещены</span>
           </div>
+          <div class="error-block" id="error-middle-name-length">
+            <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="error-text" id="error-middle-name-length-text"></span>
+          </div>
         </div>
 
         <div class="field-wrap">
@@ -268,7 +286,7 @@
             <input class="field-input {% if form.date_of_birth.errors %}error-state{% endif %}"
               type="date" id="inp-dob" name="date_of_birth"
               value="{{ form.date_of_birth.value|default:'' }}"
-              min="1890-01-01">
+              min="1890-01-01" max="">
             <span class="date-icon">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
@@ -321,7 +339,7 @@
               <circle cx="9" cy="9" r="8.5" stroke="currentColor"/>
               <path d="M9 5v4M9 13h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <span class="info-text">Пароль должен содержать как минимум 1 спец. символ, 1 цифру, 1 заглавную букву</span>
+            <span class="info-text">Пароль должен содержать как минимум 1 спец. символ, 1 цифру, 1 заглавную букву и состоять из латинских букв</span>
           </div>
           {% if form.password.errors %}
           <div class="error-block visible">
@@ -380,40 +398,147 @@ eyeToggle.addEventListener('click', () => {
 // ── Валидация ФИО ──
 const namePattern = /^[a-zA-Zа-яА-ЯёЁ\s\-]*$/;
 
-function validateNameField(input, errorBlock) {
-  const valid = namePattern.test(input.value);
-  if (!valid && input.value !== '') {
-    input.classList.add('error-state');
-    errorBlock.classList.add('visible');
-  } else {
-    input.classList.remove('error-state');
-    errorBlock.classList.remove('visible');
+// Фамилия
+const lastNameInput           = document.getElementById('inp-last-name');
+const lastNameError           = document.getElementById('error-last-name');
+const lastNameErrorLength     = document.getElementById('error-last-name-length');
+const lastNameErrorLengthText = document.getElementById('error-last-name-length-text');
+const lastNameErrorEmpty      = document.getElementById('error-last-name-empty');
+const lastNameErrorServer     = document.getElementById('error-last-name-server');
+
+function clearLastNameErrors() {
+  lastNameError.classList.remove('visible');
+  lastNameErrorLength.classList.remove('visible');
+  lastNameErrorEmpty.classList.remove('visible');
+  if (lastNameErrorServer) lastNameErrorServer.classList.remove('visible');
+  lastNameInput.classList.remove('error-state');
+}
+function validateLastName() {
+  const value = lastNameInput.value;
+  clearLastNameErrors();
+  if (value === '') return;
+  if (value.length > 150) {
+    lastNameInput.classList.add('error-state');
+    lastNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${value.length})`;
+    lastNameErrorLength.classList.add('visible');
+    return;
+  }
+  if (!namePattern.test(value)) {
+    lastNameInput.classList.add('error-state');
+    lastNameError.classList.add('visible');
   }
 }
+lastNameInput.addEventListener('input', () => { validateLastName(); });
+lastNameInput.addEventListener('blur', () => {
+  if (lastNameInput.value.trim() === '') {
+    clearLastNameErrors();
+    lastNameInput.classList.add('error-state');
+    lastNameErrorEmpty.classList.add('visible');
+  }
+});
+lastNameInput.addEventListener('focus', () => {
+  lastNameErrorEmpty.classList.remove('visible');
+  if (lastNameInput.value.trim() !== '') lastNameInput.classList.remove('error-state');
+  if (lastNameErrorServer) lastNameErrorServer.classList.remove('visible');
+});
 
-const lastNameInput      = document.getElementById('inp-last-name');
-const lastNameError      = document.getElementById('error-last-name');
-const lastNameErrorEmpty = document.getElementById('error-last-name-empty');
-lastNameInput.addEventListener('input', () => { lastNameErrorEmpty.classList.remove('visible'); validateNameField(lastNameInput, lastNameError); });
-lastNameInput.addEventListener('blur',  () => { if (lastNameInput.value.trim() === '') { lastNameInput.classList.add('error-state'); lastNameErrorEmpty.classList.add('visible'); } });
-lastNameInput.addEventListener('focus', () => { lastNameErrorEmpty.classList.remove('visible'); if (lastNameInput.value.trim() !== '') lastNameInput.classList.remove('error-state'); });
+// Имя
+const firstNameInput           = document.getElementById('inp-first-name');
+const firstNameError           = document.getElementById('error-first-name');
+const firstNameErrorLength     = document.getElementById('error-first-name-length');
+const firstNameErrorLengthText = document.getElementById('error-first-name-length-text');
+const firstNameErrorEmpty      = document.getElementById('error-first-name-empty');
+const firstNameErrorServer     = document.getElementById('error-first-name-server');
 
-const firstNameInput      = document.getElementById('inp-first-name');
-const firstNameError      = document.getElementById('error-first-name');
-const firstNameErrorEmpty = document.getElementById('error-first-name-empty');
-firstNameInput.addEventListener('input', () => { firstNameErrorEmpty.classList.remove('visible'); validateNameField(firstNameInput, firstNameError); });
-firstNameInput.addEventListener('blur',  () => { if (firstNameInput.value.trim() === '') { firstNameInput.classList.add('error-state'); firstNameErrorEmpty.classList.add('visible'); } });
-firstNameInput.addEventListener('focus', () => { firstNameErrorEmpty.classList.remove('visible'); if (firstNameInput.value.trim() !== '') firstNameInput.classList.remove('error-state'); });
+function clearFirstNameErrors() {
+  firstNameError.classList.remove('visible');
+  firstNameErrorLength.classList.remove('visible');
+  firstNameErrorEmpty.classList.remove('visible');
+  if (firstNameErrorServer) firstNameErrorServer.classList.remove('visible');
+  firstNameInput.classList.remove('error-state');
+}
+function validateFirstName() {
+  const value = firstNameInput.value;
+  clearFirstNameErrors();
+  if (value === '') return;
+  if (value.length > 150) {
+    firstNameInput.classList.add('error-state');
+    firstNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${value.length})`;
+    firstNameErrorLength.classList.add('visible');
+    return;
+  }
+  if (!namePattern.test(value)) {
+    firstNameInput.classList.add('error-state');
+    firstNameError.classList.add('visible');
+  }
+}
+firstNameInput.addEventListener('input', () => { validateFirstName(); });
+firstNameInput.addEventListener('blur', () => {
+  if (firstNameInput.value.trim() === '') {
+    clearFirstNameErrors();
+    firstNameInput.classList.add('error-state');
+    firstNameErrorEmpty.classList.add('visible');
+  }
+});
+firstNameInput.addEventListener('focus', () => {
+  firstNameErrorEmpty.classList.remove('visible');
+  if (firstNameInput.value.trim() !== '') firstNameInput.classList.remove('error-state');
+  if (firstNameErrorServer) firstNameErrorServer.classList.remove('visible');
+});
 
-const middleNameInput = document.getElementById('inp-middle-name');
-const middleNameError = document.getElementById('error-middle-name');
-middleNameInput.addEventListener('input', () => { validateNameField(middleNameInput, middleNameError); });
+// Отчество (необязательное)
+const middleNameInput           = document.getElementById('inp-middle-name');
+const middleNameError           = document.getElementById('error-middle-name');
+const middleNameErrorLength     = document.getElementById('error-middle-name-length');
+const middleNameErrorLengthText = document.getElementById('error-middle-name-length-text');
+
+function clearMiddleNameErrors() {
+  middleNameError.classList.remove('visible');
+  middleNameErrorLength.classList.remove('visible');
+  middleNameInput.classList.remove('error-state');
+}
+function validateMiddleName() {
+  const value = middleNameInput.value;
+  clearMiddleNameErrors();
+  if (value === '') return;
+  if (value.length > 150) {
+    middleNameInput.classList.add('error-state');
+    middleNameErrorLengthText.textContent = `Убедитесь, что это значение содержит не более 150 символов (сейчас ${value.length})`;
+    middleNameErrorLength.classList.add('visible');
+    return;
+  }
+  if (!namePattern.test(value)) {
+    middleNameInput.classList.add('error-state');
+    middleNameError.classList.add('visible');
+  }
+}
+middleNameInput.addEventListener('input', () => { validateMiddleName(); });
 
 // ── Валидация даты рождения ──
 const dobInput       = document.getElementById('inp-dob');
 const dobErrEmpty    = document.getElementById('error-dob-empty');
 const dobErrFuture   = document.getElementById('error-dob-future');
 const dobErrMin      = document.getElementById('error-dob-min');
+
+// Устанавливаем максимальную дату как сегодня
+(function() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  dobInput.max = `${y}-${m}-${d}`;
+})();
+
+// Ограничение года до 4 цифр
+dobInput.addEventListener('input', () => {
+  if (dobInput.value) {
+    const parts = dobInput.value.split('-');
+    if (parts[0] && parts[0].length > 4) {
+      parts[0] = parts[0].slice(0, 4);
+      dobInput.value = parts.join('-');
+    }
+  }
+});
 
 function clearDobErrors() {
   [dobErrEmpty, dobErrFuture, dobErrMin].forEach(el => el.classList.remove('visible'));

@@ -216,6 +216,20 @@
     opacity: 1;
   }
 
+  /* ── FIELD ERROR ─────────────────────────────────────────────────── */
+  .field-error {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    background: #FFF0F0;
+    border-radius: 8px;
+    height: 36px;
+  }
+  .field-error.visible { display: flex; }
+  .field-error-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--red-400); }
+  .field-error-text { font-size: 12px; color: var(--red-400); line-height: 1.4; }
+
   /* ── ERROR BANNER ────────────────────────────────────────────────── */
   .error-banner {
     display: none;
@@ -320,13 +334,21 @@
           <label class="field-label" for="id_email">Электронная почта</label>
           <input
             class="field-input {% if form.email.errors %}error-border{% endif %}"
-            type="email"
+            type="text"
             id="id_email"
             name="email"
             placeholder="ivan.i@gmail.com"
             value="{{ form.email.value|default:'' }}"
-            required
+            maxlength="50"
+            autocomplete="email"
           >
+          <div class="field-error" id="err-email">
+            <svg class="field-error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="field-error-text" id="err-email-text">Вы не ввели электронную почту</span>
+          </div>
         </div>
 
         <!-- Password -->
@@ -339,7 +361,7 @@
               id="id_password"
               name="password"
               placeholder="Введите пароль"
-              required
+              autocomplete="current-password"
             >
             <button class="eye-btn" id="eye-toggle" type="button" title="Показать пароль">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -348,6 +370,13 @@
                 <line x1="2" y1="2" x2="18" y2="18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" id="eye-slash"/>
               </svg>
             </button>
+          </div>
+          <div class="field-error" id="err-password">
+            <svg class="field-error-icon" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+              <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="field-error-text">Вы не ввели пароль</span>
           </div>
         </div>
 
@@ -375,10 +404,10 @@
 </footer>
 
 <script>
-// Eye toggle
-const passInput  = document.getElementById('id_password');
-const eyeToggle  = document.getElementById('eye-toggle');
-const eyeSlash   = document.getElementById('eye-slash');
+/* ── Eye toggle ── */
+const passInput   = document.getElementById('id_password');
+const eyeToggle   = document.getElementById('eye-toggle');
+const eyeSlash    = document.getElementById('eye-slash');
 let   passVisible = false;
 
 eyeToggle.addEventListener('click', () => {
@@ -387,11 +416,68 @@ eyeToggle.addEventListener('click', () => {
   eyeSlash.style.display = passVisible ? 'none' : '';
 });
 
-// Email input: add border on focus
+/* ── Email border on focus ── */
 const emailInput = document.getElementById('id_email');
 emailInput.addEventListener('focus', () => emailInput.classList.add('active-border'));
 emailInput.addEventListener('blur',  () => {
   if (!emailInput.value) emailInput.classList.remove('active-border');
+});
+
+/* ── Максимум 50 символов для email ── */
+emailInput.addEventListener('input', () => {
+  if (emailInput.value.length > 50) emailInput.value = emailInput.value.slice(0, 50);
+});
+
+/* ── Helpers ── */
+function showEmailError(msg) {
+  emailInput.classList.add('error-border');
+  emailInput.classList.remove('active-border');
+  document.getElementById('err-email-text').textContent = msg;
+  document.getElementById('err-email').classList.add('visible');
+}
+function hideEmailError() {
+  emailInput.classList.remove('error-border');
+  document.getElementById('err-email').classList.remove('visible');
+}
+function showPassError() {
+  passInput.classList.add('error-border');
+  document.getElementById('err-password').classList.add('visible');
+}
+function hidePassError() {
+  passInput.classList.remove('error-border');
+  document.getElementById('err-password').classList.remove('visible');
+}
+
+/* ── Сброс ошибок при вводе ── */
+emailInput.addEventListener('input', hideEmailError);
+passInput.addEventListener('input', hidePassError);
+
+/* ── Валидация email ── */
+function isValidEmail(val) {
+  /* Формат: что-то @ что-то.что-то */
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+}
+
+/* ── Валидация при отправке формы ── */
+document.getElementById('login-form').addEventListener('submit', function(e) {
+  var valid = true;
+
+  var emailVal = emailInput.value.trim();
+  if (!emailVal) {
+    showEmailError('Вы не ввели электронную почту');
+    valid = false;
+  } else if (!isValidEmail(emailVal)) {
+    showEmailError('Некорректный адрес электронной почты');
+    valid = false;
+  }
+
+  var passVal = passInput.value;
+  if (!passVal) {
+    showPassError();
+    valid = false;
+  }
+
+  if (!valid) e.preventDefault();
 });
 </script>
 </body>

@@ -14,7 +14,9 @@ from django.views import View
 from django.views.generic import DetailView
 
 from accounts.mixins import DoctorRequiredMixin
-from patients.models import Patient
+from medications.models import Medication
+from patients.models import Conclusion, ConclusionMedication, ConclusionTherapy, Patient
+from therapy.models import Therapy
 from tests.views import _load_score_ranges, _match_score_range, _get_pathotype_label
 
 
@@ -46,12 +48,9 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
         from tests.models import Answer, ScoreRange, Test, TestSession
 
         DURATION_LABELS = {
-            '1w': 'Менее 1 недели',
-            '1m': '1–4 недели',
-            '3m': '1–3 месяца',
-            '6m': '3–6 месяцев',
-            '1y': '6–12 месяцев',
-            '1y+': 'Более 1 года',
+            'acute':    'Острая (до 1 месяца)',
+            'subacute': 'Подострая (1 - 3 месяца)',
+            'chronic':  'Хроническая (более 3 месяцев)',
         }
 
         # Один запрос: все результаты + все answers с вопросами и этапами
@@ -196,12 +195,9 @@ class PatientUpdateAPIView(LoginRequiredMixin, View):
     """AJAX: обновить данные пациента (доктор или сам пациент)"""
 
     DURATION_LABELS = {
-        '1w': 'Менее 1 недели',
-        '1m': '1–4 недели',
-        '3m': '1–3 месяца',
-        '6m': '3–6 месяцев',
-        '1y': '6–12 месяцев',
-        '1y+': 'Более 1 года',
+        'acute':    'Острая (до 1 месяца)',
+        'subacute': 'Подострая (1 - 3 месяца)',
+        'chronic':  'Хроническая (более 3 месяцев)',
     }
 
     def post(self, request, pk):
@@ -258,7 +254,7 @@ class PatientUpdateAPIView(LoginRequiredMixin, View):
             patient.medical_history = data.get('diagnosis', '')[:5000].strip()
             patient.pain_location = data.get('pain_location', '')[:500].strip()
             duration = data.get('pain_duration', '').strip()
-            valid_durations = ['', '1w', '1m', '3m', '6m', '1y', '1y+']
+            valid_durations = ['', 'acute', 'subacute', 'chronic']
             patient.pain_duration = duration if duration in valid_durations else ''
             patient.save(update_fields=['medical_history', 'pain_location', 'pain_duration'])
 
@@ -296,12 +292,9 @@ class PatientExportExcelView(LoginRequiredMixin, View):
     """
 
     DURATION_LABELS = {
-        '1w': 'Менее 1 недели',
-        '1m': '1–4 недели',
-        '3m': '1–3 месяца',
-        '6m': '3–6 месяцев',
-        '1y': '6–12 месяцев',
-        '1y+': 'Более 1 года',
+        'acute':    'Острая (до 1 месяца)',
+        'subacute': 'Подострая (1 - 3 месяца)',
+        'chronic':  'Хроническая (более 3 месяцев)',
     }
 
     def _get_patient(self, user, pk):
@@ -478,3 +471,177 @@ class PatientExportExcelView(LoginRequiredMixin, View):
         encoded = quote(filename, safe='')
         response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded}"
         return response
+
+
+class ConclusionListView(DoctorRequiredMixin, View):
+    """История заключений пациента"""
+
+    def get(self, request, pk):
+        from datetime import datetime
+        patient = get_object_or_404(
+            Patient.objects.select_related('user'),
+            pk=pk,
+            assigned_doctor=request.user,
+        )
+
+        def parse_date(s):
+            """Парсит ДД.ММ.ГГГГ, возвращает date или None"""
+            if not s:
+                return None
+            try:
+                return datetime.strptime(s.strip(), '%d.%m.%Y').date()
+            except ValueError:
+                return None
+
+        date_from_str = request.GET.get('date_from', '').strip()
+        date_to_str = request.GET.get('date_to', '').strip()
+        date_from = parse_date(date_from_str)
+        date_to = parse_date(date_to_str)
+        if date_from_str and not date_from:
+            date_from_str = ''
+        if date_to_str and not date_to:
+            date_to_str = ''
+
+        conclusions_qs = Conclusion.objects.filter(patient=patient).order_by('-created_at')
+        if date_from:
+            conclusions_qs = conclusions_qs.filter(created_at__date__gte=date_from)
+        if date_to:
+            conclusions_qs = conclusions_qs.filter(created_at__date__lte=date_to)
+
+        paginator = Paginator(conclusions_qs, 10)
+        page = paginator.get_page(request.GET.get('page', 1))
+
+        return render(request, 'patients/conclusion_history.html', {
+            'patient': patient,
+            'page': page,
+            'total_count': paginator.count,
+            'filter_date_from': date_from_str,
+            'filter_date_to': date_to_str,
+        })
+
+
+class ConclusionMedicineView(DoctorRequiredMixin, View):
+    """Шаг 1: выбор лекарств для заключения"""
+
+    def _get_patient(self, request, pk):
+        return get_object_or_404(
+            Patient.objects.select_related('user'),
+            pk=pk,
+            assigned_doctor=request.user,
+        )
+
+    def get(self, request, pk):
+        from tests.models import TestResult
+        patient = self._get_patient(request, pk)
+        med_type = request.GET.get('med_type', '').strip()
+        all_medications = Medication.objects.all().order_by('medication_type', 'name')
+        medications = all_medications.filter(medication_type__icontains=med_type) if med_type else all_medications
+
+        # Типы лекарств для фильтра
+        med_types = list(
+            Medication.objects.values_list('medication_type', flat=True)
+            .distinct().exclude(medication_type='').order_by('medication_type')
+        )
+
+        # Предварительно выбранные из сессии (при возврате назад)
+        selected_ids = request.session.get(f'conclusion_med_ids_{pk}', [])
+
+        last_result = (
+            TestResult.objects.filter(patient=patient, status='completed')
+            .order_by('-completed_at')
+            .first()
+        )
+
+        return render(request, 'patients/conclusion_medicine.html', {
+            'patient': patient,
+            'medications': medications,          # отфильтрованные — для левой колонки
+            'all_medications': all_medications,  # все — для карточек справа
+            'med_types': med_types,
+            'selected_ids': selected_ids,
+            'current_med_type': med_type,
+            'last_result': last_result,
+        })
+
+    def post(self, request, pk):
+        patient = self._get_patient(request, pk)
+        selected_ids = request.POST.getlist('medication_ids')
+        # Сохраняем выбранные ID в сессию
+        request.session[f'conclusion_med_ids_{pk}'] = [int(i) for i in selected_ids if i.isdigit()]
+        return redirect('patients:conclusion_rehabilitation', pk=pk)
+
+
+class ConclusionRehabilitationView(DoctorRequiredMixin, View):
+    """Шаг 2: выбор реабилитационных мероприятий и создание заключения"""
+
+    def _get_patient(self, request, pk):
+        return get_object_or_404(
+            Patient.objects.select_related('user'),
+            pk=pk,
+            assigned_doctor=request.user,
+        )
+
+    def get(self, request, pk):
+        from tests.models import TestResult
+        patient = self._get_patient(request, pk)
+        therapies = Therapy.objects.all().order_by('therapy_type', 'name')
+
+        # Предварительно выбранные из сессии (при возврате назад)
+        selected_ids = request.session.get(f'conclusion_therapy_ids_{pk}', [])
+
+        last_result = (
+            TestResult.objects.filter(patient=patient, status='completed')
+            .order_by('-completed_at')
+            .first()
+        )
+
+        return render(request, 'patients/conclusion_rehabilitation.html', {
+            'patient': patient,
+            'therapies': therapies,
+            'selected_ids': selected_ids,
+            'last_result': last_result,
+        })
+
+    def post(self, request, pk):
+        from tests.models import TestResult
+
+        patient = self._get_patient(request, pk)
+
+        # Лекарства из сессии
+        med_ids = request.session.get(f'conclusion_med_ids_{pk}', [])
+        therapy_ids = [int(i) for i in request.POST.getlist('therapy_ids') if i.isdigit()]
+
+        # Сохраняем therapy_ids в сессию на случай возврата
+        request.session[f'conclusion_therapy_ids_{pk}'] = therapy_ids
+
+        # Последний завершённый тест пациента
+        last_result = (
+            TestResult.objects.filter(patient=patient, status='completed')
+            .order_by('-completed_at')
+            .first()
+        )
+
+        # Создаём заключение
+        conclusion = Conclusion.objects.create(
+            patient=patient,
+            doctor=request.user,
+            last_test_result=last_result,
+        )
+
+        # Добавляем лекарства
+        if med_ids:
+            meds = Medication.objects.filter(pk__in=med_ids)
+            for med in meds:
+                ConclusionMedication.objects.create(conclusion=conclusion, medication=med)
+
+        # Добавляем терапии
+        if therapy_ids:
+            therapies = Therapy.objects.filter(pk__in=therapy_ids)
+            for therapy in therapies:
+                ConclusionTherapy.objects.create(conclusion=conclusion, therapy=therapy)
+
+        # Очищаем сессию
+        request.session.pop(f'conclusion_med_ids_{pk}', None)
+        request.session.pop(f'conclusion_therapy_ids_{pk}', None)
+
+        messages.success(request, 'Заключение успешно сформировано.')
+        return redirect('patients:detail', pk=pk)

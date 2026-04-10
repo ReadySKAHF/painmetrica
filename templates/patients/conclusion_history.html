@@ -376,7 +376,7 @@ a.pagination__btn[aria-disabled="true"],
           Заключение &nbsp;<span class="card-title-date">{{ conclusion.created_at|date:"d.m.Y" }}</span>
         </span>
       </div>
-      <span class="btn-outline" style="opacity:0.5;cursor:default;">Скачать заключение</span>
+      <a href="{% url 'patients:conclusion_download' pk=patient.pk conclusion_pk=conclusion.pk %}" class="btn-outline">Скачать заключение</a>
     </div>
     {% empty %}
     <div class="empty-state">

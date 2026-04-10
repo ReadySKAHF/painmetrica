@@ -127,6 +127,11 @@ body {
   display: flex; flex-direction: column; gap: 6px;
 }
 .scheme-block-item { font-size: 13px; color: var(--gray-950); line-height: 1.5; }
+.scheme-edit {
+  font-size: 13px; color: var(--gray-950); line-height: 1.5;
+  width: 100%; background: transparent; border: none; outline: none;
+  resize: vertical; font-family: inherit; padding: 0; margin: 0; min-height: 3em;
+}
 
 .right-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -274,7 +279,7 @@ body {
         {% if therapy.prescription_scheme %}
         <div class="detail-section-title">Схема назначения</div>
         <div class="scheme-block">
-          <div class="scheme-block-item">{{ therapy.prescription_scheme }}</div>
+          <textarea class="scheme-edit" id="scheme-{{ therapy.pk }}" data-therapy-id="{{ therapy.pk }}">{{ therapy.prescription_scheme }}</textarea>
         </div>
         {% endif %}
       </div>
@@ -327,9 +332,17 @@ function updateHiddenInputs() {
   var container = document.getElementById('hidden-inputs');
   container.innerHTML = '';
   document.querySelectorAll('.therapy-item input[type="checkbox"]:checked').forEach(function(cb) {
+    var id = cb.dataset.id;
     var inp = document.createElement('input');
-    inp.type = 'hidden'; inp.name = 'therapy_ids'; inp.value = cb.dataset.id;
+    inp.type = 'hidden'; inp.name = 'therapy_ids'; inp.value = id;
     container.appendChild(inp);
+    // Добавляем отредактированную схему для этой терапии
+    var textarea = document.getElementById('scheme-' + id);
+    if (textarea) {
+      var s = document.createElement('input');
+      s.type = 'hidden'; s.name = 'scheme_' + id; s.value = textarea.value;
+      container.appendChild(s);
+    }
   });
 }
 

@@ -100,6 +100,7 @@ class ConclusionMedication(models.Model):
         related_name='in_conclusions',
         verbose_name='Лекарство',
     )
+    custom_scheme = models.TextField('Схема назначения (редактированная)', blank=True)
 
     class Meta:
         verbose_name = 'Лекарство в заключении'
@@ -122,6 +123,7 @@ class ConclusionTherapy(models.Model):
         related_name='in_conclusions',
         verbose_name='Терапия',
     )
+    custom_scheme = models.TextField('Схема назначения (редактированная)', blank=True)
 
     class Meta:
         verbose_name = 'Мероприятие в заключении'

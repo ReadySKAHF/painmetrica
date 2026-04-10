@@ -565,8 +565,16 @@ class ConclusionMedicineView(DoctorRequiredMixin, View):
     def post(self, request, pk):
         patient = self._get_patient(request, pk)
         selected_ids = request.POST.getlist('medication_ids')
-        # Сохраняем выбранные ID в сессию
-        request.session[f'conclusion_med_ids_{pk}'] = [int(i) for i in selected_ids if i.isdigit()]
+        med_ids = [int(i) for i in selected_ids if i.isdigit()]
+        request.session[f'conclusion_med_ids_{pk}'] = med_ids
+
+        # Сохраняем отредактированные схемы {str(id): scheme}
+        med_schemes = {}
+        for med_id in med_ids:
+            scheme = request.POST.get(f'scheme_{med_id}', '').strip()
+            med_schemes[str(med_id)] = scheme
+        request.session[f'conclusion_med_schemes_{pk}'] = med_schemes
+
         return redirect('patients:conclusion_rehabilitation', pk=pk)
 
 
@@ -606,8 +614,10 @@ class ConclusionRehabilitationView(DoctorRequiredMixin, View):
 
         patient = self._get_patient(request, pk)
 
-        # Лекарства из сессии
+        # Лекарства и их схемы из сессии
         med_ids = request.session.get(f'conclusion_med_ids_{pk}', [])
+        med_schemes = request.session.get(f'conclusion_med_schemes_{pk}', {})
+
         therapy_ids = [int(i) for i in request.POST.getlist('therapy_ids') if i.isdigit()]
 
         # Сохраняем therapy_ids в сессию на случай возврата
@@ -627,21 +637,257 @@ class ConclusionRehabilitationView(DoctorRequiredMixin, View):
             last_test_result=last_result,
         )
 
-        # Добавляем лекарства
+        # Добавляем лекарства с отредактированными схемами
         if med_ids:
             meds = Medication.objects.filter(pk__in=med_ids)
             for med in meds:
-                ConclusionMedication.objects.create(conclusion=conclusion, medication=med)
+                custom = med_schemes.get(str(med.pk), '')
+                ConclusionMedication.objects.create(
+                    conclusion=conclusion,
+                    medication=med,
+                    custom_scheme=custom,
+                )
 
-        # Добавляем терапии
+        # Добавляем терапии с отредактированными схемами
         if therapy_ids:
-            therapies = Therapy.objects.filter(pk__in=therapy_ids)
-            for therapy in therapies:
-                ConclusionTherapy.objects.create(conclusion=conclusion, therapy=therapy)
+            therapies_qs = Therapy.objects.filter(pk__in=therapy_ids)
+            for therapy in therapies_qs:
+                custom = request.POST.get(f'scheme_{therapy.pk}', '').strip()
+                ConclusionTherapy.objects.create(
+                    conclusion=conclusion,
+                    therapy=therapy,
+                    custom_scheme=custom,
+                )
 
         # Очищаем сессию
         request.session.pop(f'conclusion_med_ids_{pk}', None)
+        request.session.pop(f'conclusion_med_schemes_{pk}', None)
         request.session.pop(f'conclusion_therapy_ids_{pk}', None)
 
         messages.success(request, 'Заключение успешно сформировано.')
         return redirect('patients:detail', pk=pk)
+
+
+class ConclusionDownloadView(DoctorRequiredMixin, View):
+    """Скачать заключение в формате DOCX по шаблону conclusion-template.docx"""
+
+    DURATION_LABELS = {
+        'acute':    'Острая (до 1 месяца)',
+        'subacute': 'Подострая (1–3 месяца)',
+        'chronic':  'Хроническая (более 3 месяцев)',
+    }
+
+    def get(self, request, pk, conclusion_pk):
+        import docx
+        from docx.shared import Pt
+        from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+        from tests.models import ScoreRange
+
+        patient = get_object_or_404(
+            Patient.objects.select_related('user', 'user__patient_profile'),
+            pk=pk,
+            assigned_doctor=request.user,
+        )
+        conclusion = get_object_or_404(
+            Conclusion.objects.select_related(
+                'doctor',
+                'last_test_result__test',
+            ).prefetch_related(
+                'conclusion_medications__medication',
+                'conclusion_therapies__therapy',
+                'last_test_result__answers__question__stage',
+            ),
+            pk=conclusion_pk,
+            patient=patient,
+        )
+
+        # ── Результаты тестирования из last_test_result ────────────────────
+        # Показываем только шаги, для которых есть совпадение в ScoreRange
+        test_results_data = []
+        if conclusion.last_test_result:
+            result = conclusion.last_test_result
+            score_ranges = list(ScoreRange.objects.filter(test=result.test))
+            step_scores = {}
+            step_stages = {}
+            for answer in result.answers.all():
+                stage = answer.question.stage
+                if stage is None:
+                    continue
+                step = stage.sidebar_step
+                if step not in step_scores:
+                    step_scores[step] = 0
+                    step_stages[step] = stage
+                step_scores[step] += answer.score
+            for step in sorted(step_scores.keys()):
+                score = step_scores[step]
+                stage = step_stages[step]
+                score_range = _match_score_range(score_ranges, step, score)
+                if score_range is None:
+                    continue  # шаги без ScoreRange не выводим
+                test_results_data.append({
+                    'name': stage.name,
+                    'label': score_range.label,
+                    'score': score,
+                })
+
+        # ── Данные пациента ────────────────────────────────────────────────
+        patient_user = patient.user
+        try:
+            dob = patient_user.patient_profile.date_of_birth
+            dob_str = dob.strftime('%d.%m.%Y') if dob else ''
+        except Exception:
+            dob_str = ''
+
+        fio_parts = filter(None, [
+            patient_user.last_name,
+            patient_user.first_name,
+            getattr(patient_user, 'middle_name', ''),
+        ])
+        patient_fio = ' '.join(fio_parts)
+        patient_name_line = patient_fio
+        if dob_str:
+            patient_name_line += f', {dob_str}'
+
+        diagnosis = patient.medical_history or '–'
+        created_date = conclusion.created_at.strftime('%d.%m.%Y')
+        duration_text = self.DURATION_LABELS.get(patient.pain_duration, patient.pain_duration or '–')
+
+        # ── Заключение: список результатов через запятую ───────────────────
+        if test_results_data:
+            conclusion_parts = [r['label'] for r in test_results_data]
+            conclusion_text = f"Заключение: у пациента имеется {', '.join(conclusion_parts)}."
+        else:
+            conclusion_text = 'Заключение: –'
+
+        # ── Врач: Фамилия И.О. ─────────────────────────────────────────────
+        doctor = conclusion.doctor
+        doc_last = doctor.last_name or ''
+        doc_first = (doctor.first_name or '')[:1]
+        doc_middle = (getattr(doctor, 'middle_name', '') or '')[:1]
+        doctor_short = doc_last
+        if doc_first:
+            doctor_short += f' {doc_first}.'
+        if doc_middle:
+            doctor_short += f' {doc_middle}.'
+
+        # ── Лекарства и мероприятия ────────────────────────────────────────
+        medications = [
+            (cm.medication.name, cm.custom_scheme or cm.medication.prescription_scheme)
+            for cm in conclusion.conclusion_medications.all()
+        ]
+        therapies = [
+            (ct.therapy.name, ct.custom_scheme or ct.therapy.prescription_scheme)
+            for ct in conclusion.conclusion_therapies.all()
+        ]
+
+        # ── Открываем шаблон ───────────────────────────────────────────────
+        template_path = os.path.join(settings.BASE_DIR, 'conclusion-template.docx')
+        document = docx.Document(template_path)
+
+        # Находим параграф "КОНСУЛЬТАТИВНОЕ ЗАКЛЮЧЕНИЕ" и удаляем всё после него
+        header_end = None
+        for i, p in enumerate(document.paragraphs):
+            if 'КОНСУЛЬТАТИВНОЕ ЗАКЛЮЧЕНИЕ' in p.text:
+                header_end = i
+                break
+
+        if header_end is not None:
+            for p in list(document.paragraphs[header_end + 1:]):
+                p._element.getparent().remove(p._element)
+
+        # Одинарный интервал для параграфов шапки
+        for p in document.paragraphs:
+            fmt = p.paragraph_format
+            fmt.line_spacing_rule = WD_LINE_SPACING.SINGLE
+            fmt.space_before = Pt(0)
+            fmt.space_after = Pt(0)
+
+        # ── Вспомогательная: добавить параграф с одним или несколькими runs ─
+        def _add(runs, bold=False, italic=False,
+                 align=WD_ALIGN_PARAGRAPH.JUSTIFY, size=12):
+            """runs — строка ИЛИ список кортежей (text, bold, italic)."""
+            para = document.add_paragraph()
+            para.alignment = align
+            fmt = para.paragraph_format
+            fmt.line_spacing_rule = WD_LINE_SPACING.SINGLE
+            fmt.space_before = Pt(0)
+            fmt.space_after = Pt(0)
+            if isinstance(runs, str):
+                if runs:
+                    r = para.add_run(runs)
+                    r.bold = bold
+                    r.italic = italic
+                    r.font.name = 'Times New Roman'
+                    r.font.size = Pt(size)
+            else:
+                for text, r_bold, r_italic in runs:
+                    if text:
+                        r = para.add_run(text)
+                        r.bold = r_bold
+                        r.italic = r_italic
+                        r.font.name = 'Times New Roman'
+                        r.font.size = Pt(size)
+            return para
+
+        # ── Формируем содержимое ───────────────────────────────────────────
+        _add('')
+
+        # Дата осмотра — вся строка курсив
+        _add(f'Дата осмотра: {created_date} г.',
+             italic=True, align=WD_ALIGN_PARAGRAPH.LEFT)
+
+        # Ф.И.О. пациента — вся строка курсив
+        fio_line = (f'Ф.И.О. пациента: {patient_name_line} г.'
+                    if dob_str else f'Ф.И.О. пациента: {patient_name_line}')
+        _add(fio_line, italic=True, align=WD_ALIGN_PARAGRAPH.LEFT)
+
+        # Диагноз: — метка курсив, значение обычное
+        _add([
+            ('Диагноз: ', False, True),
+            (diagnosis,   False, False),
+        ])
+
+        _add('')
+        _add('')
+
+        # Результаты тестирования — курсив
+        _add('Результаты тестирования:', italic=True)
+        for r in test_results_data:
+            _add(f"Опросник {r['name']}: {r['label']} ({r['score']} баллов)")
+
+        # Длительность болевого синдрома
+        _add(f'Длительность болевого синдрома: {duration_text}')
+
+        _add('')
+
+        _add(conclusion_text, bold=True)
+
+        _add('')
+
+        _add('Рекомендации по лечению и реабилитации:', bold=True)
+        for name, scheme in medications:
+            _add(f'- {name}: {scheme}', bold=True)
+        for name, scheme in therapies:
+            _add(f'- {name}: {scheme}', bold=True)
+
+        _add('')
+
+        _add(f'Врач:                      {doctor_short}', bold=True,
+             align=WD_ALIGN_PARAGRAPH.RIGHT)
+
+        # ── Отдаём файл ───────────────────────────────────────────────────
+        output = BytesIO()
+        document.save(output)
+        output.seek(0)
+
+        safe_name = patient_user.get_full_name().replace(' ', '_')
+        filename = f'Заключение_{safe_name}_{created_date}.docx'
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        )
+        from urllib.parse import quote
+        encoded = quote(filename, safe='')
+        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded}"
+        return response

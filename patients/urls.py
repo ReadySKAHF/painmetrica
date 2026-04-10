@@ -11,4 +11,5 @@ urlpatterns = [
     path('<int:pk>/conclusions/', views.ConclusionListView.as_view(), name='conclusion_history'),
     path('<int:pk>/conclusion/medicine/', views.ConclusionMedicineView.as_view(), name='conclusion_medicine'),
     path('<int:pk>/conclusion/rehabilitation/', views.ConclusionRehabilitationView.as_view(), name='conclusion_rehabilitation'),
+    path('<int:pk>/conclusions/<int:conclusion_pk>/download/', views.ConclusionDownloadView.as_view(), name='conclusion_download'),
 ]

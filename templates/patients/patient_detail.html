@@ -1749,5 +1749,23 @@
 </script>
 
 
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const conclusionPk = params.get('download_conclusion');
+  if (conclusionPk) {
+    const downloadUrl = "{% url 'patients:conclusion_download' pk=patient.pk conclusion_pk=0 %}".replace('/0/', '/' + conclusionPk + '/');
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Убираем параметр из адресной строки без перезагрузки
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+})();
+</script>
+
 </body>
 </html>

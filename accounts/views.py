@@ -440,7 +440,7 @@ class SendPatientInvitationView(LoginRequiredMixin, View):
         try:
             validate_email(email)
         except ValidationError:
-            return JsonResponse({'success': False, 'message': 'Неверный формат email.'})
+            return JsonResponse({'success': False, 'message': 'Некорректный адрес электронной почты'})
 
         from django.contrib.auth import get_user_model
         User = get_user_model()
@@ -814,10 +814,10 @@ class PasswordResetSetView(View):
         if not token_obj or not token_obj.is_valid():
             return render(request, self.invalid_template)
 
-        form = PasswordResetSetForm(request.POST)
+        user = token_obj.user
+        form = PasswordResetSetForm(request.POST, user=user)
 
         if form.is_valid():
-            user = token_obj.user
             user.set_password(form.cleaned_data['new_password'])
             user.save()
 

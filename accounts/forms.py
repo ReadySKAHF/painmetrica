@@ -166,6 +166,10 @@ class PasswordResetSetForm(forms.Form):
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
 
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._user = user
+
     def clean_new_password(self):
         import re
         password = self.cleaned_data.get('new_password')
@@ -185,8 +189,12 @@ class PasswordResetSetForm(forms.Form):
         cleaned_data = super().clean()
         p1 = cleaned_data.get('new_password')
         p2 = cleaned_data.get('confirm_password')
-        if p1 and p2 and p1 != p2:
-            raise forms.ValidationError('Пароли не совпадают')
+        if p1 and p2:
+            # Проверяем совпадение с текущим паролем на сервере (хеш никуда не передаётся)
+            if self._user is not None and self._user.check_password(p1):
+                self.add_error('confirm_password', 'Новый пароль не должен совпадать со старым')
+            elif p1 != p2:
+                raise forms.ValidationError('Пароли не совпадают')
         return cleaned_data
 
 

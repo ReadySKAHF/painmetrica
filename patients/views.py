@@ -7,9 +7,9 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views import View
 from django.views.generic import DetailView
 
@@ -664,8 +664,10 @@ class ConclusionRehabilitationView(DoctorRequiredMixin, View):
         request.session.pop(f'conclusion_med_schemes_{pk}', None)
         request.session.pop(f'conclusion_therapy_ids_{pk}', None)
 
-        messages.success(request, 'Заключение успешно сформировано.')
-        return redirect('patients:detail', pk=pk)
+        return redirect(
+            reverse('patients:detail', kwargs={'pk': pk})
+            + f'?download_conclusion={conclusion.pk}'
+        )
 
 
 class ConclusionDownloadView(DoctorRequiredMixin, View):

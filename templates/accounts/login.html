@@ -306,21 +306,18 @@
   <div class="content">
     <h1 class="page-title">Вход в аккаунт</h1>
 
-    <!-- Messages from Django -->
+    <!-- Messages from Django (only errors) -->
     {% if messages %}
       {% for message in messages %}
-        <div class="error-banner visible {% if message.tags == 'success' %}success{% endif %}">
+        {% if message.tags != 'success' %}
+        <div class="error-banner visible">
           <svg class="error-banner-icon" viewBox="0 0 18 18" fill="none">
-            {% if message.tags == 'success' %}
-            <circle cx="9" cy="9" r="8.5" stroke="#2E7CF6"/>
-            <path d="M6 9l2 2 4-4" stroke="#2E7CF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            {% else %}
             <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
             <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
-            {% endif %}
           </svg>
           <span class="error-banner-text">{{ message }}</span>
         </div>
+        {% endif %}
       {% endfor %}
     {% endif %}
 

@@ -988,7 +988,9 @@
   {% if messages %}
   <div class="messages-wrap">
     {% for message in messages %}
+    {% if message.tags != 'success' %}
     <div class="msg {{ message.tags }}">{{ message }}</div>
+    {% endif %}
     {% endfor %}
   </div>
   {% endif %}

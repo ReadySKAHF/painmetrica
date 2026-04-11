@@ -421,6 +421,8 @@ body {
 var TEXT_LIMIT = 120;
 // Ключ для хранения выбранных ID в sessionStorage — уникален для пациента
 var STORAGE_KEY = 'conclusion_med_ids_{{ patient.pk }}';
+// Ключ для хранения схем назначений
+var SCHEMES_KEY = 'conclusion_med_schemes_{{ patient.pk }}';
 
 function getStoredIds() {
   try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]'); }
@@ -429,6 +431,26 @@ function getStoredIds() {
 
 function saveStoredIds(ids) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+}
+
+function getStoredSchemes() {
+  try { return JSON.parse(sessionStorage.getItem(SCHEMES_KEY) || '{}'); }
+  catch (e) { return {}; }
+}
+
+function saveScheme(id, value) {
+  var schemes = getStoredSchemes();
+  schemes[String(id)] = value;
+  sessionStorage.setItem(SCHEMES_KEY, JSON.stringify(schemes));
+}
+
+function saveAllVisibleSchemes() {
+  var schemes = getStoredSchemes();
+  document.querySelectorAll('.scheme-edit').forEach(function(ta) {
+    var id = ta.dataset.medId;
+    if (id) schemes[String(id)] = ta.value;
+  });
+  sessionStorage.setItem(SCHEMES_KEY, JSON.stringify(schemes));
 }
 
 function addStoredId(id) {
@@ -471,18 +493,18 @@ function updateRightCol() {
 function updateHiddenInputs() {
   var container = document.getElementById('hidden-inputs');
   container.innerHTML = '';
+  var storedSchemes = getStoredSchemes();
   // Берём все ID из sessionStorage — включая лекарства с других страниц фильтра
   getStoredIds().forEach(function(id) {
     var inp = document.createElement('input');
     inp.type = 'hidden'; inp.name = 'medication_ids'; inp.value = id;
     container.appendChild(inp);
-    // Добавляем отредактированную схему для этого лекарства
+    // Схема: берём из DOM если карточка видна, иначе из sessionStorage
     var textarea = document.getElementById('scheme-' + id);
-    if (textarea) {
-      var s = document.createElement('input');
-      s.type = 'hidden'; s.name = 'scheme_' + id; s.value = textarea.value;
-      container.appendChild(s);
-    }
+    var schemeValue = textarea ? textarea.value : (storedSchemes[String(id)] || '');
+    var s = document.createElement('input');
+    s.type = 'hidden'; s.name = 'scheme_' + id; s.value = schemeValue;
+    container.appendChild(s);
   });
 }
 
@@ -518,11 +540,12 @@ document.addEventListener('click', function(e) {
 });
 
 document.getElementById('btn-filter').addEventListener('click', function() {
+  // Сохраняем все текущие схемы перед перезагрузкой страницы
+  saveAllVisibleSchemes();
   var val = hiddenInput.value;
   var url = new URL(window.location.href);
   if (val) url.searchParams.set('med_type', val);
   else url.searchParams.delete('med_type');
-  // Переходим — sessionStorage уже содержит актуальные выборы
   window.location.href = url.toString();
 });
 
@@ -540,10 +563,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Инициализируем collapsible и устанавливаем видимость для ВСЕХ карточек справа
   // (включая карточки лекарств, скрытых текущим фильтром)
+  var storedSchemes = getStoredSchemes();
   document.querySelectorAll('.detail-card').forEach(function(card) {
     var id = parseInt(card.id.replace('card-', ''));
     initCollapsible('side-' + id, 'btn-side-' + id);
     card.style.display = storedIds.indexOf(id) !== -1 ? '' : 'none';
+    // Восстанавливаем сохранённую схему в textarea
+    var ta = document.getElementById('scheme-' + id);
+    if (ta && storedSchemes[String(id)] !== undefined) {
+      ta.value = storedSchemes[String(id)];
+    }
+    // Сохраняем схему в sessionStorage при каждом вводе
+    if (ta) {
+      ta.addEventListener('input', function() {
+        saveScheme(String(id), this.value);
+        updateHiddenInputs();
+      });
+    }
   });
 
   document.querySelectorAll('.med-item input[type="checkbox"]').forEach(function(cb) {
@@ -572,8 +608,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // При сабмите — очищаем sessionStorage (переходим к следующему шагу)
   document.getElementById('medicine-form').addEventListener('submit', function() {
+    saveAllVisibleSchemes();
     updateHiddenInputs();
     sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(SCHEMES_KEY);
   });
 });
 </script>

@@ -477,14 +477,36 @@
 
   <script>
   (function() {
-    const SAVE_URL = '{% url "tests:save_progress" session.pk %}';
-    const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var SAVE_URL = '{% url "tests:save_progress" session.pk %}';
+    var CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var SESSION_KEY = 'test_answers_{{ session.pk }}';
+
+    // ── localStorage-буфер: защита от потери ответов при обрыве сети ──
+    function getLocalAnswers() {
+      try {
+        return JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function persistAnswerLocally(qId, value) {
+      try {
+        var stored = getLocalAnswers();
+        stored['q_' + qId] = value;
+        localStorage.setItem(SESSION_KEY, JSON.stringify(stored));
+      } catch (e) {}
+    }
 
     function saveProgress(answers) {
-      fetch(SAVE_URL, {
+      return fetch(SAVE_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
         body: JSON.stringify({answers: answers}),
+      }).then(function(resp) {
+        if (resp.ok) {
+          try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+        }
       }).catch(function() {});
     }
 
@@ -506,6 +528,10 @@
     var MIN = parseInt(range.min);
     var MAX = parseInt(range.max);
     var vasInteracted = {% if scale_saved_value is not None %}true{% else %}false{% endif %};
+
+    // Дебаунс: сохранение через 800 мс после последнего движения ползунка
+    var saveTimer = null;
+    var SAVE_DELAY = 800;
 
     document.getElementById('stageForm').addEventListener('submit', function(e) {
       if (!vasInteracted) {
@@ -561,15 +587,56 @@
       vasInteracted = true;
       var val = parseInt(range.value);
       updateSlider(val);
-      var ans = {};
-      ans['q_{{ questions.0.pk }}'] = val;
-      saveProgress(ans);
+      persistAnswerLocally('{{ questions.0.pk }}', val);
+      // Дебаунс: сбрасываем таймер при каждом движении — AJAX только после остановки
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(function() {
+        var ans = {};
+        ans['q_{{ questions.0.pk }}'] = val;
+        saveProgress(ans);
+      }, SAVE_DELAY);
     });
+
     window.addEventListener('resize', function() { updateSlider(parseInt(range.value)); });
+
+    // Восстановление из localStorage (только если сервер не вернул сохранённое значение)
+    {% if scale_saved_value is None %}
+    (function() {
+      var stored = getLocalAnswers();
+      var lsVal = stored['q_{{ questions.0.pk }}'];
+      if (lsVal !== undefined) {
+        var restored = parseInt(lsVal);
+        if (!isNaN(restored) && restored >= MIN && restored <= MAX) {
+          range.value = restored;
+          vasInteracted = true;
+        }
+      }
+    })();
+    {% endif %}
+
     updateSlider(parseInt(range.value));
 
     {% else %}
     // ── Выбор вариантов ──
+
+    // Восстановление из localStorage (только если сервер не предзаполнил ответ)
+    document.querySelectorAll('.options').forEach(function(optGroup) {
+      var hasSelected = optGroup.querySelector('.option.selected') !== null;
+      if (!hasSelected) {
+        var stored = getLocalAnswers();
+        var qid = optGroup.dataset.qid;
+        var lsVal = stored['q_' + qid];
+        if (lsVal !== undefined) {
+          var targetOpt = optGroup.querySelector('[data-oid="' + String(lsVal) + '"]');
+          if (targetOpt) {
+            targetOpt.classList.add('selected');
+            var radio = targetOpt.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+          }
+        }
+      }
+    });
+
     document.getElementById('stageForm').addEventListener('submit', function(e) {
       // Сброс предыдущих ошибок
       document.querySelectorAll('.question-card').forEach(function(c) {
@@ -619,9 +686,10 @@
 
           var qid = optGroup.dataset.qid;
           var oid = parseInt(opt.dataset.oid);
+          persistAnswerLocally(qid, oid);
           var ans = {};
           ans['q_' + qid] = oid;
-          saveProgress(ans);
+          saveProgress(ans);  // клик = намеренное действие, без задержки
         });
       });
     });

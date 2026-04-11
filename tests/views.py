@@ -6,11 +6,11 @@ class _SessionCompleted(Exception):
         self.session_id = session_id
 
 
-import json
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
+from django.db import connection
+from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -18,7 +18,7 @@ from django.views import View
 
 from accounts.mixins import DoctorRequiredMixin
 from patients.models import Patient
-from tests.models import Answer, QuestionOption, ScoreRange, Stage, Test, TestResult, TestSession
+from tests.models import Answer, Question, QuestionOption, ScoreRange, Stage, Test, TestResult, TestSession
 
 
 # ─────────────────────────────────────────────
@@ -116,8 +116,27 @@ def _authorize_session(request, session):
 
 
 def _finalize_session(session):
-    """Создаёт TestResult из завершённой сессии, подсчитывает баллы и заключение."""
-    total_score = 0
+    """Создаёт TestResult из завершённой сессии, подсчитывает баллы и заключение.
+
+    Оптимизация: вместо N SELECT на каждый вариант и N INSERT на каждый ответ
+    выполняется 1 SELECT для всех QuestionOption + bulk_create для Answer и M2M.
+    Итого: ~5-6 запросов вместо 50+.
+    """
+    # 1. Собираем все option_id из answers_data одним проходом
+    all_option_ids = []
+    for key, raw in session.answers_data.items():
+        if not key.startswith('q_'):
+            continue
+        if isinstance(raw, list):
+            all_option_ids.extend(int(i) for i in raw if str(i).isdigit())
+        elif str(raw).isdigit():
+            all_option_ids.append(int(raw))
+
+    # 2. Один SELECT для всех QuestionOption
+    options_map = {
+        opt.pk: opt
+        for opt in QuestionOption.objects.filter(pk__in=all_option_ids)
+    }
 
     result = TestResult.objects.create(
         session=session,
@@ -129,14 +148,23 @@ def _finalize_session(session):
         completed_at=session.completed_at,
     )
 
-    for stage in session.test.stages.order_by('order'):
-        for question in stage.questions.prefetch_related('options').order_by('order'):
+    total_score = 0
+    answers_to_create = []
+    m2m_pairs = []  # (answer_index, option_id)
+
+    # Загружаем все этапы с вопросами за 2 запроса (prefetch)
+    stages = session.test.stages.prefetch_related(
+        Prefetch('questions', queryset=Question.objects.order_by('order'))
+    ).order_by('order')
+
+    for stage in stages:
+        for question in stage.questions.all():
             key = f'q_{question.pk}'
             raw = session.answers_data.get(key)
             if raw is None:
                 continue
 
-            answer = Answer.objects.create(result=result, question=question)
+            answer = Answer(result=result, question=question, score=0)
 
             if question.question_type == 'scale':
                 val = int(raw)
@@ -145,26 +173,32 @@ def _finalize_session(session):
                 total_score += val
 
             elif question.question_type == 'single':
-                try:
-                    option = QuestionOption.objects.get(pk=int(raw))
-                    answer.selected_options.add(option)
-                    answer.score = option.score
-                    total_score += option.score
-                except QuestionOption.DoesNotExist:
-                    pass
+                opt = options_map.get(int(raw)) if str(raw).isdigit() else None
+                if opt:
+                    answer.score = opt.score
+                    total_score += opt.score
+                    m2m_pairs.append((len(answers_to_create), opt.pk))
 
             elif question.question_type == 'multiple':
                 ids = raw if isinstance(raw, list) else [raw]
                 for opt_id in ids:
-                    try:
-                        option = QuestionOption.objects.get(pk=int(opt_id))
-                        answer.selected_options.add(option)
-                        answer.score += option.score
-                        total_score += option.score
-                    except QuestionOption.DoesNotExist:
-                        pass
+                    opt = options_map.get(int(opt_id))
+                    if opt:
+                        answer.score += opt.score
+                        total_score += opt.score
+                        m2m_pairs.append((len(answers_to_create), opt.pk))
 
-            answer.save()
+            answers_to_create.append(answer)
+
+    # Один INSERT вместо N
+    created_answers = Answer.objects.bulk_create(answers_to_create)
+
+    # M2M bulk через промежуточную таблицу напрямую
+    ThroughModel = Answer.selected_options.through
+    ThroughModel.objects.bulk_create([
+        ThroughModel(answer_id=created_answers[idx].pk, questionoption_id=opt_id)
+        for idx, opt_id in m2m_pairs
+    ])
 
     # Ищем подходящий диапазон для заключения
     score_range = ScoreRange.objects.filter(
@@ -358,7 +392,11 @@ class StageView(LoginRequiredMixin, View):
 # ─────────────────────────────────────────────
 
 class SaveProgressView(LoginRequiredMixin, View):
-    """AJAX-endpoint: сохраняет текущие ответы без перехода на следующий этап."""
+    """AJAX-endpoint: сохраняет текущие ответы без перехода на следующий этап.
+
+    На PostgreSQL: авторизация встроена в WHERE-условие UPDATE — 1 запрос вместо 2.
+    На SQLite: классический SELECT + UPDATE (jsonb-оператор недоступен).
+    """
 
     def post(self, request, session_id):
         try:
@@ -366,16 +404,42 @@ class SaveProgressView(LoginRequiredMixin, View):
         except (json.JSONDecodeError, ValueError):
             return JsonResponse({'ok': False, 'error': 'Неверный формат'}, status=400)
 
-        session = get_object_or_404(TestSession, pk=session_id, status='in_progress')
-        try:
-            _authorize_session(request, session)
-        except PermissionDenied:
-            return JsonResponse({'ok': False, 'error': 'Нет доступа'}, status=403)
+        new_answers = data.get('answers', {})
+        if not isinstance(new_answers, dict):
+            return JsonResponse({'ok': False, 'error': 'Неверный формат'}, status=400)
 
-        answers = dict(session.answers_data)
-        answers.update(data.get('answers', {}))
-        session.answers_data = answers
-        session.save(update_fields=['answers_data'])
+        if connection.vendor == 'postgresql':
+            from django.db.models.expressions import RawSQL
+
+            user = request.user
+            if user.user_type == 'patient':
+                qs = TestSession.objects.filter(
+                    pk=session_id, status='in_progress', patient__user=user
+                )
+            elif user.user_type == 'doctor':
+                qs = TestSession.objects.filter(
+                    pk=session_id, status='in_progress', taken_by=user
+                )
+            else:
+                return JsonResponse({'ok': False, 'error': 'Нет доступа'}, status=403)
+
+            updated = qs.update(
+                answers_data=RawSQL('answers_data || %s::jsonb', [json.dumps(new_answers)])
+            )
+            if not updated:
+                return JsonResponse({'ok': False, 'error': 'Сессия не найдена'}, status=404)
+
+        else:
+            session = get_object_or_404(TestSession, pk=session_id, status='in_progress')
+            try:
+                _authorize_session(request, session)
+            except PermissionDenied:
+                return JsonResponse({'ok': False, 'error': 'Нет доступа'}, status=403)
+
+            answers = dict(session.answers_data)
+            answers.update(new_answers)
+            session.answers_data = answers
+            session.save(update_fields=['answers_data'])
 
         return JsonResponse({'ok': True})
 

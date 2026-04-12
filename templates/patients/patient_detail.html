@@ -1042,7 +1042,7 @@
           <div class="edit-col {% if not is_doctor %}edit-col--patient{% endif %}">
             <div class="form-field">
               <label class="field-label">Фамилия</label>
-              <input class="field-input" id="edit-last-name" type="text" value="{{ patient.user.last_name }}" placeholder="Фамилия" maxlength="50">
+              <input class="field-input" id="edit-last-name" type="text" value="{{ patient.user.last_name }}" placeholder="{% if is_doctor %}Введите фамилию пациента{% else %}Введите свою фамилию{% endif %}" maxlength="150">
               <div class="error-block" id="err-edit-last-name">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span class="error-text">Цифры и спец. символы запрещены</span>
@@ -1054,7 +1054,7 @@
             </div>
             <div class="form-field">
               <label class="field-label">Имя</label>
-              <input class="field-input" id="edit-first-name" type="text" value="{{ patient.user.first_name }}" placeholder="Имя" maxlength="50">
+              <input class="field-input" id="edit-first-name" type="text" value="{{ patient.user.first_name }}" placeholder="{% if is_doctor %}Введите имя пациента{% else %}Введите свое имя{% endif %}" maxlength="150">
               <div class="error-block" id="err-edit-first-name">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span class="error-text">Цифры и спец. символы запрещены</span>
@@ -1066,7 +1066,7 @@
             </div>
             <div class="form-field">
               <label class="field-label">Отчество <span style="font-weight:400;color:var(--gray-550);">(необязательно)</span></label>
-              <input class="field-input" id="edit-middle-name" type="text" value="{{ patient.user.middle_name }}" placeholder="Отчество" maxlength="50">
+              <input class="field-input" id="edit-middle-name" type="text" value="{{ patient.user.middle_name }}" placeholder="{% if is_doctor %}Введите отчество пациента{% else %}Введите свое отчество{% endif %}" maxlength="150">
               <div class="error-block" id="err-edit-middle-name">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span class="error-text">Цифры и спец. символы запрещены</span>
@@ -1098,10 +1098,10 @@
           <div class="edit-col">
             <div class="form-field">
               <label class="field-label">Диагноз</label>
-              <input class="field-input" id="edit-diagnosis" type="text" value="{{ patient.medical_history }}" placeholder="Диагноз" maxlength="500">
+              <input class="field-input" id="edit-diagnosis" type="text" value="{{ patient.medical_history }}" placeholder="Введите диагноз пациента" maxlength="500">
               <div class="error-block" id="err-edit-diagnosis">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span class="error-text">Укажите диагноз</span>
+                <span class="error-text">Введите диагноз</span>
               </div>
               <div class="error-block" id="err-edit-diagnosis-invalid">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -1110,17 +1110,17 @@
             </div>
             <div class="form-field">
               <label class="field-label">Локализация боли</label>
-              <input class="field-input" id="edit-pain-location" type="text" value="{{ patient.pain_location }}" placeholder="Локализация боли" maxlength="200">
+              <input class="field-input" id="edit-pain-location" type="text" value="{{ patient.pain_location }}" placeholder="Введите локализацию боли пациента" maxlength="200">
               <div class="error-block" id="err-edit-pain-location">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span class="error-text">Укажите локализацию боли</span>
+                <span class="error-text">Введите локализацию боли</span>
               </div>
             </div>
             <div class="form-field">
               <label class="field-label">Длительность боли</label>
               <div class="edit-dur-wrap" id="editDurWrap">
                 <button type="button" class="edit-dur-trigger{% if patient.pain_duration %} has-value{% endif %}" id="editDurTrigger" aria-haspopup="listbox">
-                  <span class="trigger-text" id="editDurText">{% if patient.pain_duration == 'acute' %}Острая (до 1 месяца){% elif patient.pain_duration == 'subacute' %}Подострая (1 - 3 месяца){% elif patient.pain_duration == 'chronic' %}Хроническая (более 3 месяцев){% else %}Укажите длительность боли пациента{% endif %}</span>
+                  <span class="trigger-text" id="editDurText">{% if patient.pain_duration == 'acute' %}Острая (до 1 месяца){% elif patient.pain_duration == 'subacute' %}Подострая (1 - 3 месяца){% elif patient.pain_duration == 'chronic' %}Хроническая (более 3 месяцев){% else %}Выберите длительность боли пациента{% endif %}</span>
                   <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
                     <path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
@@ -1134,7 +1134,7 @@
               </div>
               <div class="error-block" id="err-edit-pain-duration">
                 <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span class="error-text">Укажите длительность боли</span>
+                <span class="error-text">Выберите длительность боли</span>
               </div>
             </div>
           </div>
@@ -1667,7 +1667,7 @@
           durText.textContent = durLabels[durVal] || durVal;
           durTrigger.classList.add('has-value');
         } else {
-          durText.textContent = 'Укажите длительность боли пациента';
+          durText.textContent = 'Выберите длительность боли пациента';
           durTrigger.classList.remove('has-value');
         }
         document.querySelectorAll('#editDurDropdown .edit-dur-option').forEach(function(o) {

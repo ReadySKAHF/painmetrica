@@ -855,7 +855,17 @@
   }
   .f-select:focus { border-color: #2E7CF6; box-shadow: 0 0 0 3px rgba(46,124,246,.12); }
 
-  /* ── Custom duration dropdown ── */
+  /* ── Checkbox consent (formB) ── */
+  .f-consent-wrap {
+    display: flex; align-items: flex-start; gap: 10px;
+    width: 432px; max-width: 100%; cursor: pointer;
+  }
+  .f-consent-wrap input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: var(--blue-500);
+    cursor: pointer; flex-shrink: 0; margin-top: 2px;
+  }
+  .f-consent-label { font-size: 13px; color: var(--gray-950); line-height: 1.5; }
+/* ── Custom duration dropdown ── */
   .f-dur-wrap { position: relative; }
   .f-dur-trigger {
     width: 100%; height: 44px; padding: 0 40px 0 14px;
@@ -1627,9 +1637,13 @@
           </div>
         </div>
       </div>
+      <label class="f-consent-wrap">
+        <input type="checkbox" id="fConsent">
+        <span class="f-consent-label">Я подтверждаю, что пациент при поступлении в учреждение здравоохранения или ГомГМУ подписал согласие на обработку персональных данных, в том числе специальных персональных данных (медицинских данных), в соответствии с установленным порядком. Указанное согласие охватывает обработку данных в Программном средстве Painmetrica в целях, предусмотренных Политикой обработки персональных данных</span>
+      </label>
       <p class="m-error" id="formBError"></p>
       <div class="btn-row">
-        <button class="m-btn" style="min-width:129px" id="addPatientBtn" onclick="submitManualPatient()">Добавить</button>
+        <button class="m-btn" style="min-width:129px" id="addPatientBtn" onclick="submitManualPatient()" disabled>Добавить</button>
         <button class="m-btn-outline" onclick="showModal('formA')">Назад</button>
         <button class="m-btn-outline" onclick="clearFormB()">Очистить</button>
       </div>
@@ -1757,6 +1771,11 @@
       }
     });
   })();
+
+  // ── Чекбокс согласия: управляет доступностью кнопки "Добавить" ──
+  document.getElementById('fConsent').addEventListener('change', function() {
+    document.getElementById('addPatientBtn').disabled = !this.checked;
+  });
 
   // ── Вспомогательные для email-блока ──
   function hideInviteErrors() {
@@ -1904,6 +1923,8 @@
       const blk = document.getElementById(id);
       if (blk) { blk.querySelector('.error-text').textContent = ''; blk.classList.remove('visible'); }
     });
+    document.getElementById('fConsent').checked = false;
+    document.getElementById('addPatientBtn').disabled = true;
   }
 
   // ── Добавить пациента (шаг 2) ──
@@ -1935,6 +1956,8 @@
       setFieldError('fDurationTrigger', 'fDurationErr', 'Вы не указали длительность боли');
       valid = false;
     }
+
+
 
     if (!valid) return;
 

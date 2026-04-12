@@ -328,10 +328,10 @@ body {
 
       <!-- FILTER -->
       <div class="filter-block">
-        <span class="filter-label">Тип лекарства</span>
+        <span class="filter-label">Фармакологическая группа</span>
         <div class="custom-select-wrap" id="wrap-med-type">
           <button type="button" class="custom-select-trigger {% if current_med_type %}has-value{% endif %}" id="trigger-med-type">
-            <span class="trigger-text" id="trigger-med-type-text">{% if current_med_type %}{{ current_med_type }}{% else %}Тип лекарства{% endif %}</span>
+            <span class="trigger-text" id="trigger-med-type-text">{% if current_med_type %}{{ current_med_type }}{% else %}Фармакологическая группа{% endif %}</span>
             <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
               <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -523,7 +523,7 @@ dropdown.querySelectorAll('.custom-select-option').forEach(function(opt) {
   opt.addEventListener('click', function() {
     var val = this.dataset.value;
     hiddenInput.value = val;
-    triggerText.textContent = val || 'Тип лекарства';
+    triggerText.textContent = val || 'Фармакологическая группа';
     trigger.classList.toggle('has-value', !!val);
     trigger.classList.remove('open');
     dropdown.classList.remove('open');

@@ -15,8 +15,6 @@ urlpatterns = [
     path('session/<uuid:session_id>/save/', views.SaveProgressView.as_view(), name='save_progress'),
     # Страница результатов
     path('session/<uuid:session_id>/result/', views.ResultView.as_view(), name='result'),
-    # Страница результатов сразу после теста
-    path('session/<uuid:session_id>/done/', views.AfterTestResultView.as_view(), name='after_result'),
     # Детальные ответы по шагу
     path('session/<uuid:session_id>/result/<int:sidebar_step>/', views.ResultDetailView.as_view(), name='result_detail'),
 

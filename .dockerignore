@@ -1,0 +1,55 @@
+# Секреты
+.env
+.env.local
+.env.*.local
+
+# Виртуальное окружение
+venv/
+env/
+.venv/
+
+# Кэш Python
+__pycache__/
+*.pyc
+*.pyo
+*.py[cod]
+*.so
+
+# База данных (локальная)
+db.sqlite3
+*.db
+
+# Медиафайлы (монтируются как volume)
+media/
+
+# Логи
+logs/
+*.log
+
+# Статика (генерируется при старте)
+staticfiles/
+
+# Git
+.git/
+.gitignore
+
+# Документация и прочее
+*.md
+*.docx
+*.xlsx
+*.txt
+*.drawio
+
+# Тесты
+tests.txt
+test_*.py
+
+# Временные файлы
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

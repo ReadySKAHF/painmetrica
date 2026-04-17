@@ -691,10 +691,10 @@
     border: 1px solid var(--gray-300);
     border-radius: 14px;
     padding: 10px 14px;
-    display: flex; align-items: center;
+    display: flex; align-items: flex-start;
     gap: 12px; justify-content: space-between;
   }
-  .ht-filter-inputs { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .ht-filter-inputs { display: flex; align-items: flex-start; gap: 10px; flex: 1; }
   .ht-date-wrap { position: relative; flex: 1; }
   .ht-date-wrap .field-input { padding-right: 40px; font-size: 12px; }
   .ht-date-icon {
@@ -709,9 +709,14 @@
     background: var(--blue-500); border: 1.5px solid transparent; border-radius: 33px;
     font-family: inherit; font-size: 13px; font-weight: 600;
     color: var(--white); cursor: pointer; white-space: nowrap;
-    transition: opacity 0.15s;
+    transition: opacity 0.15s; margin-top: 16px; flex-shrink: 0;
   }
   .btn-show:hover { opacity: 0.88; }
+  .btn-show:disabled {
+    background: var(--gray-300); color: var(--gray-550);
+    cursor: not-allowed; opacity: 1;
+  }
+  .btn-show:disabled:hover { opacity: 1; }
   .btn-show.clear {
     background: var(--white); border-color: var(--gray-950);
     color: var(--gray-950);
@@ -799,8 +804,9 @@
 
   /* ── Filter date errors ── */
   .ht-date-col { display: flex; flex-direction: column; flex: 1; gap: 4px; }
+  .ht-date-label { font-size: 12px; font-weight: 600; color: var(--gray-950); line-height: 1; }
   .ht-filter-bar { align-items: flex-start; }
-  .ht-filter-bar .ht-divider { margin-top: 11px; }
+  .ht-filter-bar .ht-divider { margin-top: 27px; }
   .ht-filter-error {
     display: none;
     align-items: center;
@@ -1222,13 +1228,14 @@
 
         <!-- Фильтр + кнопки -->
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <form class="ht-filter-bar" method="get" id="ht-filter-form">
+          <form class="ht-filter-bar" method="get" id="ht-filter-form" novalidate>
             <input type="hidden" name="tab" value="history">
             <div class="ht-filter-inputs">
               <div class="ht-date-col">
+                <span class="ht-date-label">Начало периода</span>
                 <div class="ht-date-wrap">
                   <input class="field-input" id="htDateFrom" type="date" name="date_from"
-                         value="{{ filter_date_from }}" placeholder="Начало периода">
+                         value="{{ filter_date_from }}">
                   <svg class="ht-date-icon" viewBox="0 0 18 18" fill="none" onclick="htOpenPicker('htDateFrom')">
                     <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
                     <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
@@ -1242,9 +1249,10 @@
               </div>
               <div class="ht-divider"></div>
               <div class="ht-date-col">
+                <span class="ht-date-label">Окончание периода</span>
                 <div class="ht-date-wrap">
                   <input class="field-input" id="htDateTo" type="date" name="date_to"
-                         value="{{ filter_date_to }}" placeholder="Конец периода">
+                         value="{{ filter_date_to }}">
                   <svg class="ht-date-icon" viewBox="0 0 18 18" fill="none" onclick="htOpenPicker('htDateTo')">
                     <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
                     <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
@@ -1444,19 +1452,44 @@
       errDateOrder.classList.remove('visible');
     }
 
+    function updateBtnDisabled() {
+      if (filterApplied) {
+        htBtnShow.disabled = false;
+        return;
+      }
+      htBtnShow.disabled = !(htDateFrom.value && htDateTo.value);
+    }
+
     function validateFilterDates() {
       clearFilterErrors();
       const MIN_DATE = '1890-01-01';
-      const maxDate  = htDateFrom.max; // set to today in the block below
+      const _now = new Date();
+      const maxDate = _now.getFullYear() + '-' +
+        String(_now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(_now.getDate()).padStart(2, '0');
       let valid = true;
 
-      if (htDateFrom.value && (htDateFrom.value < MIN_DATE || htDateFrom.value > maxDate)) {
-        errFromRange.classList.add('visible');
-        valid = false;
+      if (htDateFrom.value) {
+        if (htDateFrom.value > maxDate) {
+          errFromRange.querySelector('.error-text').textContent = 'Дата не может быть позднееего сегодняшнего дня';
+          errFromRange.classList.add('visible');
+          valid = false;
+        } else if (htDateFrom.value < MIN_DATE) {
+          errFromRange.querySelector('.error-text').textContent = 'Дата не может быть раньше 01.01.1890';
+          errFromRange.classList.add('visible');
+          valid = false;
+        }
       }
-      if (htDateTo.value && (htDateTo.value < MIN_DATE || htDateTo.value > maxDate)) {
-        errToRange.classList.add('visible');
-        valid = false;
+      if (htDateTo.value) {
+        if (htDateTo.value > maxDate) {
+          errToRange.querySelector('.error-text').textContent = 'Дата не может быть позднееего сегодняшнего дня';
+          errToRange.classList.add('visible');
+          valid = false;
+        } else if (htDateTo.value < MIN_DATE) {
+          errToRange.querySelector('.error-text').textContent = 'Дата не может быть раньше 01.01.1890';
+          errToRange.classList.add('visible');
+          valid = false;
+        }
       }
       if (valid && htDateFrom.value && htDateTo.value && htDateFrom.value > htDateTo.value) {
         errDateOrder.classList.add('visible');
@@ -1465,8 +1498,22 @@
       return valid;
     }
 
-    htDateFrom.addEventListener('change', () => { filterApplied = false; clearFilterErrors(); });
-    htDateTo.addEventListener('change',   () => { filterApplied = false; clearFilterErrors(); });
+    htDateFrom.addEventListener('change', () => {
+      filterApplied = false;
+      clearFilterErrors();
+      htBtnShow.textContent = 'Показать';
+      htBtnShow.classList.remove('clear');
+      updateBtnDisabled();
+    });
+    htDateTo.addEventListener('change', () => {
+      filterApplied = false;
+      clearFilterErrors();
+      htBtnShow.textContent = 'Показать';
+      htBtnShow.classList.remove('clear');
+      updateBtnDisabled();
+    });
+
+    updateBtnDisabled();
 
     document.getElementById('ht-filter-form').addEventListener('submit', function (e) {
       if (filterApplied) return; // очистка — не валидируем
@@ -1490,17 +1537,7 @@
     });
   })();
 
-  (function() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const max = yyyy + '-' + mm + '-' + dd;
-    const f = document.getElementById('htDateFrom');
-    const t = document.getElementById('htDateTo');
-    if (f) f.max = max;
-    if (t) t.max = max;
-  })();
+  // max на датах не ставим — иначе браузер показывает свой тултип при вводе будущей даты
 
   const BAD_NAME_EDIT = /[^a-zA-Zа-яёА-ЯЁ\s\-]/;
 

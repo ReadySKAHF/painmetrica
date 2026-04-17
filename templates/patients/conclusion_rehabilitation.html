@@ -145,12 +145,12 @@ body {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 1320px; max-width: calc(100vw - 24px);
   background: var(--white); border-radius: 28px 28px 0 0;
-  height: 180px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px;
+  padding-top: 30px; padding-bottom: 24px;
   box-shadow: 0 -2px 16px rgba(0,0,0,0.06); z-index: 90;
 }
 .btn-save-main {
-  width: 300px; height: 46px; background: var(--blue-500); border: none; border-radius: 33px;
+  width: 300px; height: 40px; background: var(--blue-500); border: none; border-radius: 33px;
   font-family: inherit; font-size: 16px; font-weight: 700; color: var(--white);
   cursor: pointer; transition: opacity 0.15s;
 }
@@ -224,9 +224,9 @@ body {
     Назад к медикаментозному лечению
   </a>
 
-  <h1 class="page-title">Рекомендованная реабилитационная терапия</h1>
+  <h1 class="page-title">Рекомендованные реабилитационные мероприятия</h1>
   <p class="page-desc">
-    Данный раздел предназначен для разработки комплексной программы немедикаментозного восстановления, адаптированной под конкретный механизм боли и диагноз вашего пациента. В левой колонке представлены доступные методики. Выбирая подходящие мероприятия, вы перемещаете их в центральную форму, где отображается полный текст описания каждой техники с указанием параметров воздействия и длительности процедур. В центральной форме вы можете корректировать реабилитационную терапию по вашему усмотрению. После завершения подбора все выбранные элементы будут автоматически перенесены в соответствующий раздел итогового консультативного заключения.&quot;<br>
+    Данный раздел предназначен для разработки комплексной программы немедикаментозного восстановления, адаптированной под конкретный механизм боли и диагноз вашего пациента. В левой колонке представлены доступные методики. Выбирая подходящие мероприятия, вы перемещаете их в центральную форму, где отображается полный текст описания каждой техники с указанием параметров воздействия и длительности процедур. В центральной форме вы можете корректировать реабилитационную терапию <strong>по вашему усмотрению</strong>. После завершения подбора все выбранные элементы будут автоматически перенесены в соответствующий раздел итогового консультативного заключения.&quot;<br>
     <strong>Обращаем ваше внимание, что заключение будет сформирована по результатам последней тестовой сессии. Посмотреть результаты по ней можно {% if last_result %}<a href="{% url 'tests:result' session_id=last_result.session_id %}" target="_blank">здесь</a>{% else %}<span>здесь</span>{% endif %}</strong>
   </p>
 
@@ -294,6 +294,9 @@ body {
   <div id="hidden-inputs"></div>
   <footer class="site-footer">
     <button type="submit" class="btn-save-main">Сформировать заключение</button>
+    <div style="display:flex;align-items:center;margin-top:20px;">
+      <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="114" height="28" style="display:block;">
+    </div>
     <span class="footer-tagline">Система управления пациентами для врачей и специалистов</span>
     <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
   </footer>

@@ -184,7 +184,7 @@
       {% csrf_token %}
       <label class="cb-agree-wrap{% if agreed %} visible{% endif %}">
         <input type="checkbox" id="cb-agree" name="agreed"{% if agreed %} checked{% endif %}>
-        <span class="cb-agree-label">Я ознакомился(-ась) с Политикой обработки персональных данных программного средства Painmetrica, понимаю её содержание и выражаю своё свободное, конкретное, информированное и сознательное согласие на обработку моих персональных данных в целях, указанных в Политике.</span>
+        <span class="cb-agree-label">Я ознакомился(-ась) с Пользовательским соглашением программного средства Painmetrica, понимаю его содержание и принимаю его условия в полном объёме.</span>
       </label>
       <div class="btns-row">
         <a href="{% url 'accounts:register_step_two' %}" class="btn-secondary">Назад</a>

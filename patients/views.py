@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, date
 from io import BytesIO
 
 from django.conf import settings
@@ -485,11 +485,11 @@ class ConclusionListView(DoctorRequiredMixin, View):
         )
 
         def parse_date(s):
-            """Парсит ДД.ММ.ГГГГ, возвращает date или None"""
+            """Парсит ГГГГ-ММ-ДД (ISO), возвращает date или None"""
             if not s:
                 return None
             try:
-                return datetime.strptime(s.strip(), '%d.%m.%Y').date()
+                return date.fromisoformat(s.strip())
             except ValueError:
                 return None
 
@@ -533,9 +533,9 @@ class ConclusionMedicineView(DoctorRequiredMixin, View):
     def get(self, request, pk):
         from tests.models import TestResult
         patient = self._get_patient(request, pk)
-        med_type = request.GET.get('med_type', '').strip()
+        med_types_filter = [t.strip() for t in request.GET.getlist('med_type') if t.strip()]
         all_medications = Medication.objects.all().order_by('medication_type', 'name')
-        medications = all_medications.filter(medication_type__icontains=med_type) if med_type else all_medications
+        medications = all_medications.filter(medication_type__in=med_types_filter) if med_types_filter else all_medications
 
         # Типы лекарств для фильтра
         med_types = list(
@@ -558,7 +558,7 @@ class ConclusionMedicineView(DoctorRequiredMixin, View):
             'all_medications': all_medications,  # все — для карточек справа
             'med_types': med_types,
             'selected_ids': selected_ids,
-            'current_med_type': med_type,
+            'current_med_types': med_types_filter,
             'last_result': last_result,
         })
 

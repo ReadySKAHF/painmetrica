@@ -335,6 +335,17 @@ class StageView(LoginRequiredMixin, View):
         next_stage = next((s for s in all_stages if s.order > order), None)
         is_last_stage = next_stage is None
 
+        # Смещение для нумерации вопросов в модальном окне валидации:
+        # считаем вопросы только в предыдущих этапах с тем же sidebar_step,
+        # чтобы нумерация шла в рамках одного теста (например, HADS 1-14, а не 1-54)
+        prev_stages_same_step = [
+            s for s in all_stages
+            if s.order < order and s.sidebar_step == stage.sidebar_step
+        ]
+        question_offset = 0
+        if prev_stages_same_step:
+            question_offset = Question.objects.filter(stage__in=prev_stages_same_step).count()
+
         return render(request, 'tests/session_stage.html', {
             'session': session,
             'stage': stage,
@@ -345,6 +356,7 @@ class StageView(LoginRequiredMixin, View):
             'scale_saved_value': scale_saved_value,
             'is_last_stage': is_last_stage,
             'patient': session.patient,
+            'question_offset': question_offset,
         })
 
     def post(self, request, session_id, order):

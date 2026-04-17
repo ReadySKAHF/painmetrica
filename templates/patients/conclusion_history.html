@@ -99,19 +99,19 @@ body {
   background: var(--white);
   border: 1px solid var(--gray-300);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 10px 14px;
 }
 
 .filter-date-col { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .filter-label { font-size: 12px; font-weight: 600; color: var(--gray-950); line-height: 1; }
-.filter-date-wrap { position: relative; }
+.filter-date-wrap { position: relative; flex: 1; }
 
 .filter-date-input {
   width: 100%; height: 44px;
   background: var(--gray-200);
   border: 1.5px solid transparent; border-radius: 10px;
   padding: 0 40px 0 14px;
-  font-size: 13px; font-family: inherit; color: var(--gray-550);
+  font-size: 12px; font-family: inherit; color: var(--gray-550);
   outline: none; transition: border-color 0.15s; cursor: pointer;
 }
 .filter-date-input:focus { border-color: var(--blue-400); color: var(--gray-950); }
@@ -119,15 +119,9 @@ body {
 
 .filter-date-icon {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  width: 18px; height: 18px; opacity: 0.55; pointer-events: none;
+  width: 18px; height: 18px; opacity: 0.55; cursor: pointer;
 }
-.filter-date-hidden {
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  opacity: 0; width: 18px; height: 18px; cursor: pointer; border: none;
-}
-.filter-date-hidden::-webkit-calendar-picker-indicator {
-  position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; opacity: 0;
-}
+.filter-date-icon:hover { opacity: 0.85; }
 
 .filter-date-input.error { border-color: #E43D3D; }
 .filter-error-block {
@@ -136,24 +130,31 @@ body {
   border-radius: 8px; height: 36px;
 }
 .filter-error-block.visible { display: flex; }
-.filter-error-icon { width: 18px; height: 18px; flex-shrink: 0; color: #E43D3D; }
-.filter-error-text { font-size: 12px; color: #E43D3D; line-height: 1.4; white-space: nowrap; }
+.filter-error-icon { width: 15px; height: 15px; flex-shrink: 0; }
+.filter-error-text { font-size: 11px; color: #E43D3D; line-height: 1.4; white-space: nowrap; }
 
 .filter-divider {
   width: 1px; height: 14px; background: var(--gray-300);
-  flex-shrink: 0; margin-top: 30px;
+  flex-shrink: 0; margin-top: 27px;
 }
 
 .btn-show {
-  height: 44px; padding: 0 22px;
-  background: var(--gray-300); border: none; border-radius: 33px;
-  font-family: inherit; font-size: 13px; font-weight: 600; color: var(--gray-550);
-  cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s;
+  height: 44px; padding: 0 20px;
+  background: var(--blue-500); border: 1.5px solid transparent; border-radius: 33px;
+  font-family: inherit; font-size: 13px; font-weight: 600; color: var(--white);
+  cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
   flex-shrink: 0; margin-top: 16px;
 }
-.btn-show:hover { background: #D8D8D8; color: var(--gray-950); }
-.btn-show.active { background: var(--blue-500); color: var(--white); }
-.btn-show.active:hover { opacity: 0.88; }
+.btn-show:hover { opacity: 0.88; }
+.btn-show:disabled {
+  background: var(--gray-300); color: var(--gray-550);
+  cursor: not-allowed; opacity: 1;
+}
+.btn-show:disabled:hover { opacity: 1; }
+.btn-show.clear {
+  background: var(--white); border-color: var(--gray-950); color: var(--gray-950);
+}
+.btn-show.clear:hover { opacity: 0.75; }
 
 /* ── CARDS ── */
 .cards-section { display: flex; flex-direction: column; gap: 18px; margin-bottom: 24px; }
@@ -315,51 +316,55 @@ a.pagination__btn[aria-disabled="true"],
   <!-- TOOLBAR -->
   <div class="toolbar">
     <span class="filter-count">Всего заключений: <strong>{{ total_count }}</strong></span>
-    <form class="filter-bar" method="get" id="filter-form">
+    <form class="filter-bar" method="get" id="filter-form" novalidate>
       <div class="filter-date-col">
         <span class="filter-label">Начало периода</span>
         <div class="filter-date-wrap">
-          <input class="filter-date-input" id="dateFrom" type="text" name="date_from"
-                 value="{{ filter_date_from }}"
-                 placeholder="ДД.ММ.ГГГГ" maxlength="10" autocomplete="off">
-          <svg class="filter-date-icon" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <input class="filter-date-input" id="dateFrom" type="date" name="date_from"
+                 value="{{ filter_date_from }}">
+          <svg class="filter-date-icon" viewBox="0 0 18 18" fill="none" onclick="clOpenPicker('dateFrom')">
             <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
             <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
             <path d="M6 1V4M12 1V4" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <input type="date" id="dateFromPicker" class="filter-date-hidden" tabindex="-1" min="1890-01-01">
         </div>
         <div class="filter-error-block" id="err-date-from">
           <svg class="filter-error-icon" viewBox="0 0 18 18" fill="none">
             <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
             <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <span class="filter-error-text" id="err-date-from-text">Неверный формат даты</span>
+          <span class="filter-error-text" id="err-date-from-text"></span>
         </div>
       </div>
       <div class="filter-divider"></div>
       <div class="filter-date-col">
         <span class="filter-label">Окончание периода</span>
         <div class="filter-date-wrap">
-          <input class="filter-date-input" id="dateTo" type="text" name="date_to"
-                 value="{{ filter_date_to }}"
-                 placeholder="ДД.ММ.ГГГГ" maxlength="10" autocomplete="off">
-          <svg class="filter-date-icon" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <input class="filter-date-input" id="dateTo" type="date" name="date_to"
+                 value="{{ filter_date_to }}">
+          <svg class="filter-date-icon" viewBox="0 0 18 18" fill="none" onclick="clOpenPicker('dateTo')">
             <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
             <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
             <path d="M6 1V4M12 1V4" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <input type="date" id="dateToPicker" class="filter-date-hidden" tabindex="-1" min="1890-01-01">
         </div>
         <div class="filter-error-block" id="err-date-to">
           <svg class="filter-error-icon" viewBox="0 0 18 18" fill="none">
             <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
             <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <span class="filter-error-text" id="err-date-to-text">Неверный формат даты</span>
+          <span class="filter-error-text" id="err-date-to-text"></span>
+        </div>
+        <div class="filter-error-block" id="err-date-order">
+          <svg class="filter-error-icon" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/>
+            <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="filter-error-text">Конец периода раньше начала</span>
         </div>
       </div>
-      <button type="submit" class="btn-show{% if filter_date_from or filter_date_to %} active{% endif %}" id="btn-show">Показать</button>
+      <button type="submit" class="btn-show {% if filter_date_from or filter_date_to %}clear{% endif %}"
+              id="btn-show">{% if filter_date_from or filter_date_to %}Очистить{% else %}Показать{% endif %}</button>
     </form>
   </div>
 
@@ -519,9 +524,19 @@ a.pagination__btn[aria-disabled="true"],
 
     /* Проверка "Начало периода" */
     if (fromVal) {
-      if (!fromDate || fromDate < minDate || fromDate > today) {
+      if (!fromDate) {
         dateFrom.classList.add('error');
-        errFromText.textContent = 'Дата должна быть между 01.01.1890 и сегодняшним днём';
+        errFromText.textContent = 'Неверный формат даты';
+        errFrom.classList.add('visible');
+        valid = false;
+      } else if (fromDate > today) {
+        dateFrom.classList.add('error');
+        errFromText.textContent = 'Дата не может быть в будущем';
+        errFrom.classList.add('visible');
+        valid = false;
+      } else if (fromDate < minDate) {
+        dateFrom.classList.add('error');
+        errFromText.textContent = 'Дата не может быть раньше 01.01.1890';
         errFrom.classList.add('visible');
         valid = false;
       }
@@ -529,9 +544,19 @@ a.pagination__btn[aria-disabled="true"],
 
     /* Проверка "Окончание периода" */
     if (toVal) {
-      if (!toDate || toDate < minDate || toDate > today) {
+      if (!toDate) {
         dateTo.classList.add('error');
-        errToText.textContent = 'Дата должна быть между 01.01.1890 и сегодняшним днём';
+        errToText.textContent = 'Неверный формат даты';
+        errTo.classList.add('visible');
+        valid = false;
+      } else if (toDate > today) {
+        dateTo.classList.add('error');
+        errToText.textContent = 'Дата не может быть в будущем';
+        errTo.classList.add('visible');
+        valid = false;
+      } else if (toDate < minDate) {
+        dateTo.classList.add('error');
+        errToText.textContent = 'Дата не может быть раньше 01.01.1890';
         errTo.classList.add('visible');
         valid = false;
       }
@@ -540,7 +565,7 @@ a.pagination__btn[aria-disabled="true"],
     /* Проверка порядка дат */
     if (fromDate && toDate && fromDate > toDate) {
       dateTo.classList.add('error');
-      errToText.textContent = 'Дата окончания не может быть раньше даты начала';
+      errToText.textContent = 'Конец периода раньше начала';
       errTo.classList.add('visible');
       valid = false;
     }

@@ -102,13 +102,16 @@
 
   /* ── FILTER BLOCK ── */
   .filter-block {
-    width: 424px; min-height: 188px;
+    width: 424px;
     background: var(--white);
     border: 1px solid var(--gray-300);
     border-radius: 16px;
     padding: 20px; display: flex; flex-direction: column; gap: 12px;
     margin-bottom: 24px;
   }
+
+  .date-col { display: flex; flex-direction: column; gap: 4px; }
+  .date-label { font-size: 12px; font-weight: 600; color: var(--gray-950); line-height: 1; }
 
   .date-wrap { position: relative; }
 
@@ -123,12 +126,21 @@
   }
   .field-input::-webkit-calendar-picker-indicator { display: none; }
   .field-input:focus { border-color: var(--blue-400); background: var(--white); }
-  .field-input::placeholder { color: var(--gray-550); }
+  .field-input.error { border-color: #E43D3D; }
 
   .date-icon {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    width: 18px; height: 18px; opacity: 0.55; pointer-events: none;
+    width: 18px; height: 18px; opacity: 0.55; cursor: pointer;
   }
+  .date-icon:hover { opacity: 0.85; }
+
+  .date-error {
+    display: none; align-items: center; gap: 6px;
+    padding: 6px 10px; background: #FFF0F0; border-radius: 8px;
+  }
+  .date-error.visible { display: flex; }
+  .date-error svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .date-error span { font-size: 11px; color: #E43D3D; line-height: 1.4; }
 
   .btn-show {
     height: 44px; width: 100%;
@@ -315,26 +327,44 @@
     <div class="left-col">
 
       <!-- Блок фильтра дат -->
-      <form method="get" class="filter-block" id="filter-form">
-        <div class="date-wrap">
-          <input type="date" name="date_from" class="field-input" id="date-from"
-                 value="{{ filter_date_from }}" placeholder="Выберите начало периода">
-          <svg class="date-icon" viewBox="0 0 18 18" fill="none">
-            <rect x="2" y="3" width="14" height="13" rx="2" stroke="#919191" stroke-width="1.4"/>
-            <path d="M2 7h14" stroke="#919191" stroke-width="1.4"/>
-            <path d="M6 1v4M12 1v4" stroke="#919191" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
+      <form method="get" class="filter-block" id="filter-form" novalidate>
+        <div class="date-col">
+          <span class="date-label">Начало периода</span>
+          <div class="date-wrap">
+            <input type="date" name="date_from" class="field-input" id="date-from"
+                   value="{{ filter_date_from }}" min="1890-01-01">
+            <svg class="date-icon" viewBox="0 0 18 18" fill="none" onclick="openDatePicker('date-from')">
+              <rect x="2" y="3" width="14" height="13" rx="2" stroke="#919191" stroke-width="1.4"/>
+              <path d="M2 7h14" stroke="#919191" stroke-width="1.4"/>
+              <path d="M6 1v4M12 1v4" stroke="#919191" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="date-error" id="err-date-from">
+            <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span id="err-date-from-text"></span>
+          </div>
         </div>
-        <div class="date-wrap">
-          <input type="date" name="date_to" class="field-input" id="date-to"
-                 value="{{ filter_date_to }}" placeholder="Выберите конец периода">
-          <svg class="date-icon" viewBox="0 0 18 18" fill="none">
-            <rect x="2" y="3" width="14" height="13" rx="2" stroke="#919191" stroke-width="1.4"/>
-            <path d="M2 7h14" stroke="#919191" stroke-width="1.4"/>
-            <path d="M6 1v4M12 1v4" stroke="#919191" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
+        <div class="date-col">
+          <span class="date-label">Конец периода</span>
+          <div class="date-wrap">
+            <input type="date" name="date_to" class="field-input" id="date-to"
+                   value="{{ filter_date_to }}" min="1890-01-01">
+            <svg class="date-icon" viewBox="0 0 18 18" fill="none" onclick="openDatePicker('date-to')">
+              <rect x="2" y="3" width="14" height="13" rx="2" stroke="#919191" stroke-width="1.4"/>
+              <path d="M2 7h14" stroke="#919191" stroke-width="1.4"/>
+              <path d="M6 1v4M12 1v4" stroke="#919191" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="date-error" id="err-date-to">
+            <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span id="err-date-to-text"></span>
+          </div>
+          <div class="date-error" id="err-date-order">
+            <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span>Конец периода раньше начала</span>
+          </div>
         </div>
-        <button type="submit" class="btn-show {% if filter_date_from or filter_date_to %}clear{% else %}{% endif %}"
+        <button type="submit" class="btn-show {% if filter_date_from or filter_date_to %}clear{% endif %}"
                 id="btn-show">{% if filter_date_from or filter_date_to %}Очистить{% else %}Показать{% endif %}</button>
       </form>
 
@@ -421,7 +451,7 @@
           <circle cx="34" cy="14" r="3" fill="#262626"/>
           <circle cx="42" cy="22" r="3" fill="#262626"/>
         </svg>
-        <span class="chart-empty-text">Выберите сессии для построения графика</span>
+        <span class="chart-empty-text">Выберите тесты для построения графика</span>
       </div>
       <div class="chart-wrapper" id="chart-wrapper" style="display:none;">
         <canvas id="compare-chart"></canvas>
@@ -451,26 +481,119 @@ if (loadMoreBtn) {
   });
 }
 
+// ── DATE PICKER OPENER ────────────────────────────────────────────────────────
+function openDatePicker(id) {
+  const input = document.getElementById(id);
+  try { input.showPicker(); } catch(e) { input.focus(); }
+}
+
 // ── DATE FILTER ────────────────────────────────────────────────────────────────
-const dateFrom = document.getElementById('date-from');
-const dateTo   = document.getElementById('date-to');
-const btnShow  = document.getElementById('btn-show');
+const dateFrom   = document.getElementById('date-from');
+const dateTo     = document.getElementById('date-to');
+const btnShow    = document.getElementById('btn-show');
 const filterForm = document.getElementById('filter-form');
+
+const errFrom      = document.getElementById('err-date-from');
+const errFromText  = document.getElementById('err-date-from-text');
+const errTo        = document.getElementById('err-date-to');
+const errToText    = document.getElementById('err-date-to-text');
+const errOrder     = document.getElementById('err-date-order');
+
+const MIN_DATE = '1890-01-01';
+
+function todayIso() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+function clearErrors() {
+  [errFrom, errTo, errOrder].forEach(el => el.classList.remove('visible'));
+  [dateFrom, dateTo].forEach(el => el.classList.remove('error'));
+}
+
+// Ограничение года до 4 цифр для type="date"
+function limitYear(input) {
+  if (!input.value) return;
+  const parts = input.value.split('-');
+  if (parts[0] && parts[0].length > 4) {
+    parts[0] = parts[0].slice(0, 4);
+    input.value = parts.join('-');
+  }
+}
 
 // Если фильтр уже применён (страница загружена с датами) — кнопка "Очистить"
 let filterApplied = btnShow.classList.contains('clear');
 
 function updateShowBtn() {
-  if (filterApplied) return; // состояние управляется через clear-логику
+  if (filterApplied) return;
   const ok = dateFrom.value && dateTo.value;
   btnShow.classList.toggle('active', ok);
   btnShow.disabled = !ok;
 }
 
-dateFrom.addEventListener('change', () => { filterApplied = false; updateShowBtn(); });
-dateTo.addEventListener('change',   () => { filterApplied = false; updateShowBtn(); });
+dateFrom.addEventListener('input', () => { limitYear(dateFrom); });
+dateTo.addEventListener('input',   () => { limitYear(dateTo); });
 
-btnShow.addEventListener('click', function (e) {
+dateFrom.addEventListener('change', () => {
+  filterApplied = false;
+  clearErrors();
+  btnShow.classList.remove('clear');
+  btnShow.textContent = 'Показать';
+  updateShowBtn();
+});
+dateTo.addEventListener('change', () => {
+  filterApplied = false;
+  clearErrors();
+  btnShow.classList.remove('clear');
+  btnShow.textContent = 'Показать';
+  updateShowBtn();
+});
+
+filterForm.addEventListener('submit', function(e) {
+  if (filterApplied) return; // «Очистить» — не валидируем
+  clearErrors();
+  const today = todayIso();
+  let valid = true;
+
+  if (dateFrom.value) {
+    if (dateFrom.value > today) {
+      dateFrom.classList.add('error');
+      errFromText.textContent = 'Дата не может быть позже сегодняшнего дня';
+      errFrom.classList.add('visible');
+      valid = false;
+    } else if (dateFrom.value < MIN_DATE) {
+      dateFrom.classList.add('error');
+      errFromText.textContent = 'Дата не может быть раньше 01.01.1890';
+      errFrom.classList.add('visible');
+      valid = false;
+    }
+  }
+
+  if (dateTo.value) {
+    if (dateTo.value > today) {
+      dateTo.classList.add('error');
+      errToText.textContent = 'Дата не может быть позже сегодняшнего дня';
+      errTo.classList.add('visible');
+      valid = false;
+    } else if (dateTo.value < MIN_DATE) {
+      dateTo.classList.add('error');
+      errToText.textContent = 'Дата не может быть раньше 01.01.1890';
+      errTo.classList.add('visible');
+      valid = false;
+    }
+  }
+
+  if (valid && dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) {
+    errOrder.classList.add('visible');
+    valid = false;
+  }
+
+  if (!valid) e.preventDefault();
+});
+
+btnShow.addEventListener('click', function(e) {
   if (filterApplied) {
     e.preventDefault();
     dateFrom.value = '';
@@ -480,6 +603,13 @@ btnShow.addEventListener('click', function (e) {
 });
 
 if (!filterApplied) updateShowBtn();
+
+// Ограничение пикера: max = сегодня (min уже в HTML = 1890-01-01)
+(function() {
+  const max = todayIso();
+  dateFrom.max = max;
+  dateTo.max   = max;
+})();
 
 // ── CHECKBOX: группа выбирает все в ней ───────────────────────────────────────
 document.querySelectorAll('.group-cb').forEach(groupCb => {

@@ -18,6 +18,26 @@ def get_item(dictionary, key):
 
 
 @register.filter
+def scale_label(question, value):
+    """Возвращает текстовую метку шкалы для заданного числового значения.
+    Использование: {{ answer.question|scale_label:answer.scale_value }}
+    """
+    if value is None:
+        return '—'
+    try:
+        int_val = int(value)
+    except (TypeError, ValueError):
+        return str(value)
+    for lbl in (question.scale_labels or []):
+        try:
+            if int(lbl.get('min', 0)) <= int_val <= int(lbl.get('max', 0)):
+                return lbl.get('label', '—')
+        except (TypeError, ValueError):
+            continue
+    return str(value)
+
+
+@register.filter
 def is_selected(saved_answers, option_pk):
     """Проверяет, выбран ли вариант ответа.
     Использование: {{ saved_answers|is_selected:option.pk }}

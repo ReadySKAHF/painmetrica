@@ -362,13 +362,8 @@
       <div class="page-title">{{ stage.page_title }}</div>
 
       {% if stage.annotation %}
-      <div class="info-banner" id="infoBanner">
+      <div class="info-banner">
         <p>{{ stage.annotation }}</p>
-        <button class="close-btn" onclick="document.getElementById('infoBanner').style.display='none'" type="button">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M1 1L9 9M9 1L1 9" stroke="#262626" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
       </div>
       {% endif %}
 
@@ -646,7 +641,8 @@
       });
 
       var unanswered = [];
-      var qIdx = 0;
+      var QUESTION_OFFSET = {{ question_offset }};
+      var qIdx = QUESTION_OFFSET;
       document.querySelectorAll('.options').forEach(function(optGroup) {
         qIdx++;
         var hasSelected = optGroup.querySelector('.option.selected') !== null;

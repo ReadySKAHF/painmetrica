@@ -1,4 +1,4 @@
-{% load static %}
+{% load static test_filters %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -194,7 +194,7 @@
             <div class="qa-answer-group">
               <span class="qa-answer-text">
                 {% if answer.question.question_type == 'scale' %}
-                  {{ answer.scale_value }}
+                  {{ answer.question|scale_label:answer.scale_value }}
                 {% else %}
                   {% for opt in answer.selected_options.all %}
                     {{ opt.option_text }}{% if not forloop.last %}, {% endif %}

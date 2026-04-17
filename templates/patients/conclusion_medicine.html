@@ -132,21 +132,38 @@ body {
 .custom-select-option {
   padding: 10px 8px; border-radius: 8px; cursor: pointer;
   font-size: 13px; color: var(--gray-950); transition: background 0.12s;
+  display: flex; align-items: center; gap: 8px; user-select: none;
 }
 .custom-select-option:hover { background: var(--blue-100); }
 .custom-select-option.selected { background: var(--blue-100); color: var(--blue-400); font-weight: 600; }
-.custom-select-option.clear-opt { color: var(--gray-550); }
+
+/* Чекбокс внутри опции */
+.opt-check {
+  width: 16px; height: 16px; min-width: 16px; border-radius: 4px;
+  border: 1.5px solid var(--gray-300); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, border-color 0.12s; flex-shrink: 0;
+}
+.custom-select-option.selected .opt-check {
+  background: var(--blue-500); border-color: var(--blue-500);
+}
+.opt-check svg { display: none; }
+.custom-select-option.selected .opt-check svg { display: block; }
 
 .btn-filter {
-  height: 44px; width: 140px;
-  background: var(--white);
-  border: 1.5px solid var(--gray-950);
+  height: 44px; width: 100%;
+  background: var(--blue-500);
+  border: 1.5px solid var(--blue-500);
   border-radius: 33px;
   font-family: inherit; font-size: 14px; font-weight: 600;
-  color: var(--gray-950); cursor: pointer;
-  transition: background 0.15s;
+  color: var(--white); cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.btn-filter:hover { background: var(--gray-250); }
+.btn-filter:hover { opacity: 0.88; background: var(--blue-500); }
+.btn-filter.reset {
+  background: var(--white); border-color: var(--gray-950); color: var(--gray-950);
+}
+.btn-filter.reset:hover { background: var(--gray-250); }
 
 /* ── MED LIST ── */
 .med-list { display: flex; flex-direction: column; gap: 8px; }
@@ -234,13 +251,13 @@ body {
   width: 1320px; max-width: calc(100vw - 24px);
   background: var(--white);
   border-radius: 28px 28px 0 0;
-  height: 180px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 10px;
+  padding-top: 30px; padding-bottom: 24px;
   box-shadow: 0 -2px 16px rgba(0,0,0,0.06);
   z-index: 90;
 }
 .btn-save-main {
-  width: 480px; height: 46px;
+  width: auto; padding: 0 32px; height: 40px; white-space: nowrap;
   background: var(--blue-500); border: none; border-radius: 33px;
   font-family: inherit; font-size: 15px; font-weight: 700;
   color: var(--white); cursor: pointer; transition: opacity 0.15s;
@@ -317,7 +334,7 @@ body {
 
   <h1 class="page-title">Рекомендованное медикаментозное лечение</h1>
   <p class="page-desc">
-    На этой странице вы можете сформировать индивидуальный план медикаментозной терапии для включения в итоговое консультативное заключение. Выбирайте необходимые препараты, предложенные системой по результатам последней сессии тестирования, в списке слева, используя фильтрацию по типам препаратов. При добавлении лекарства в центральную форму система автоматически подставит готовые схемы назначения, которые вы можете редактировать по вашему усмотрению, и информацию о побочных эффектах. Далее информация о наименовании лекарства и схеме применения будет перенесена в финальный Word-документ консультативного заключения.<br>
+    На этой странице вы можете сформировать индивидуальный план медикаментозной терапии для включения в итоговое консультативное заключение. Выбирайте необходимые препараты, предложенные системой по результатам последней сессии тестирования, в списке слева, используя фильтрацию по типам препаратов. При добавлении лекарства в центральную форму система автоматически подставит готовые схемы назначения, которые вы можете редактировать <strong>по вашему усмотрению</strong>, и информацию о побочных эффектах. Далее информация о наименовании лекарства и схеме применения будет перенесена в финальный Word-документ консультативного заключения.<br>
     <strong>Обращаем ваше внимание, что заключение будет сформирована по результатам последней тестовой сессии. Посмотреть результаты по ней можно {% if last_result %}<a href="{% url 'tests:result' session_id=last_result.session_id %}" target="_blank">здесь</a>{% else %}<span>здесь</span>{% endif %}</strong>
   </p>
 
@@ -330,21 +347,28 @@ body {
       <div class="filter-block">
         <span class="filter-label">Фармакологическая группа</span>
         <div class="custom-select-wrap" id="wrap-med-type">
-          <button type="button" class="custom-select-trigger {% if current_med_type %}has-value{% endif %}" id="trigger-med-type">
-            <span class="trigger-text" id="trigger-med-type-text">{% if current_med_type %}{{ current_med_type }}{% else %}Фармакологическая группа{% endif %}</span>
+          <button type="button" class="custom-select-trigger {% if current_med_types %}has-value{% endif %}" id="trigger-med-type">
+            <span class="trigger-text" id="trigger-med-type-text">{% if current_med_types|length == 1 %}{{ current_med_types.0 }}{% elif current_med_types|length > 1 %}{{ current_med_types|length }} выбрано{% else %}Фармакологическая группа{% endif %}</span>
             <svg class="trigger-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
               <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
           <div class="custom-select-dropdown" id="dropdown-med-type">
-            <div class="custom-select-option clear-opt" data-value="">Все типы</div>
             {% for t in med_types %}
-            <div class="custom-select-option {% if t == current_med_type %}selected{% endif %}" data-value="{{ t }}">{{ t }}</div>
+            <div class="custom-select-option {% if t in current_med_types %}selected{% endif %}" data-value="{{ t }}">
+              <span class="opt-check">
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              {{ t }}
+            </div>
             {% endfor %}
           </div>
         </div>
-        <input type="hidden" id="id_med_type" name="med_type" value="{{ current_med_type }}">
-        <button class="btn-filter" type="button" id="btn-filter">Отфильтровать</button>
+        <button class="btn-filter{% if current_med_types %} reset{% endif %}" type="button" id="btn-filter">
+          {% if current_med_types %}Сбросить фильтр{% else %}Отфильтровать{% endif %}
+        </button>
       </div>
 
       <!-- MED LIST -->
@@ -410,7 +434,10 @@ body {
   {% csrf_token %}
   <div id="hidden-inputs"></div>
   <footer class="site-footer">
-    <button type="submit" class="btn-save-main">Сохранить и перейти к назначению реабилитационной терапии</button>
+    <button type="submit" class="btn-save-main">Сохранить и перейти к назначению реабилитационных мероприятий</button>
+    <div style="display:flex;align-items:center;margin-top:20px;">
+      <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="114" height="28" style="display:block;">
+    </div>
     <span class="footer-tagline">Система управления пациентами для врачей и специалистов</span>
     <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
   </footer>
@@ -507,11 +534,41 @@ function updateHiddenInputs() {
   });
 }
 
-// Dropdown
-var trigger = document.getElementById('trigger-med-type');
-var dropdown = document.getElementById('dropdown-med-type');
-var hiddenInput = document.getElementById('id_med_type');
+// ── Мультиселект фармакологических групп ──────────────────────────────────────
+var trigger     = document.getElementById('trigger-med-type');
+var dropdown    = document.getElementById('dropdown-med-type');
 var triggerText = document.getElementById('trigger-med-type-text');
+var btnFilter   = document.getElementById('btn-filter');
+
+// Начальный набор выбранных значений (из URL при загрузке страницы)
+var selectedTypes = new Set(
+  [{% for t in current_med_types %}"{{ t }}",{% endfor %}]
+);
+var filterApplied = {{ current_med_types|length }} > 0;
+
+function updateTriggerText() {
+  var count = selectedTypes.size;
+  if (count === 0) {
+    triggerText.textContent = 'Фармакологическая группа';
+    trigger.classList.remove('has-value');
+  } else if (count === 1) {
+    triggerText.textContent = Array.from(selectedTypes)[0];
+    trigger.classList.add('has-value');
+  } else {
+    triggerText.textContent = count + ' выбрано';
+    trigger.classList.add('has-value');
+  }
+}
+
+function updateFilterBtn() {
+  if (filterApplied) {
+    btnFilter.textContent = 'Сбросить фильтр';
+    btnFilter.classList.add('reset');
+  } else {
+    btnFilter.textContent = 'Отфильтровать';
+    btnFilter.classList.remove('reset');
+  }
+}
 
 trigger.addEventListener('click', function() {
   var isOpen = dropdown.classList.contains('open');
@@ -520,32 +577,49 @@ trigger.addEventListener('click', function() {
 });
 
 dropdown.querySelectorAll('.custom-select-option').forEach(function(opt) {
-  opt.addEventListener('click', function() {
+  opt.addEventListener('click', function(e) {
+    e.stopPropagation();
     var val = this.dataset.value;
-    hiddenInput.value = val;
-    triggerText.textContent = val || 'Фармакологическая группа';
-    trigger.classList.toggle('has-value', !!val);
-    trigger.classList.remove('open');
-    dropdown.classList.remove('open');
-    dropdown.querySelectorAll('.custom-select-option').forEach(function(o) { o.classList.remove('selected'); });
-    this.classList.add('selected');
+    if (selectedTypes.has(val)) {
+      selectedTypes.delete(val);
+      this.classList.remove('selected');
+    } else {
+      selectedTypes.add(val);
+      this.classList.add('selected');
+    }
+    // Если фильтр был применён и пользователь меняет выбор — переходим в режим "Отфильтровать"
+    if (filterApplied) {
+      filterApplied = false;
+      updateFilterBtn();
+    }
+    updateTriggerText();
   });
 });
 
 document.addEventListener('click', function(e) {
   if (!e.target.closest('#wrap-med-type')) {
-    dropdown.classList.remove('open'); trigger.classList.remove('open');
+    dropdown.classList.remove('open');
+    trigger.classList.remove('open');
   }
 });
 
-document.getElementById('btn-filter').addEventListener('click', function() {
-  // Сохраняем все текущие схемы перед перезагрузкой страницы
+btnFilter.addEventListener('click', function() {
   saveAllVisibleSchemes();
-  var val = hiddenInput.value;
-  var url = new URL(window.location.href);
-  if (val) url.searchParams.set('med_type', val);
-  else url.searchParams.delete('med_type');
-  window.location.href = url.toString();
+  if (filterApplied) {
+    // Сбросить фильтр
+    selectedTypes.clear();
+    var url = new URL(window.location.href);
+    url.searchParams.delete('med_type');
+    window.location.href = url.toString();
+  } else {
+    // Применить фильтр
+    var url = new URL(window.location.href);
+    url.searchParams.delete('med_type');
+    selectedTypes.forEach(function(val) {
+      url.searchParams.append('med_type', val);
+    });
+    window.location.href = url.toString();
+  }
 });
 
 // Checkboxes

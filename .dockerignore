@@ -35,9 +35,6 @@ staticfiles/
 
 # Документация и прочее
 *.md
-*.docx
-*.xlsx
-*.txt
 *.drawio
 
 # Тесты

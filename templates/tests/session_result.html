@@ -57,7 +57,7 @@
     /* ── MAIN ── */
     .main {
       flex: 1; width: 100%; max-width: 1320px; margin: 0 auto;
-      padding: 48px 12px 80px;
+      padding: 20px 12px 80px;
     }
 
     .page-title {
@@ -128,6 +128,17 @@
       transition: background 0.15s;
     }
     .btn-cabinet:hover { background: #1a57e0; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--blue-500);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
 
     /* ── FOOTER ── */
     .footer {
@@ -203,6 +214,15 @@
 <!-- MAIN -->
 <main class="main">
 
+  {% if from_detail %}
+  <a href="{% url 'patients:detail' patient.pk %}" class="back-link">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18l-6-6 6-6" stroke="#2E67F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Вернуться назад
+  </a>
+  {% endif %}
+
   <h1 class="page-title">Результаты тестирования пациента</h1>
   <p class="page-desc">
     Здесь представлены результаты вашего тестирования.
@@ -251,9 +271,11 @@
       </div>
       {% endif %}
 
+      {% if not from_detail %}
       <a class="btn-cabinet" href="{% url 'patients:detail' patient.pk %}">
         В личный кабинет
       </a>
+      {% endif %}
     </div>
 
   </div>

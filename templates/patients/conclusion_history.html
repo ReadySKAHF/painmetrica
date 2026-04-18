@@ -474,19 +474,19 @@ a.pagination__btn[aria-disabled="true"],
     }
   }
 
-  /* ── Автоформатирование: вставка точек ── */
-  function applyDateMask(input) {
-    var raw = input.value.replace(/\D/g, '');
-    var result = '';
-    if (raw.length >= 1) result += raw.slice(0, 2);
-    if (raw.length >= 3) result += '.' + raw.slice(2, 4);
-    if (raw.length >= 5) result += '.' + raw.slice(4, 8);
-    input.value = result;
+  /* ── Ограничение года до 4 цифр для type="date" ── */
+  function clampYear(input) {
+    if (!input.value) return;
+    var parts = input.value.split('-');
+    if (parts[0] && parts[0].length > 4) {
+      parts[0] = parts[0].slice(0, 4);
+      input.value = parts.join('-');
+    }
     updateBtn();
   }
 
-  dateFrom.addEventListener('input', function() { applyDateMask(this); });
-  dateTo.addEventListener('input', function() { applyDateMask(this); });
+  dateFrom.addEventListener('input', function() { clampYear(this); });
+  dateTo.addEventListener('input', function() { clampYear(this); });
 
   /* ── Скрыть ошибку при вводе ── */
   dateFrom.addEventListener('input', function() {

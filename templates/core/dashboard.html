@@ -1684,8 +1684,17 @@
     document.getElementById(id).classList.remove('hidden');
   }
 
+  function clearModal2() {
+    document.getElementById('inviteEmail').value = '';
+    document.getElementById('inviteEmail').classList.remove('input-error');
+    ['inviteErrEmpty','inviteErrFormat','inviteErrExists','inviteErrOther'].forEach(id =>
+      document.getElementById(id).classList.remove('visible')
+    );
+  }
+
   function closeAllModals() {
     overlay.classList.add('hidden');
+    clearModal2();
     clearFormA();
     clearFormB();
     setTimeout(() => showModal('modal1'), 180);

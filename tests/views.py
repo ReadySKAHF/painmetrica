@@ -537,6 +537,7 @@ class ResultView(LoginRequiredMixin, View):
             'pathotype_label': pathotype_label,
             'pathotype_text': pathotype_text,
             'is_doctor': user.user_type == 'doctor',
+            'from_detail': request.GET.get('from_detail') == '1',
         })
 
 

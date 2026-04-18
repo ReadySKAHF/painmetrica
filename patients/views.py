@@ -693,6 +693,7 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
         conclusion = get_object_or_404(
             Conclusion.objects.select_related(
                 'doctor',
+                'doctor__doctor_profile',
                 'last_test_result__test',
             ).prefetch_related(
                 'conclusion_medications__medication',
@@ -782,9 +783,39 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
             for ct in conclusion.conclusion_therapies.all()
         ]
 
+        # ── Данные врача для шапки ─────────────────────────────────────────
+        doctor_profile = getattr(doctor, 'doctor_profile', None)
+        doctor_workplace = (doctor_profile.workplace if doctor_profile else '') or ''
+        doctor_position = (doctor_profile.position if doctor_profile else '') or ''
+        doctor_fio_parts = filter(None, [
+            doctor.last_name,
+            doctor.first_name,
+            getattr(doctor, 'middle_name', ''),
+        ])
+        doctor_fio = ' '.join(doctor_fio_parts)
+
         # ── Открываем шаблон ───────────────────────────────────────────────
         template_path = os.path.join(settings.BASE_DIR, 'conclusion-template.docx')
         document = docx.Document(template_path)
+
+        # Заменяем шапку шаблона данными врача из БД
+        def _replace_para_text(para, new_text):
+            """Заменяет текст параграфа, сохраняя форматирование первого run."""
+            for run in para.runs:
+                run.text = ''
+            if para.runs:
+                para.runs[0].text = new_text
+            else:
+                para.add_run(new_text)
+
+        header_map = {
+            0: doctor_workplace,
+            1: doctor_position,
+            2: doctor_fio,
+        }
+        for idx, new_text in header_map.items():
+            if idx < len(document.paragraphs) and new_text:
+                _replace_para_text(document.paragraphs[idx], new_text)
 
         # Находим параграф "КОНСУЛЬТАТИВНОЕ ЗАКЛЮЧЕНИЕ" и удаляем всё после него
         header_end = None

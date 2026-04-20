@@ -734,6 +734,23 @@
   }
   .ht-empty-text { font-size: 15px; color: var(--gray-550); }
 
+  /* ── NOT FOUND (история) ── */
+  .ht-not-found {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 24px; padding: 60px 0 40px;
+  }
+  .ht-not-found-img {
+    width: 138px; height: 109px;
+    background: var(--gray-300); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ht-not-found-texts {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px; max-width: 572px; text-align: center;
+  }
+  .ht-not-found-title { font-size: 26px; font-weight: 700; color: var(--gray-950); }
+  .ht-not-found-sub { font-size: 17px; font-weight: 400; color: var(--gray-950); line-height: 1.4; }
+
   /* ── PAGINATION (точно как dashboard.html) ── */
   .pagination-wrap {
     display: flex;
@@ -1392,6 +1409,25 @@
         </script>
         {% endif %}
 
+        {% else %}
+        {% if filter_date_from or filter_date_to %}
+        <div class="ht-not-found">
+          <div class="ht-not-found-img">
+            <svg width="70" height="60" viewBox="0 0 70 60" fill="none">
+              <rect x="10" y="5" width="40" height="50" rx="5" fill="#EAEAEA"/>
+              <path d="M20 18H40" stroke="#919191" stroke-width="2" stroke-linecap="round"/>
+              <path d="M20 26H40" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M20 33H32" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="52" cy="46" r="12" fill="#F9F9F9" stroke="#EAEAEA" stroke-width="1.5"/>
+              <path d="M48 42L56 50M56 42L48 50" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="ht-not-found-texts">
+            <p class="ht-not-found-title">Сессий тестирования в данный период не найдено</p>
+            <p class="ht-not-found-sub">Попробуйте изменить даты поиска</p>
+          </div>
+          <a href="?tab=history" class="btn-outline" style="text-decoration:none;">Сбросить период</a>
+        </div>
         {% elif not current_status %}
         <div class="ht-empty">
           <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
@@ -1400,6 +1436,7 @@
           </svg>
           <span class="ht-empty-text">Тестирований пока нет</span>
         </div>
+        {% endif %}
         {% endif %}
 
       </div>
@@ -1515,6 +1552,23 @@
 
     updateBtnDisabled();
 
+    var todayIso = new Date().toISOString().split('T')[0];
+    htDateFrom.min = '1890-01-01';
+    htDateFrom.max = todayIso;
+    htDateTo.min   = '1890-01-01';
+    htDateTo.max   = todayIso;
+
+    function clampYear(input) {
+      if (!input.value) return;
+      var parts = input.value.split('-');
+      if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].slice(0, 4);
+        input.value = parts.join('-');
+      }
+    }
+    htDateFrom.addEventListener('input', function() { clampYear(this); });
+    htDateTo.addEventListener('input', function() { clampYear(this); });
+
     document.getElementById('ht-filter-form').addEventListener('submit', function (e) {
       if (filterApplied) return; // очистка — не валидируем
       if (!validateFilterDates()) {
@@ -1536,8 +1590,6 @@
       }
     });
   })();
-
-  // max на датах не ставим — иначе браузер показывает свой тултип при вводе будущей даты
 
   const BAD_NAME_EDIT = /[^a-zA-Zа-яёА-ЯЁ\s\-]/;
 

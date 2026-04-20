@@ -125,13 +125,14 @@ body {
 
 .filter-date-input.error { border-color: #E43D3D; }
 .filter-error-block {
-  display: none; align-items: center; gap: 8px;
-  padding: 0 12px; background: #FFF0F0;
-  border-radius: 8px; height: 36px;
+  display: none; align-items: center; gap: 6px;
+  padding: 5px 8px; background: #FFF5F5;
+  border: 1px solid #FBCFCF;
+  border-radius: 8px;
 }
 .filter-error-block.visible { display: flex; }
 .filter-error-icon { width: 15px; height: 15px; flex-shrink: 0; }
-.filter-error-text { font-size: 11px; color: #E43D3D; line-height: 1.4; white-space: nowrap; }
+.filter-error-text { font-size: 11px; color: #E43D3D; line-height: 1.4; }
 
 .filter-divider {
   width: 1px; height: 14px; background: var(--gray-300);
@@ -185,14 +186,23 @@ body {
 }
 .btn-outline:hover { background: var(--gray-250); }
 
-/* ── EMPTY STATE ── */
-.empty-state {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 240px; background: var(--white);
-  border: 1px solid var(--gray-300); border-radius: 24px;
-  padding: 40px; text-align: center; color: var(--gray-550);
-  font-size: 16px; line-height: 1.6;
+/* ── NOT FOUND ── */
+.not-found {
+  display: none; flex-direction: column; align-items: center;
+  gap: 24px; padding: 80px 0 60px;
 }
+.not-found.show { display: flex; }
+.not-found-img {
+  width: 138px; height: 109px;
+  background: var(--gray-300); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.not-found-texts {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; max-width: 572px; text-align: center;
+}
+.not-found-title { font-size: 30px; font-weight: 700; color: var(--gray-950); }
+.not-found-sub { font-size: 20px; font-weight: 400; color: var(--gray-950); line-height: 1.4; }
 
 /* ── PAGINATION ── */
 .pagination-wrap { display: flex; justify-content: center; margin-top: 6px; margin-bottom: 40px; }
@@ -383,9 +393,42 @@ a.pagination__btn[aria-disabled="true"],
       <a href="{% url 'patients:conclusion_download' pk=patient.pk conclusion_pk=conclusion.pk %}" class="btn-outline">Скачать заключение</a>
     </div>
     {% empty %}
-    <div class="empty-state">
-      Заключений пока нет{% if filter_date_from or filter_date_to %} за выбранный период{% endif %}
+    {% if filter_date_from or filter_date_to %}
+    <div class="not-found show">
+      <div class="not-found-img">
+        <svg width="70" height="60" viewBox="0 0 70 60" fill="none">
+          <rect x="10" y="5" width="40" height="50" rx="5" fill="#EAEAEA"/>
+          <path d="M20 18H40" stroke="#919191" stroke-width="2" stroke-linecap="round"/>
+          <path d="M20 26H40" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M20 33H32" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="52" cy="46" r="12" fill="#F9F9F9" stroke="#EAEAEA" stroke-width="1.5"/>
+          <path d="M48 42L56 50M56 42L48 50" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="not-found-texts">
+        <p class="not-found-title">Сформированных заключений в данный период не найдено</p>
+        <p class="not-found-sub">Попробуйте изменить даты поиска</p>
+      </div>
+      <a href="{% url 'patients:conclusion_history' pk=patient.pk %}" class="btn-outline">Сбросить период</a>
     </div>
+    {% else %}
+    <div class="not-found show">
+      <div class="not-found-img">
+        <svg width="70" height="60" viewBox="0 0 70 60" fill="none">
+          <rect x="10" y="5" width="40" height="50" rx="5" fill="#EAEAEA"/>
+          <path d="M20 18H40" stroke="#919191" stroke-width="2" stroke-linecap="round"/>
+          <path d="M20 26H40" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M20 33H32" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="52" cy="46" r="12" fill="#F9F9F9" stroke="#EAEAEA" stroke-width="1.5"/>
+          <path d="M48 42L56 50M56 42L48 50" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="not-found-texts">
+        <p class="not-found-title">Заключений пока нет</p>
+        <p class="not-found-sub">У пациента ещё нет заключений</p>
+      </div>
+    </div>
+    {% endif %}
     {% endfor %}
   </div>
 
@@ -456,151 +499,136 @@ a.pagination__btn[aria-disabled="true"],
 </footer>
 
 <script>
-  var dateFrom    = document.getElementById('dateFrom');
-  var dateTo      = document.getElementById('dateTo');
-  var btnShow     = document.getElementById('btn-show');
-  var filterForm  = document.getElementById('filter-form');
-  var errFrom     = document.getElementById('err-date-from');
-  var errFromText = document.getElementById('err-date-from-text');
-  var errTo       = document.getElementById('err-date-to');
-  var errToText   = document.getElementById('err-date-to-text');
-
-  /* ── Кнопка активна при наличии значения ── */
-  function updateBtn() {
-    if (dateFrom.value || dateTo.value) {
-      btnShow.classList.add('active');
-    } else {
-      btnShow.classList.remove('active');
-    }
+  function clOpenPicker(id) {
+    var input = document.getElementById(id);
+    try { input.showPicker(); } catch(e) { input.focus(); }
   }
 
-  /* ── Ограничение года до 4 цифр для type="date" ── */
-  function clampYear(input) {
-    if (!input.value) return;
-    var parts = input.value.split('-');
-    if (parts[0] && parts[0].length > 4) {
-      parts[0] = parts[0].slice(0, 4);
-      input.value = parts.join('-');
-    }
-    updateBtn();
-  }
+  (function() {
+    var btnShow    = document.getElementById('btn-show');
+    var dateFrom   = document.getElementById('dateFrom');
+    var dateTo     = document.getElementById('dateTo');
+    if (!btnShow) return;
 
-  dateFrom.addEventListener('input', function() { clampYear(this); });
-  dateTo.addEventListener('input', function() { clampYear(this); });
+    var filterApplied = btnShow.classList.contains('clear');
 
-  /* ── Скрыть ошибку при вводе ── */
-  dateFrom.addEventListener('input', function() {
-    errFrom.classList.remove('visible');
-    this.classList.remove('error');
-  });
-  dateTo.addEventListener('input', function() {
-    errTo.classList.remove('visible');
-    this.classList.remove('error');
-  });
+    var errFromRange = document.getElementById('err-date-from');
+    var errToRange   = document.getElementById('err-date-to');
+    var errDateOrder = document.getElementById('err-date-order');
 
-  /* ── Разбор ДД.ММ.ГГГГ → Date или null ── */
-  function parseDate(str) {
-    if (!str || str.length !== 10) return null;
-    var parts = str.split('.');
-    if (parts.length !== 3 || parts[0].length !== 2 || parts[1].length !== 2 || parts[2].length !== 4) return null;
-    var d = parseInt(parts[0], 10);
-    var m = parseInt(parts[1], 10);
-    var y = parseInt(parts[2], 10);
-    var obj = new Date(y, m - 1, d);
-    if (obj.getFullYear() !== y || obj.getMonth() !== m - 1 || obj.getDate() !== d) return null;
-    return obj;
-  }
-
-  /* ── Валидация при отправке ── */
-  filterForm.addEventListener('submit', function(e) {
-    var valid = true;
-    var today = new Date(); today.setHours(0, 0, 0, 0);
-    var minDate = new Date(1890, 0, 1);
-
-    var fromVal = dateFrom.value.trim();
-    var toVal   = dateTo.value.trim();
-    var fromDate = fromVal ? parseDate(fromVal) : null;
-    var toDate   = toVal   ? parseDate(toVal)   : null;
-
-    /* Проверка "Начало периода" */
-    if (fromVal) {
-      if (!fromDate) {
-        dateFrom.classList.add('error');
-        errFromText.textContent = 'Неверный формат даты';
-        errFrom.classList.add('visible');
-        valid = false;
-      } else if (fromDate > today) {
-        dateFrom.classList.add('error');
-        errFromText.textContent = 'Дата не может быть в будущем';
-        errFrom.classList.add('visible');
-        valid = false;
-      } else if (fromDate < minDate) {
-        dateFrom.classList.add('error');
-        errFromText.textContent = 'Дата не может быть раньше 01.01.1890';
-        errFrom.classList.add('visible');
-        valid = false;
-      }
-    }
-
-    /* Проверка "Окончание периода" */
-    if (toVal) {
-      if (!toDate) {
-        dateTo.classList.add('error');
-        errToText.textContent = 'Неверный формат даты';
-        errTo.classList.add('visible');
-        valid = false;
-      } else if (toDate > today) {
-        dateTo.classList.add('error');
-        errToText.textContent = 'Дата не может быть в будущем';
-        errTo.classList.add('visible');
-        valid = false;
-      } else if (toDate < minDate) {
-        dateTo.classList.add('error');
-        errToText.textContent = 'Дата не может быть раньше 01.01.1890';
-        errTo.classList.add('visible');
-        valid = false;
-      }
-    }
-
-    /* Проверка порядка дат */
-    if (fromDate && toDate && fromDate > toDate) {
-      dateTo.classList.add('error');
-      errToText.textContent = 'Конец периода раньше начала';
-      errTo.classList.add('visible');
-      valid = false;
-    }
-
-    if (!valid) e.preventDefault();
-  });
-
-  /* ── Ограничение пикеров: max = сегодня ── */
-  var todayIso = new Date().toISOString().split('T')[0];
-  var fromPicker = document.getElementById('dateFromPicker');
-  var toPicker   = document.getElementById('dateToPicker');
-  if (fromPicker) fromPicker.max = todayIso;
-  if (toPicker)   toPicker.max   = todayIso;
-
-  /* ── При выборе даты через пикер → в текстовое поле ── */
-  if (fromPicker) {
-    fromPicker.addEventListener('change', function() {
-      if (!this.value) return;
-      var p = this.value.split('-');         // YYYY-MM-DD
-      dateFrom.value = p[2] + '.' + p[1] + '.' + p[0];
-      errFrom.classList.remove('visible');
+    function clearFilterErrors() {
+      errFromRange.classList.remove('visible');
+      errToRange.classList.remove('visible');
+      errDateOrder.classList.remove('visible');
       dateFrom.classList.remove('error');
-      updateBtn();
-    });
-  }
-  if (toPicker) {
-    toPicker.addEventListener('change', function() {
-      if (!this.value) return;
-      var p = this.value.split('-');
-      dateTo.value = p[2] + '.' + p[1] + '.' + p[0];
-      errTo.classList.remove('visible');
       dateTo.classList.remove('error');
-      updateBtn();
+    }
+
+    function updateBtnDisabled() {
+      if (filterApplied) {
+        btnShow.disabled = false;
+        return;
+      }
+      btnShow.disabled = !(dateFrom.value && dateTo.value);
+    }
+
+    function validateFilterDates() {
+      clearFilterErrors();
+      var MIN_DATE = '1890-01-01';
+      var now = new Date();
+      var maxDate = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0');
+      var valid = true;
+
+      if (dateFrom.value) {
+        if (dateFrom.value > maxDate) {
+          errFromRange.querySelector('.filter-error-text').textContent = 'Дата не может быть позднее сегодняшнего дня';
+          errFromRange.classList.add('visible');
+          dateFrom.classList.add('error');
+          valid = false;
+        } else if (dateFrom.value < MIN_DATE) {
+          errFromRange.querySelector('.filter-error-text').textContent = 'Дата не может быть раньше 01.01.1890';
+          errFromRange.classList.add('visible');
+          dateFrom.classList.add('error');
+          valid = false;
+        }
+      }
+      if (dateTo.value) {
+        if (dateTo.value > maxDate) {
+          errToRange.querySelector('.filter-error-text').textContent = 'Дата не может быть позднее сегодняшнего дня';
+          errToRange.classList.add('visible');
+          dateTo.classList.add('error');
+          valid = false;
+        } else if (dateTo.value < MIN_DATE) {
+          errToRange.querySelector('.filter-error-text').textContent = 'Дата не может быть раньше 01.01.1890';
+          errToRange.classList.add('visible');
+          dateTo.classList.add('error');
+          valid = false;
+        }
+      }
+      if (valid && dateFrom.value && dateTo.value && dateFrom.value > dateTo.value) {
+        errDateOrder.classList.add('visible');
+        dateTo.classList.add('error');
+        valid = false;
+      }
+      return valid;
+    }
+
+    dateFrom.addEventListener('change', function() {
+      filterApplied = false;
+      clearFilterErrors();
+      btnShow.textContent = 'Показать';
+      btnShow.classList.remove('clear');
+      updateBtnDisabled();
     });
-  }
+    dateTo.addEventListener('change', function() {
+      filterApplied = false;
+      clearFilterErrors();
+      btnShow.textContent = 'Показать';
+      btnShow.classList.remove('clear');
+      updateBtnDisabled();
+    });
+
+    updateBtnDisabled();
+
+    var todayIso = new Date().toISOString().split('T')[0];
+    dateFrom.min = '1890-01-01';
+    dateFrom.max = todayIso;
+    dateTo.min   = '1890-01-01';
+    dateTo.max   = todayIso;
+
+    function clampYear(input) {
+      if (!input.value) return;
+      var parts = input.value.split('-');
+      if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].slice(0, 4);
+        input.value = parts.join('-');
+      }
+    }
+    dateFrom.addEventListener('input', function() { clampYear(this); });
+    dateTo.addEventListener('input', function() { clampYear(this); });
+
+    document.getElementById('filter-form').addEventListener('submit', function(e) {
+      if (filterApplied) return;
+      if (!validateFilterDates()) {
+        e.preventDefault();
+      }
+    });
+
+    btnShow.addEventListener('click', function(e) {
+      if (filterApplied) {
+        e.preventDefault();
+        dateFrom.value = '';
+        dateTo.value   = '';
+        clearFilterErrors();
+        var url = new URL(window.location.href);
+        url.searchParams.delete('date_from');
+        url.searchParams.delete('date_to');
+        window.location.href = url.toString();
+      }
+    });
+  })();
 </script>
 
 </body>

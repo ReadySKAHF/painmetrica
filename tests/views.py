@@ -580,6 +580,7 @@ class ResultDetailView(LoginRequiredMixin, View):
             'patient': session.patient,
             'answers': answers,
             'sidebar_step': sidebar_step,
+            'from_detail': request.GET.get('from_detail') == '1',
         })
 
 

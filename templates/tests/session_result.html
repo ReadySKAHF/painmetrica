@@ -237,7 +237,7 @@
         <span class="test-time-badge">{{ result.completed_at|date:"d.m.Y, H:i:s" }}</span>
       </div>
       {% for sub in sub_results %}
-      <a href="{% url 'tests:result_detail' session_id=session.pk sidebar_step=sub.sidebar_step %}" class="score-card">
+      <a href="{% url 'tests:result_detail' session_id=session.pk sidebar_step=sub.sidebar_step %}{% if from_detail %}?from_detail=1{% endif %}" class="score-card">
         <div class="score-circle">
           <span class="score-number">{{ sub.score }} б.</span>
         </div>

@@ -173,7 +173,7 @@
 
 <main class="page-main">
 
-  <a href="{% url 'tests:result' session.pk %}" class="back-link">
+  <a href="{% url 'tests:result' session.pk %}{% if from_detail %}?from_detail=1{% endif %}" class="back-link">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path d="M15 19L8 12L15 5" stroke="#2E67F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>

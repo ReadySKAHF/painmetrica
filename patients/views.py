@@ -389,8 +389,10 @@ class PatientExportExcelView(LoginRequiredMixin, View):
         # ── Лист 2: Результаты тестов ─────────────────────────────────────
         ws_res = wb['Результаты тестов']
 
-        # Переименовываем заголовок колонки C
+        # Переименовываем/добавляем заголовки колонок
         ws_res['C2'] = 'Тест ВАШ (VAS), NCS-R, PAINAD'
+        ws_res['F2'] = 'Тест HADS. Оценка уровня тревоги'
+        ws_res['G2'] = 'Тест HADS. Оценка уровня депрессии'
 
         # Строка 3 — пустая строка-пример из шаблона; убираем её
         ws_res.delete_rows(3)
@@ -428,7 +430,8 @@ class PatientExportExcelView(LoginRequiredMixin, View):
                 step_scores.get(1) if 1 in step_scores else '—',  # VAS / NCS-R / PAINAD
                 '—' if is_single_score else (step_scores.get(2) if 2 in step_scores else '—'),  # DN4
                 '—' if is_single_score else (step_scores.get(3) if 3 in step_scores else '—'),  # CSI
-                '—' if is_single_score else (step_scores.get(4) if 4 in step_scores else '—'),  # HADS
+                '—' if is_single_score else (step_scores.get(4) if 4 in step_scores else '—'),  # HADS тревога
+                '—' if is_single_score else (step_scores.get(5) if 5 in step_scores else '—'),  # HADS депрессия
             ]
 
             row_idx = ws_res.max_row + 1
@@ -883,10 +886,19 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
         _add('')
         _add('')
 
+        def _conclusion_test_name(name):
+            """'Тест HADS. Оценка уровня тревоги' → 'HADS (оценка уровня тревоги)'"""
+            if name.startswith('Тест '):
+                name = name[5:]
+            if '. ' in name:
+                prefix, suffix = name.split('. ', 1)
+                name = f'{prefix} ({suffix.lower()})'
+            return name
+
         # Результаты тестирования — курсив
         _add('Результаты тестирования:', italic=True)
         for r in test_results_data:
-            _add(f"Опросник {r['name']}: {r['label']} ({r['score']} баллов)")
+            _add(f"Опросник {_conclusion_test_name(r['name'])}: {r['label']} ({r['score']} баллов)")
 
         # Длительность болевого синдрома
         _add(f'Длительность болевого синдрома: {duration_text}')

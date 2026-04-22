@@ -128,6 +128,20 @@
       white-space: nowrap;
     }
 
+    /* ── Block title (sub-heading within stage) ── */
+    .qa-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .qa-block-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray-950);
+      padding-top: 6px;
+    }
+
     .qa-empty {
       padding: 48px 0;
       text-align: center;
@@ -187,27 +201,35 @@
       {% for stage_group in stage_groups %}
       <section class="qa-section">
         <h2 class="qa-section-title">{{ stage_group.grouper.page_title }}</h2>
-        <div class="qa-list">
-          {% for answer in stage_group.list %}
-          <div class="qa-row">
-            <span class="qa-question">{{ answer.question.question_text }}</span>
-            <div class="qa-answer-group">
-              <span class="qa-answer-text">
-                {% if answer.question.question_type == 'scale' %}
-                  {{ answer.question|scale_label:answer.scale_value }}
-                {% else %}
-                  {% for opt in answer.selected_options.all %}
-                    {{ opt.option_text }}{% if not forloop.last %}, {% endif %}
-                  {% empty %}
-                    —
-                  {% endfor %}
-                {% endif %}
-              </span>
-              <span class="qa-score">{{ answer.score }} б.</span>
+        {% regroup stage_group.list by question.block_title as block_groups %}
+        {% for block_group in block_groups %}
+        <div class="qa-block">
+          {% if block_group.grouper %}
+          <h3 class="qa-block-title">{{ block_group.grouper }}</h3>
+          {% endif %}
+          <div class="qa-list">
+            {% for answer in block_group.list %}
+            <div class="qa-row">
+              <span class="qa-question">{{ answer.question.question_text }}</span>
+              <div class="qa-answer-group">
+                <span class="qa-answer-text">
+                  {% if answer.question.question_type == 'scale' %}
+                    {{ answer.question|scale_label:answer.scale_value }}
+                  {% else %}
+                    {% for opt in answer.selected_options.all %}
+                      {{ opt.option_text }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                      —
+                    {% endfor %}
+                  {% endif %}
+                </span>
+                <span class="qa-score">{{ answer.score }} б.</span>
+              </div>
             </div>
+            {% endfor %}
           </div>
-          {% endfor %}
         </div>
+        {% endfor %}
       </section>
       {% endfor %}
     {% else %}

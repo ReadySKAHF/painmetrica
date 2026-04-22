@@ -647,10 +647,16 @@ const CHART_COLORS = [
 ];
 
 // Порядок этапов по оси X
-const STAGE_ORDER = ['Тест VAS', 'Тест DN4', 'Тест CSI', 'Тест HADS', 'Тест PAINAD', 'Тест NCS-R'];
+const STAGE_ORDER = [
+  'Тест VAS', 'Тест DN4', 'Тест CSI',
+  'Тест HADS. Оценка уровня тревоги', 'Тест HADS. Оценка уровня депрессии',
+  'Тест PAINAD', 'Тест NCS-R',
+];
 
 function formatStageName(name) {
   if (name === 'Тест VAS') return 'Тест ВАШ (VAS)';
+  if (name === 'Тест HADS. Оценка уровня тревоги')   return 'HADS. Тревога';
+  if (name === 'Тест HADS. Оценка уровня депрессии') return 'HADS. Депрессия';
   return name;
 }
 
@@ -746,7 +752,7 @@ function updateChart() {
           x: {
             offset: true,
             grid:   { color: '#EAEAEA' },
-            ticks:  { font: { family: 'Proxima Nova', size: 11 }, color: '#262626', maxRotation: 0 },
+            ticks:  { font: { family: 'Proxima Nova', size: 11 }, color: '#262626', maxRotation: 0, autoSkip: false },
           },
           y: {
             beginAtZero: true,

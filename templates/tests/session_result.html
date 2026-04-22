@@ -16,6 +16,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
+      --blue-400: #2E7CF6;
       --blue-500: #2E67F6;
       --blue-50:  #EEF5FF;
       --gray-950: #262626;
@@ -48,7 +49,7 @@
     .nav-link { display: flex; flex-direction: row; align-items: center; gap: 6px; cursor: pointer; text-decoration: none; }
     .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;  color: var(--gray-950);}
     .nav-link .nav-label { font-size: 18px; line-height: 18px; font-weight: 400; color: var(--gray-950); }
-    .nav-link.active .nav-label { color: var(--blue-500); font-weight: 700; }
+    .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
   .nav-link.active .nav-icon { color: var(--blue-400); }
     .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
     .user-avatar { width: 36px; height: 36px; flex-shrink: 0; }

@@ -153,7 +153,7 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
         ]
 
         # Проверяем возможность сравнения: ≥2 завершённых теста одной категории
-        COMPARABLE = ['complex', 'painad']
+        COMPARABLE = ['complex', 'painad', 'ncsr']
         category_counts = Counter(
             r.test.category
             for r in all_results

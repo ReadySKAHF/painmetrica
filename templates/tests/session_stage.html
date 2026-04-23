@@ -1,12 +1,8 @@
+{% extends 'base_app.html' %}
 {% load test_filters %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" href="/static/favicon-nobg.svg" type="image/svg+xml">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ stage.page_title }} — PainMetrika</title>
-  <style>
+{% block title %}{{ stage.page_title }} — PainMetrika{% endblock %}
+
+{% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
     src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
@@ -38,15 +34,7 @@
     .site-footer-copy { font-size: 14px; color: #919191; text-align: center; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'Proxima Nova', sans-serif;
-      background: #F9F9F9;
-      min-height: 100vh;
-      padding: 148px 0 0;
-      display: flex;
-      flex-direction: column;
-    }
-    .page-main { flex: 1; max-width: 1320px; margin: 0 auto; padding: 0 12px 60px; }
+    .page-main { flex: 1; max-width: 1320px; margin: 0 auto; padding: 148px 12px 60px; }
 
     /* ── Back link ── */
     .topbar { display: flex; align-items: center; margin-bottom: 28px; }
@@ -296,26 +284,12 @@
       .sidebar { width: 100%; }
       .slider-card { padding: 24px 20px; }
     }
-  </style>
-</head>
-<body>
+{% endblock %}
 
-<header class="site-header">
-  <a href="{% url 'core:dashboard' %}" class="site-logo" title="Painmetrica">
-    <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="172" height="43" style="display:block;">
-  </a>
-  <div class="site-header-right">
-    <svg width="36" height="36" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
-      <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span class="site-user-name">{{ request.user.last_name }} {{ request.user.first_name }}</span>
-  </div>
-</header>
+{% block main_class %}page-main{% endblock %}
 
-<main class="page-main">
-  <!-- Back link -->
+{% block content %}
+<!-- Back link -->
   <div class="topbar">
     <a href="{% url 'patients:detail' patient.pk %}" class="back-link">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -695,14 +669,4 @@
     document.getElementById('valOverlay').classList.remove('active');
   }
   </script>
-
-</main>
-
-<footer class="site-footer">
-  <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="114" height="28" style="display:block;">
-  <span class="site-footer-tagline">Система управления пациентами для врачей и специалистов</span>
-  <span class="site-footer-copy">© Painmetrica 2026. Все права защищены</span>
-</footer>
-
-</body>
-</html>
+{% endblock %}

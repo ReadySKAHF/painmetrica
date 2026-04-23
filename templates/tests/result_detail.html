@@ -1,12 +1,8 @@
-{% load static test_filters %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" href="/static/favicon-nobg.svg" type="image/svg+xml">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Детальные ответы — PainMetrika</title>
-  <style>
+{% extends 'base_app.html' %}
+{% load test_filters %}
+{% block title %}Детальные ответы — PainMetrika{% endblock %}
+
+{% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
     src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
@@ -26,15 +22,6 @@
       --blue-500: #2E67F6;
     }
 
-    body {
-      font-family: 'Proxima Nova', sans-serif;
-      background: var(--gray-200);
-      color: var(--gray-950);
-      min-height: 100vh;
-      padding-top: 148px;
-      display: flex;
-      flex-direction: column;
-    }
 
     /* ── Header ── */
     .site-header {
@@ -167,27 +154,10 @@
       .qa-row { flex-direction: column; align-items: flex-start; gap: 12px; }
       .qa-answer-group { width: 100%; justify-content: space-between; }
     }
-  </style>
-</head>
-<body>
+{% endblock %}
 
-<header class="site-header">
-  <a href="{% url 'core:dashboard' %}" class="site-logo" title="Painmetrica">
-    <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="172" height="43" style="display:block;">
-  </a>
-  <div class="site-header-right">
-    <svg width="36" height="36" viewBox="0 0 30 29" fill="none">
-      <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
-      <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span class="site-user-name">{{ request.user.last_name }} {{ request.user.first_name }}</span>
-  </div>
-</header>
-
-<main class="page-main">
-
-  <a href="{% url 'tests:result' session.pk %}{% if from_detail %}?from_detail=1{% endif %}" class="back-link">
+{% block content %}
+<a href="{% url 'tests:result' session.pk %}{% if from_detail %}?from_detail=1{% endif %}" class="back-link">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path d="M15 19L8 12L15 5" stroke="#2E67F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
@@ -237,16 +207,4 @@
     {% endif %}
 
   </div>
-
-</main>
-
-<footer class="footer">
-  <div class="footer-logo">
-    <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="114" height="28" style="display:block;">
-    </div>
-  <span class="footer-tagline">Система управления пациентами для врачей и специалистов</span>
-  <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
-</footer>
-
-</body>
-</html>
+{% endblock %}

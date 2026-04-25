@@ -40,7 +40,6 @@ db.sqlite3
 *.sqlite3
 staticfiles/
 media/
-/static/
 
 # IDE и редакторы
 .idea/

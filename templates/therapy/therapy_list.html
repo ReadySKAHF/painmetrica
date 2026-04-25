@@ -6,8 +6,32 @@
 {% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
-    font-weight: normal;
+    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope-Regular.ttf') format('truetype');
+    font-weight: 400;
     font-style: normal;
 }
 
@@ -49,7 +73,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 32px 52px;
+    padding: 32px 24px;
     z-index: 100;
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
@@ -87,9 +111,9 @@
    color: var(--gray-950);}
 
   .nav-link .nav-label {
-    font-size: 18px;
-    line-height: 18px;
-    font-weight: 400;
+    font-size: 14px;
+    line-height: 14px;
+    font-weight: 600;
     color: var(--gray-950);
   }
 
@@ -104,29 +128,29 @@
   }
 
   .user-name {
-    font-size: 18px;
+    font-size: 14px;
     color: var(--gray-950);
     white-space: nowrap;
   }
 
   /* ── MAIN ── */
   .main {
-    flex: 1;
-    width: 100%;
     max-width: 1320px;
+    width: 100%;
     margin: 0 auto;
-    padding-top: 148px;
+    padding-top: 184px;
     padding-bottom: 40px;
     padding-left: 12px;
     padding-right: 12px;
+    flex: 1;
   }
 
   .page-title {
-    font-size: 30px;
+    font-size: 24px;
     font-weight: 700;
-    line-height: 30px;
+    line-height: 24px;
     color: var(--gray-950);
-    margin-bottom: 52px;
+    margin-bottom: 36px;
   }
 
   /* ── TOOLBAR ── */
@@ -146,9 +170,10 @@
 
   .therapies-count {
     font-size: 18px;
-    line-height: 22px;
+    line-height: 18px;
     color: var(--gray-950);
   }
+  .therapies-count strong { font-size: 18px; font-weight: 700; }
 
   /* ── SEARCH ── */
   .search-field {
@@ -181,7 +206,7 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
   }
 
   .card {
@@ -189,7 +214,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 32px 28px;
+    padding: 24px 24px;
     gap: 27px;
     background: var(--white);
     border: 1px solid var(--gray-300);
@@ -224,8 +249,8 @@
   }
 
   .card-icon {
-    width: 70px;
-    height: 70px;
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -233,21 +258,23 @@
   }
 
   .medical-icon {
-    width: 70px;
-    height: 70px;
+    width: 52px;
+    height: 52px;
     object-fit: contain;
   }
 
   .card-info {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
   }
 
   .card-name {
-    font-size: 30px;
+    font-size: 18px;
     font-weight: 700;
-    line-height: 30px;
+    line-height: 18px;
     color: var(--gray-950);
   }
 
@@ -258,18 +285,18 @@
   }
 
   .card-label {
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 14px;
     color: var(--gray-950);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .card-value {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 400;
-    line-height: 20px;
+    line-height: 14px;
     color: var(--gray-950);
   }
 
@@ -279,13 +306,14 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 22px;
+    padding: 0 22px;
+    height: 36px;
     background: var(--white);
     border: 1px solid var(--gray-950);
     border-radius: 33px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--gray-950);
     font-family: inherit;
     text-decoration: none;
@@ -294,6 +322,7 @@
     flex-shrink: 0;
   }
   .btn-outline:hover { background: var(--gray-250); }
+  .card > .btn-outline { align-self: center; }
 
   .btn-outline-sm {
     display: flex;
@@ -302,10 +331,10 @@
     padding: 10px 18px;
     background: var(--white);
     border: 1px solid var(--gray-950);
-    border-radius: 11px;
+    border-radius: 33px;
     cursor: pointer;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--gray-950);
     font-family: inherit;
     text-decoration: none;
@@ -322,15 +351,9 @@
     padding: 80px 0 60px;
   }
   .not-found.show { display: flex; }
-
   .not-found-img {
-    width: 138px;
-    height: 109px;
-    background: var(--gray-300);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 138px; height: 109px;
+    display: flex; align-items: center; justify-content: center;
   }
 
   .not-found-texts {
@@ -359,7 +382,7 @@
   .pagination-wrap {
     display: flex;
     justify-content: center;
-    margin-top: 6px;
+    margin-top: 18px;
     margin-bottom: 40px;
   }
 
@@ -423,7 +446,7 @@
     transition: background 0.15s, color 0.15s;
   }
   .page:hover:not(.page--active) { background: #EFEFEF; }
-  .page--active { background: #5391F2; color: #FEFEFE; cursor: default; }
+  .page--active { background: #2E67F6; color: #FEFEFE; cursor: default; }
   .page--dots { background: transparent; cursor: default; color: var(--gray-950); padding: 4px 2px; min-width: 16px; }
   .page--dots:hover { background: transparent; }
 
@@ -488,7 +511,7 @@
   <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="toolbar-left">
-      <span class="therapies-count">{% if search_query %}Найдено мероприятий{% else %}Всего мероприятий{% endif %}: {{ total_therapies }}</span>
+      <span class="therapies-count">{% if search_query %}Найдено мероприятий{% else %}Всего мероприятий{% endif %}: <strong>{{ total_therapies }}</strong></span>
     </div>
     <form method="get" action="{% url 'therapy:list' %}" id="searchForm">
       <div class="search-field">
@@ -515,7 +538,7 @@
       <div class="card-content">
         <div class="card-top">
           <div class="card-icon">
-            <img src="{% static 'icon-medicine-card.svg' %}" class="medical-icon" alt="">
+            <img src="{% static 'icon-conclusion-card.svg' %}" class="medical-icon" alt="">
           </div>
           <div class="card-info">
             <span class="card-name">{{ therapy.name }}</span>
@@ -536,14 +559,7 @@
     {% empty %}
     <div class="not-found show">
       <div class="not-found-img">
-        <svg width="70" height="60" viewBox="0 0 70 60" fill="none">
-          <rect x="10" y="5" width="40" height="50" rx="5" fill="#EAEAEA"/>
-          <path d="M20 18H40" stroke="#919191" stroke-width="2" stroke-linecap="round"/>
-          <path d="M20 26H40" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M20 33H32" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="52" cy="46" r="12" fill="#F9F9F9" stroke="#EAEAEA" stroke-width="1.5"/>
-          <path d="M48 42L56 50M56 42L48 50" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+          <img src="{% static 'icon-conclusion-card.svg' %}" width="138" height="109" alt="">
       </div>
       <div class="not-found-texts">
         {% if search_query %}
@@ -608,7 +624,7 @@
 
       var prev = document.createElement('button');
       prev.className = 'pagination__btn';
-      prev.innerHTML = '<svg width="7" height="11" viewBox="0 0 7 11" fill="none"><path d="M6 1L1.5 5.5L6 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Предыдущая';
+      prev.innerHTML = 'Предыдущая';
       prev.disabled = CURRENT_PAGE === 1;
       if (CURRENT_PAGE > 1) {
         prev.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE - 1); });
@@ -638,7 +654,7 @@
 
       var next = document.createElement('button');
       next.className = 'pagination__btn';
-      next.innerHTML = 'Следующая <svg width="7" height="11" viewBox="0 0 7 11" fill="none"><path d="M1 1L5.5 5.5L1 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      next.innerHTML = 'Следующая';
       next.disabled = CURRENT_PAGE === TOTAL_PAGES;
       if (CURRENT_PAGE < TOTAL_PAGES) {
         next.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE + 1); });

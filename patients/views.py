@@ -191,6 +191,146 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
 
 
 
+class PatientWelcomeView(LoginRequiredMixin, View):
+    """Приветственная страница для пациента при первом входе"""
+
+    def get(self, request):
+        user = request.user
+        if user.user_type != 'patient':
+            return redirect('core:dashboard')
+
+        try:
+            patient = user.patient_record
+            profile = user.patient_profile
+        except Exception:
+            return redirect('core:dashboard')
+
+        profile.has_seen_welcome = True
+        profile.save(update_fields=['has_seen_welcome'])
+
+        return render(request, 'patients/patient_welcome.html', {
+            'patient': patient,
+            'assigned_doctor': patient.assigned_doctor,
+        })
+
+
+class PatientHistoryView(LoginRequiredMixin, View):
+    """Отдельная страница истории тестирования пациента"""
+
+    def get(self, request, pk):
+        from collections import Counter
+        from datetime import date
+        from django.db.models import Prefetch
+        from django.http import Http404
+        from tests.models import Answer, ScoreRange, Test, TestSession
+
+        user = request.user
+        if user.user_type == 'doctor':
+            patient = get_object_or_404(
+                Patient.objects.select_related('user', 'user__patient_profile'),
+                pk=pk, assigned_doctor=user,
+            )
+        elif user.user_type == 'patient':
+            patient = get_object_or_404(
+                Patient.objects.select_related('user', 'user__patient_profile'),
+                pk=pk, user=user,
+            )
+        else:
+            raise Http404
+
+        all_results = list(
+            patient.test_results.filter(status='completed')
+            .select_related('test', 'session')
+            .prefetch_related(
+                Prefetch('answers', queryset=Answer.objects.select_related('question__stage'))
+            )
+            .order_by('-completed_at')
+        )
+
+        test_ids = {r.test_id for r in all_results}
+        score_ranges_by_test = {}
+        if test_ids:
+            for sr in ScoreRange.objects.filter(test_id__in=test_ids):
+                score_ranges_by_test.setdefault(sr.test_id, []).append(sr)
+
+        def build_sub_results(result):
+            step_scores = {}
+            step_stages = {}
+            for answer in result.answers.all():
+                stage = answer.question.stage
+                if stage is None:
+                    continue
+                step = stage.sidebar_step
+                if step not in step_scores:
+                    step_scores[step] = 0
+                    step_stages[step] = stage
+                step_scores[step] += answer.score
+            score_ranges = score_ranges_by_test.get(result.test_id, [])
+            sub_results = []
+            for step in sorted(step_scores.keys()):
+                score = step_scores[step]
+                stage = step_stages[step]
+                score_range = _match_score_range(score_ranges, step, score)
+                sub_results.append({
+                    'name': stage.name,
+                    'score': score,
+                    'label': score_range.label if score_range else '—',
+                })
+            return sub_results
+
+        current_result = all_results[0] if all_results else None
+        if current_result:
+            current_status = {'result': current_result, 'sub_results': build_sub_results(current_result)}
+            history_list = all_results[1:]
+        else:
+            current_status = None
+            history_list = all_results
+
+        date_from_str = request.GET.get('date_from', '').strip()
+        date_to_str = request.GET.get('date_to', '').strip()
+        date_from = date_to = None
+        if date_from_str:
+            try:
+                date_from = date.fromisoformat(date_from_str)
+            except ValueError:
+                date_from_str = ''
+        if date_to_str:
+            try:
+                date_to = date.fromisoformat(date_to_str)
+            except ValueError:
+                date_to_str = ''
+
+        history_filtered = history_list
+        if date_from:
+            history_filtered = [r for r in history_filtered if r.completed_at.date() >= date_from]
+        if date_to:
+            history_filtered = [r for r in history_filtered if r.completed_at.date() <= date_to]
+
+        paginator = Paginator(history_filtered, 3)
+        history_page = paginator.get_page(request.GET.get('page', 1))
+        history_results = [
+            {'result': r, 'sub_results': build_sub_results(r)}
+            for r in history_page
+        ]
+
+        COMPARABLE = ['complex', 'painad', 'ncsr']
+        category_counts = Counter(
+            r.test.category for r in all_results if r.test.category in COMPARABLE
+        )
+        can_compare = any(cnt >= 2 for cnt in category_counts.values())
+
+        return render(request, 'patients/patient_test_history.html', {
+            'patient': patient,
+            'current_status': current_status,
+            'history_results': history_results,
+            'history_page': history_page,
+            'filter_date_from': date_from_str,
+            'filter_date_to': date_to_str,
+            'can_compare': can_compare,
+            'is_doctor': user.user_type == 'doctor',
+        })
+
+
 class PatientUpdateAPIView(LoginRequiredMixin, View):
     """AJAX: обновить данные пациента (доктор или сам пациент)"""
 

@@ -10,10 +10,12 @@ def get_item(dictionary, key):
     """
     if not isinstance(dictionary, dict):
         return None
-    # Пробуем оба варианта ключа: строковый и исходный
+    # Пробуем варианты ключа: q_{key}, строковый, исходный
     val = dictionary.get(f'q_{key}')
     if val is None:
         val = dictionary.get(str(key))
+    if val is None:
+        val = dictionary.get(key)
     return val
 
 

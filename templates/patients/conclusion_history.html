@@ -5,8 +5,32 @@
 {% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
-    font-weight: normal;
+    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope-Regular.ttf') format('truetype');
+    font-weight: 400;
     font-style: normal;
 }
 
@@ -42,7 +66,7 @@ body {
   background: var(--white);
   border-radius: 63px;
   display: flex; justify-content: space-between; align-items: center;
-  padding: 32px 52px;
+  padding: 32px 24px;
   z-index: 100;
   box-shadow: 0 2px 16px rgba(0,0,0,0.06);
 }
@@ -50,37 +74,37 @@ body {
 .nav-links { display: flex; align-items: center; gap: 42px; }
 .nav-link { display: flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer; }
 .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: var(--gray-950); }
-.nav-link .nav-label { font-size: 18px; font-weight: 400; color: var(--gray-950); }
+.nav-link .nav-label { font-size: 14px; font-weight: 600; color: var(--gray-950); }
 .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
 .nav-link.active .nav-icon { color: var(--blue-400); }
 .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
-.user-name { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
+.user-name { font-size: 14px; color: var(--gray-950); white-space: nowrap; }
 
 /* ── MAIN ── */
 .main {
   flex: 1; width: 100%; max-width: 1320px;
   margin: 0 auto;
-  padding: 128px 12px 60px;
+  padding: 149px 12px 60px;
 }
 
 /* ── BACK LINK ── */
 .back-link {
   display: inline-flex; align-items: center; gap: 6px;
-  color: var(--blue-500); font-size: 14px; font-weight: 600;
-  text-decoration: none; margin-bottom: 24px;
+  color: var(--blue-500); font-size: 14px; font-weight: 400;
+  text-decoration: none; margin-bottom: 33px;
   transition: opacity 0.15s;
 }
 .back-link:hover { opacity: 0.75; }
 .back-link svg { flex-shrink: 0; }
 
 /* ── PAGE TITLE ── */
-.page-title { font-size: 30px; font-weight: 700; color: var(--gray-950); margin-bottom: 32px; }
+.page-title { font-size: 24px; font-weight: 700; color: var(--gray-950); margin-bottom: 36px; }
 
 /* ── TOOLBAR ── */
 .toolbar {
   display: flex; align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 .filter-count {
@@ -154,12 +178,12 @@ body {
 .btn-show.clear:hover { opacity: 0.75; }
 
 /* ── CARDS ── */
-.cards-section { display: flex; flex-direction: column; gap: 18px; margin-bottom: 24px; }
+.cards-section { display: flex; flex-direction: column; gap: 18px; margin-bottom: 18px; }
 
 .card {
   display: flex; flex-direction: row;
   justify-content: space-between; align-items: center;
-  padding: 24px 28px; gap: 20px;
+  padding: 24px 24px; gap: 20px;
   background: var(--white); border: 1px solid var(--gray-300); border-radius: 24px;
   transition: box-shadow 0.15s, transform 0.15s;
 }
@@ -169,14 +193,14 @@ body {
 .card-icon { width: 48px; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .medical-icon { width: 48px; height: 48px; object-fit: contain; }
 
-.card-title { font-size: 22px; font-weight: 700; color: var(--gray-950); line-height: 1; }
+.card-title { font-size: 18px; font-weight: 700; color: var(--gray-950); line-height: 1; }
 .card-title-date { font-weight: 400; }
 
 .btn-outline {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 22px; background: var(--white);
   border: 1px solid var(--gray-950); border-radius: 33px;
-  cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gray-950);
+  cursor: pointer; font-size: 12px; font-weight: 400; color: var(--gray-950);
   font-family: inherit; text-decoration: none; transition: background 0.15s;
   white-space: nowrap; flex-shrink: 0;
 }
@@ -190,7 +214,6 @@ body {
 .not-found.show { display: flex; }
 .not-found-img {
   width: 138px; height: 109px;
-  background: var(--gray-300); border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
 }
 .not-found-texts {
@@ -201,7 +224,7 @@ body {
 .not-found-sub { font-size: 20px; font-weight: 400; color: var(--gray-950); line-height: 1.4; }
 
 /* ── PAGINATION ── */
-.pagination-wrap { display: flex; justify-content: center; margin-top: 6px; margin-bottom: 40px; }
+.pagination-wrap { display: flex; justify-content: center; margin-bottom: 40px; }
 
 .pagination {
   display: flex; flex-direction: row; align-items: center;
@@ -226,12 +249,12 @@ a.pagination__btn[aria-disabled="true"],
   display: flex; justify-content: center; align-items: center;
   padding: 4px 8px; min-width: 26px; height: 27px;
   border-radius: 16px; border: none; cursor: pointer;
-  font-family: inherit; font-weight: 400; font-size: 14px; line-height: 19px;
+  font-family: 'Manrope', sans-serif; font-weight: 400; font-size: 14px; line-height: 19px;
   color: var(--gray-950); background: #F9F9F9; transition: background 0.15s, color 0.15s;
   text-decoration: none;
 }
 .page:hover:not(.page--active) { background: #EFEFEF; }
-.page--active { background: #5391F2; color: #FEFEFE; cursor: default; }
+.page--active { background: #2E67F6; color: #FEFEFE; cursor: default; }
 .page--dots { background: transparent; cursor: default; color: var(--gray-950); padding: 4px 2px; min-width: 16px; }
 .page--dots:hover { background: transparent; }
 
@@ -263,14 +286,14 @@ a.pagination__btn[aria-disabled="true"],
     <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
       <path d="M6 1L1 6L6 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    {{ patient.user.get_full_name }}
+    В карточку пациента {{ patient.user.first_name }} {{ patient.user.last_name }}
   </a>
 
   <h1 class="page-title">История заключений</h1>
 
   <!-- TOOLBAR -->
   <div class="toolbar">
-    <span class="filter-count">Всего заключений: <strong>{{ total_count }}</strong></span>
+    <span class="filter-count">{% if filter_date_from or filter_date_to %}Найдено заключений{% else %}Всего заключений{% endif %}: <strong>{{ total_count }}</strong></span>
     <form class="filter-bar" method="get" id="filter-form" novalidate>
       <div class="filter-date-col">
         <span class="filter-label">Начало периода</span>
@@ -329,7 +352,7 @@ a.pagination__btn[aria-disabled="true"],
     <div class="card">
       <div class="card-left">
         <div class="card-icon">
-          <img src="{% static 'icon-medicine-card.svg' %}" class="medical-icon" alt="">
+          <img src="{% static 'icon-conclusion-card.svg' %}" class="medical-icon" alt="">
         </div>
         <span class="card-title">
           Заключение &nbsp;<span class="card-title-date">{{ conclusion.created_at|date:"d.m.Y" }}</span>
@@ -341,17 +364,10 @@ a.pagination__btn[aria-disabled="true"],
     {% if filter_date_from or filter_date_to %}
     <div class="not-found show">
       <div class="not-found-img">
-        <svg width="70" height="60" viewBox="0 0 70 60" fill="none">
-          <rect x="10" y="5" width="40" height="50" rx="5" fill="#EAEAEA"/>
-          <path d="M20 18H40" stroke="#919191" stroke-width="2" stroke-linecap="round"/>
-          <path d="M20 26H40" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M20 33H32" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="52" cy="46" r="12" fill="#F9F9F9" stroke="#EAEAEA" stroke-width="1.5"/>
-          <path d="M48 42L56 50M56 42L48 50" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <img src="{% static 'icon-conclusion-card.svg' %}" width="138" height="109" alt="">
       </div>
       <div class="not-found-texts">
-        <p class="not-found-title">Сформированных заключений в данный период не найдено</p>
+        <p class="not-found-title">Сформированных заключений за указанный период не найдено</p>
         <p class="not-found-sub">Попробуйте изменить даты поиска</p>
       </div>
       <a href="{% url 'patients:conclusion_history' pk=patient.pk %}" class="btn-outline">Сбросить период</a>
@@ -359,14 +375,7 @@ a.pagination__btn[aria-disabled="true"],
     {% else %}
     <div class="not-found show">
       <div class="not-found-img">
-        <svg width="70" height="60" viewBox="0 0 70 60" fill="none">
-          <rect x="10" y="5" width="40" height="50" rx="5" fill="#EAEAEA"/>
-          <path d="M20 18H40" stroke="#919191" stroke-width="2" stroke-linecap="round"/>
-          <path d="M20 26H40" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M20 33H32" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="52" cy="46" r="12" fill="#F9F9F9" stroke="#EAEAEA" stroke-width="1.5"/>
-          <path d="M48 42L56 50M56 42L48 50" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <img src="{% static 'icon-conclusion-card.svg' %}" width="138" height="109" alt="">
       </div>
       <div class="not-found-texts">
         <p class="not-found-title">Заключений пока нет</p>
@@ -384,16 +393,10 @@ a.pagination__btn[aria-disabled="true"],
       {% if page.has_previous %}
       <a class="pagination__btn"
          href="?page={{ page.previous_page_number }}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}">
-        <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-          <path d="M6 1L1.5 5.5L6 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
         Предыдущая
       </a>
       {% else %}
       <span class="pagination__btn" aria-disabled="true">
-        <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-          <path d="M6 1L1.5 5.5L6 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
         Предыдущая
       </span>
       {% endif %}
@@ -415,16 +418,10 @@ a.pagination__btn[aria-disabled="true"],
       <a class="pagination__btn"
          href="?page={{ page.next_page_number }}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}">
         Следующая
-        <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-          <path d="M1 1L5.5 5.5L1 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
       </a>
       {% else %}
       <span class="pagination__btn" aria-disabled="true">
         Следующая
-        <svg width="7" height="11" viewBox="0 0 7 11" fill="none">
-          <path d="M1 1L5.5 5.5L1 10" stroke="#262626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
       </span>
       {% endif %}
     </nav>

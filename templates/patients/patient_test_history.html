@@ -1,0 +1,645 @@
+{% extends 'base_app.html' %}
+{% block title %}История тестирования — {{ patient.user.get_full_name }} — Painmetrica{% endblock %}
+
+{% block extra_style %}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    font-weight: 400; font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+    font-weight: 500; font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    font-weight: 600; font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    font-weight: 700; font-style: normal;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --white: #FEFEFE;
+  --gray-200: #F9F9F9;
+  --gray-250: #F5F5F5;
+  --gray-300: #EAEAEA;
+  --gray-550: #919191;
+  --gray-950: #262626;
+  --blue-400: #2E7CF6;
+  --blue-500: #2E67F6;
+}
+
+body {
+  font-family: 'Proxima Nova', sans-serif;
+  background: var(--gray-200);
+  min-height: 100vh;
+  color: var(--gray-950);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── BACK LINK ── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue-500);
+  font-size: 14px;
+  font-weight: 400;
+  text-decoration: none;
+  margin-bottom: 33px;
+}
+
+/* ── BUTTONS ── */
+.btn-primary {
+  padding: 12px 22px;
+  background: var(--blue-500);
+  color: var(--white);
+  border: none;
+  border-radius: 33px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:disabled { cursor: not-allowed; opacity: 0.65; }
+
+.btn-outline {
+  padding: 10px 18px;
+  background: var(--white);
+  color: var(--gray-950);
+  border: 1px solid var(--gray-950);
+  border-radius: 33px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-outline:hover { background: var(--gray-250); }
+.btn-outline:disabled { cursor: not-allowed; opacity: 0.65; }
+
+/* ── FIELD INPUT ── */
+.field-input {
+  width: 100%; height: 44px;
+  background: var(--gray-200);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 13px; font-family: inherit; color: var(--gray-950);
+  outline: none; transition: border-color 0.15s;
+}
+.field-input:focus { border-color: var(--blue-400); background: var(--white); }
+
+/* ── HISTORY SECTION ── */
+.ht-section { display: flex; flex-direction: column; gap: 0; margin-left: 112px; margin-right: 112px; }
+.ht-section .ht-status-outer { margin-top: 36px; }
+.ht-filter-wrap { display: flex; flex-direction: column; gap: 24px; margin-top: 36px; }
+.ht-results-list { margin-top: 24px; }
+.ht-empty { margin-top: 24px; }
+.ht-not-found { margin-top: 24px; }
+
+.ht-heading { display: flex; flex-direction: column; gap: 8px; }
+.ht-heading h2 { font-size: 22px; font-weight: 700; color: var(--gray-950); margin-right: 0; }
+.ht-heading p { font-size: 12px; font-weight: 400; line-height: 1.6; color: var(--gray-950); }
+.ht-heading p .ht-link-here { color: var(--blue-500); text-decoration: none; }
+
+.ht-card {
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ht-status-outer {
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  padding: 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.ht-status-title { font-size: 18px; font-weight: 700; color: var(--gray-950); }
+.ht-status-table {
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ht-header-row {
+  display: flex; align-items: center;
+  background: var(--gray-250);
+  border-bottom: 1px solid var(--gray-300);
+}
+.ht-cell-left, .ht-cell-right {
+  display: flex; align-items: center;
+  padding: 14px 14px; gap: 10px; flex: 1;
+}
+.ht-cell-right { justify-content: flex-end; }
+
+.ht-test-title { font-size: 16px; font-weight: 700; color: var(--gray-950); line-height: 1; }
+.ht-date-text { font-size: 14px; font-weight: 400; color: var(--gray-550); white-space: nowrap; }
+
+.ht-link {
+  display: flex; align-items: center;
+  font-size: 14px; font-weight: 400; color: var(--blue-500);
+  text-decoration: none; white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.ht-link:hover { opacity: 0.75; }
+.ht-link svg { width: 24px; height: 24px; }
+
+.ht-data-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--gray-300);
+  background: var(--white);
+}
+.ht-data-row:last-child { border-bottom: none; }
+
+.ht-row-left, .ht-row-right {
+  display: flex; align-items: center;
+  padding: 10px 14px; gap: 10px; flex: 1;
+}
+.ht-row-right { justify-content: flex-end; gap: 18px; }
+.ht-row-label { font-size: 14px; font-weight: 400; color: var(--gray-950); }
+.ht-score { font-size: 14px; font-weight: 600; color: var(--blue-500); white-space: nowrap; }
+.ht-interpretation { font-size: 14px; font-weight: 400; color: var(--gray-950); white-space: nowrap; }
+
+.ht-filter-bar {
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex; align-items: flex-start;
+  gap: 12px; justify-content: space-between;
+}
+.ht-filter-inputs { display: flex; align-items: flex-start; gap: 10px; flex: 1; }
+.ht-date-col { display: flex; flex-direction: column; flex: 1; gap: 4px; }
+.ht-date-label { font-size: 12px; font-weight: 600; color: var(--gray-950); line-height: 1; }
+.ht-date-wrap { position: relative; flex: 1; }
+.ht-date-wrap .field-input { padding-right: 40px; font-size: 12px; }
+.ht-date-icon {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; opacity: .55; cursor: pointer;
+}
+.ht-date-icon:hover { opacity: .85; }
+.ht-date-wrap .field-input::-webkit-calendar-picker-indicator { display: none; }
+.ht-divider { width: 1px; height: 14px; background: var(--gray-300); flex-shrink: 0; }
+.ht-filter-bar .ht-divider { margin-top: 27px; }
+
+.btn-show {
+  height: 44px; padding: 0 20px;
+  background: var(--blue-500); border: 1.5px solid transparent; border-radius: 33px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--white); cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s; margin-top: 16px; flex-shrink: 0;
+}
+.btn-show:hover { opacity: 0.88; }
+.btn-show:disabled {
+  background: var(--gray-300); color: var(--gray-550);
+  cursor: not-allowed; opacity: 1;
+}
+.btn-show.clear {
+  background: var(--white); border-color: var(--gray-950);
+  color: var(--gray-950);
+}
+.btn-show.clear:hover { opacity: 0.75; }
+
+.ht-filter-error {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: #FFF5F5;
+  border: 1px solid #FBCFCF;
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+.ht-filter-error.visible { display: flex; }
+.ht-filter-error .error-icon { width: 15px; height: 15px; flex-shrink: 0; }
+.ht-filter-error .error-text { font-size: 11px; color: #E43D3D; line-height: 1.4; }
+
+.ht-action-btns { display: flex; gap: 10px; align-items: center; }
+
+.ht-results-list { display: flex; flex-direction: column; gap: 12px; }
+
+.ht-empty {
+  background: var(--white); border: 1px solid var(--gray-300); border-radius: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 140px; gap: 12px;
+}
+.ht-empty-text { font-size: 15px; color: var(--gray-550); }
+
+.ht-not-found {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 24px; padding: 60px 0 40px;
+}
+.ht-not-found-img {
+  width: 138px; height: 109px;
+  background: var(--gray-300); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.ht-not-found-texts {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; max-width: 572px; text-align: center;
+}
+.ht-not-found-title { font-size: 26px; font-weight: 700; color: var(--gray-950); }
+.ht-not-found-sub { font-size: 17px; font-weight: 400; color: var(--gray-950); line-height: 1.4; }
+
+/* ── PAGINATION ── */
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  margin-bottom: 40px;
+}
+.pagination {
+  display: flex; flex-direction: row; align-items: center;
+  padding: 12px 24px; gap: 12px;
+  background: var(--white); border-radius: 24px; user-select: none;
+}
+.pagination__btn {
+  display: flex; flex-direction: row; align-items: center;
+  padding: 7px 12px; gap: 4px; height: 29px;
+  background: #F9F9F9; border-radius: 17px; border: none;
+  cursor: pointer; font-family: 'Proxima Nova', sans-serif;
+  font-weight: 400; font-size: 12px; line-height: 15px;
+  color: var(--gray-950); white-space: nowrap; transition: background 0.15s;
+}
+.pagination__btn:hover { background: #EFEFEF; }
+.pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination__pages { display: flex; flex-direction: row; align-items: center; gap: 6px; }
+.page {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 4px 8px; min-width: 26px; height: 27px; border-radius: 16px;
+  border: none; cursor: pointer;
+  font-family: 'Proxima Nova', sans-serif; font-weight: 400; font-size: 14px;
+  line-height: 19px; color: var(--gray-950); background: #F9F9F9;
+  transition: background 0.15s, color 0.15s;
+}
+.page:hover:not(.page--active) { background: #EFEFEF; }
+.page--active { background: #2E67F6; color: #FEFEFE; cursor: default; }
+.page--dots { background: transparent; cursor: default; color: var(--gray-950); padding: 4px 2px; min-width: 16px; }
+.page--dots:hover { background: transparent; }
+{% endblock %}
+
+{% block content %}
+  <!-- Back link -->
+  <a href="{% url 'patients:detail' patient.pk %}" class="back-link">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    В карточку пациента {{ patient.user.first_name }} {{ patient.user.last_name }}
+  </a>
+
+  <!-- История тестирований -->
+  <div class="ht-section">
+
+    <!-- Заголовок -->
+    <div class="ht-heading">
+      <h2>История тестирования</h2>
+      <p>
+        В данном разделе представлена динамика показателей состояния пациента на основе пройденных обследований.
+        Вы можете отслеживать изменения интенсивности боли, уровней сенситизации и патогенетического подтипа
+        во времени для оценки эффективности проводимого лечения. С подробной методикой расчёта показателей
+        можно ознакомиться <a href="{% url 'tests:methodology' %}" class="ht-link-here">здесь</a>.
+      </p>
+    </div>
+
+    <!-- Текущий статус -->
+    {% if current_status %}
+    <div class="ht-status-outer">
+      <span class="ht-status-title">Текущий статус</span>
+      <div class="ht-status-table">
+        <div class="ht-header-row">
+          <div class="ht-cell-left">
+            <span class="ht-test-title">{{ current_status.result.test.title }}</span>
+          </div>
+          <div class="ht-cell-right">
+            <span class="ht-date-text">{{ current_status.result.completed_at|date:"d.m.Y в H:i" }}</span>
+            <a href="{% url 'tests:result' current_status.result.session.pk %}?from_history=1" class="ht-link">
+              Подробнее<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </div>
+        {% for sub in current_status.sub_results %}
+        <div class="ht-data-row">
+          <div class="ht-row-left"><span class="ht-row-label">{{ sub.name }}</span></div>
+          <div class="ht-row-right">
+            <span class="ht-score">{{ sub.score }} б.</span>
+            <span class="ht-interpretation">{{ sub.label }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Фильтр + кнопки -->
+    <div class="ht-filter-wrap">
+      <form class="ht-filter-bar" method="get" id="ht-filter-form" novalidate>
+        <div class="ht-filter-inputs">
+          <div class="ht-date-col">
+            <span class="ht-date-label">Начало периода</span>
+            <div class="ht-date-wrap">
+              <input class="field-input" id="htDateFrom" type="date" name="date_from"
+                     value="{{ filter_date_from }}">
+              <svg class="ht-date-icon" viewBox="0 0 18 18" fill="none" onclick="htOpenPicker('htDateFrom')">
+                <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
+                <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
+                <path d="M6 1V4M12 1V4" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="ht-filter-error" id="err-ht-date-from-range">
+              <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span class="error-text">Дата вне допустимого диапазона</span>
+            </div>
+          </div>
+          <div class="ht-divider"></div>
+          <div class="ht-date-col">
+            <span class="ht-date-label">Окончание периода</span>
+            <div class="ht-date-wrap">
+              <input class="field-input" id="htDateTo" type="date" name="date_to"
+                     value="{{ filter_date_to }}">
+              <svg class="ht-date-icon" viewBox="0 0 18 18" fill="none" onclick="htOpenPicker('htDateTo')">
+                <rect x="1" y="3" width="16" height="14" rx="2" stroke="#919191" stroke-width="1.5"/>
+                <path d="M1 7H17" stroke="#919191" stroke-width="1.5"/>
+                <path d="M6 1V4M12 1V4" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="ht-filter-error" id="err-ht-date-to-range">
+              <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span class="error-text">Дата вне допустимого диапазона</span>
+            </div>
+            <div class="ht-filter-error" id="err-ht-date-order">
+              <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span class="error-text">Конец периода раньше начала</span>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn-show {% if filter_date_from or filter_date_to %}clear{% endif %}"
+                id="ht-btn-show">{% if filter_date_from or filter_date_to %}Очистить{% else %}Показать{% endif %}</button>
+      </form>
+      <div class="ht-action-btns">
+        {% if is_doctor %}
+        {% if can_compare %}
+        <a href="{% url 'tests:compare' patient.pk %}" class="btn-primary" style="text-decoration:none;">Сравнить результаты тестов</a>
+        {% else %}
+        <button class="btn-primary" disabled style="cursor:not-allowed;opacity:0.65;" title="Нужно минимум 2 теста одной категории">Сравнить результаты тестов</button>
+        {% endif %}
+        <a class="btn-outline" id="btn-export-excel"
+           href="{% url 'patients:export_excel' patient.pk %}{% if filter_date_from or filter_date_to %}?{% if filter_date_from %}date_from={{ filter_date_from }}{% endif %}{% if filter_date_from and filter_date_to %}&{% endif %}{% if filter_date_to %}date_to={{ filter_date_to }}{% endif %}{% endif %}"
+           style="text-decoration:none;">Выгрузить в Excel</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Список истории -->
+    {% if history_results %}
+    <div class="ht-results-list">
+      {% for item in history_results %}
+      <div class="ht-card">
+        <div class="ht-header-row">
+          <div class="ht-cell-left">
+            <span class="ht-test-title">{{ item.result.test.title }}</span>
+          </div>
+          <div class="ht-cell-right">
+            <span class="ht-date-text">{{ item.result.completed_at|date:"d.m.Y в H:i" }}</span>
+            <a href="{% url 'tests:result' item.result.session.pk %}?from_history=1" class="ht-link">
+              Подробнее<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </div>
+        {% for sub in item.sub_results %}
+        <div class="ht-data-row">
+          <div class="ht-row-left"><span class="ht-row-label">{{ sub.name }}</span></div>
+          <div class="ht-row-right">
+            <span class="ht-score">{{ sub.score }} б.</span>
+            <span class="ht-interpretation">{{ sub.label }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if history_page.paginator.num_pages > 1 %}
+    <div class="pagination-wrap">
+      <nav class="pagination" id="htPagination" aria-label="Навигация по страницам истории"></nav>
+    </div>
+    <script>
+    (function () {
+      var TOTAL_PAGES = {{ history_page.paginator.num_pages }};
+      var CURRENT_PAGE = {{ history_page.number }};
+
+      function getPageUrl(page) {
+        var params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        return window.location.pathname + '?' + params.toString();
+      }
+
+      function getVisiblePages(cur, total) {
+        if (total <= 7) {
+          var arr = [];
+          for (var i = 1; i <= total; i++) arr.push(i);
+          return arr;
+        }
+        var pages = [1];
+        if (cur > 3) pages.push('…');
+        for (var p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) {
+          pages.push(p);
+        }
+        if (cur < total - 2) pages.push('…');
+        pages.push(total);
+        return pages;
+      }
+
+      var nav = document.getElementById('htPagination');
+
+      var prev = document.createElement('button');
+      prev.className = 'pagination__btn';
+      prev.innerHTML = 'Предыдущая';
+      prev.disabled = CURRENT_PAGE === 1;
+      if (CURRENT_PAGE > 1) {
+        prev.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE - 1); });
+      }
+      nav.appendChild(prev);
+
+      var pagesDiv = document.createElement('div');
+      pagesDiv.className = 'pagination__pages';
+      getVisiblePages(CURRENT_PAGE, TOTAL_PAGES).forEach(function (p) {
+        var btn = document.createElement('button');
+        if (p === '…') {
+          btn.className = 'page page--dots';
+          btn.textContent = '...';
+          btn.disabled = true;
+        } else {
+          btn.className = 'page' + (p === CURRENT_PAGE ? ' page--active' : '');
+          btn.textContent = p;
+          if (p !== CURRENT_PAGE) {
+            btn.addEventListener('click', (function (pg) {
+              return function () { window.location.href = getPageUrl(pg); };
+            })(p));
+          }
+        }
+        pagesDiv.appendChild(btn);
+      });
+      nav.appendChild(pagesDiv);
+
+      var next = document.createElement('button');
+      next.className = 'pagination__btn';
+      next.innerHTML = 'Следующая';
+      next.disabled = CURRENT_PAGE === TOTAL_PAGES;
+      if (CURRENT_PAGE < TOTAL_PAGES) {
+        next.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE + 1); });
+      }
+      nav.appendChild(next);
+    })();
+    </script>
+    {% endif %}
+
+    {% else %}
+    {% if filter_date_from or filter_date_to %}
+    <div class="ht-not-found">
+      <div class="ht-not-found-texts">
+        <p class="ht-not-found-sub">За выбранный период тестирование не проводилось.</p>
+      </div>
+    </div>
+    {% elif not current_status %}
+    <div class="ht-empty">
+      <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="30" stroke="#EAEAEA" stroke-width="3"/>
+        <path d="M22 32h20M32 22v20" stroke="#EAEAEA" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span class="ht-empty-text">Тестирований пока нет</span>
+    </div>
+    {% endif %}
+    {% endif %}
+
+  </div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+  function htOpenPicker(id) {
+    const input = document.getElementById(id);
+    try { input.showPicker(); } catch(e) { input.focus(); }
+  }
+
+  (function () {
+    const htBtnShow  = document.getElementById('ht-btn-show');
+    const htDateFrom = document.getElementById('htDateFrom');
+    const htDateTo   = document.getElementById('htDateTo');
+    if (!htBtnShow) return;
+
+    let filterApplied = htBtnShow.classList.contains('clear');
+
+    const errFromRange = document.getElementById('err-ht-date-from-range');
+    const errToRange   = document.getElementById('err-ht-date-to-range');
+    const errDateOrder = document.getElementById('err-ht-date-order');
+
+    function clearFilterErrors() {
+      errFromRange.classList.remove('visible');
+      errToRange.classList.remove('visible');
+      errDateOrder.classList.remove('visible');
+    }
+
+    function updateBtnDisabled() {
+      if (filterApplied) { htBtnShow.disabled = false; return; }
+      htBtnShow.disabled = !(htDateFrom.value && htDateTo.value);
+    }
+
+    function validateFilterDates() {
+      clearFilterErrors();
+      const MIN_DATE = '1890-01-01';
+      const _now = new Date();
+      const maxDate = _now.getFullYear() + '-' +
+        String(_now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(_now.getDate()).padStart(2, '0');
+      let valid = true;
+
+      if (htDateFrom.value) {
+        if (htDateFrom.value > maxDate) {
+          errFromRange.querySelector('.error-text').textContent = 'Дата не может быть позднее сегодняшнего дня';
+          errFromRange.classList.add('visible'); valid = false;
+        } else if (htDateFrom.value < MIN_DATE) {
+          errFromRange.querySelector('.error-text').textContent = 'Дата не может быть раньше 01.01.1890';
+          errFromRange.classList.add('visible'); valid = false;
+        }
+      }
+      if (htDateTo.value) {
+        if (htDateTo.value > maxDate) {
+          errToRange.querySelector('.error-text').textContent = 'Дата не может быть позднее сегодняшнего дня';
+          errToRange.classList.add('visible'); valid = false;
+        } else if (htDateTo.value < MIN_DATE) {
+          errToRange.querySelector('.error-text').textContent = 'Дата не может быть раньше 01.01.1890';
+          errToRange.classList.add('visible'); valid = false;
+        }
+      }
+      if (valid && htDateFrom.value && htDateTo.value && htDateFrom.value > htDateTo.value) {
+        errDateOrder.classList.add('visible'); valid = false;
+      }
+      return valid;
+    }
+
+    htDateFrom.addEventListener('change', () => {
+      filterApplied = false; clearFilterErrors();
+      htBtnShow.textContent = 'Показать'; htBtnShow.classList.remove('clear');
+      updateBtnDisabled();
+    });
+    htDateTo.addEventListener('change', () => {
+      filterApplied = false; clearFilterErrors();
+      htBtnShow.textContent = 'Показать'; htBtnShow.classList.remove('clear');
+      updateBtnDisabled();
+    });
+
+    updateBtnDisabled();
+
+    var todayIso = new Date().toISOString().split('T')[0];
+    htDateFrom.min = '1890-01-01'; htDateFrom.max = todayIso;
+    htDateTo.min   = '1890-01-01'; htDateTo.max   = todayIso;
+
+    function clampYear(input) {
+      if (!input.value) return;
+      var parts = input.value.split('-');
+      if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].slice(0, 4);
+        input.value = parts.join('-');
+      }
+    }
+    htDateFrom.addEventListener('input', function() { clampYear(this); });
+    htDateTo.addEventListener('input', function() { clampYear(this); });
+
+    document.getElementById('ht-filter-form').addEventListener('submit', function (e) {
+      if (filterApplied) return;
+      if (!validateFilterDates()) { e.preventDefault(); }
+    });
+
+    htBtnShow.addEventListener('click', function (e) {
+      if (filterApplied) {
+        e.preventDefault();
+        htDateFrom.value = ''; htDateTo.value = '';
+        clearFilterErrors();
+        window.location.href = window.location.pathname;
+      }
+    });
+  })();
+</script>
+{% endblock %}

@@ -39,7 +39,7 @@ class MedicationListView(DoctorRequiredMixin, ListView):
             doctor=self.request.user,
             medication_id__in=medication_ids
         )
-        ctx['notes_by_medication'] = {n.medication_id: n.text for n in notes}
+        ctx['notes_by_medication'] = {str(n.medication_id): n.text for n in notes}
         return ctx
 
 

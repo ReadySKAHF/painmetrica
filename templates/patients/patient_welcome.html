@@ -1,0 +1,157 @@
+{% extends 'base_app.html' %}
+{% block title %}Добро пожаловать — Painmetrica{% endblock %}
+
+{% block extra_style %}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --white:    #FEFEFE;
+  --gray-200: #F9F9F9;
+  --gray-300: #EAEAEA;
+  --gray-550: #919191;
+  --gray-950: #262626;
+  --blue-400: #2E7CF6;
+  --blue-500: #2E67F6;
+  --blue-50:  #EEF3FE;
+}
+
+body {
+  font-family: 'Proxima Nova', sans-serif;
+  background: var(--white);
+  min-height: 100vh;
+  color: var(--gray-950);
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 57px;
+  padding-bottom: 80px;
+}
+
+.welcome-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-950);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.welcome-subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--gray-550);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.welcome-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.welcome-card {
+  background: var(--blue-50);
+  border-radius: 14px;
+  width: 455px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px 0 16px;
+  gap: 16px;
+}
+
+.welcome-card--gray {
+  background: var(--gray-200);
+}
+
+.card-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-icon-circle img {
+  width: 24px;
+  height: 24px;
+}
+
+.welcome-card-text {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--gray-950);
+  line-height: 1.5;
+}
+
+.welcome-card-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--gray-950);
+  margin-bottom: 4px;
+}
+
+.welcome-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-950);
+}
+
+.btn-welcome {
+  padding: 14px 32px;
+  background: var(--blue-500);
+  color: var(--white);
+  border: none;
+  border-radius: 33px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-welcome:hover { opacity: 0.88; }
+{% endblock %}
+
+{% block content %}
+<div class="welcome-wrap">
+  <h1 class="welcome-title">Добро пожаловать, {{ patient.user.first_name }}!</h1>
+  <p class="welcome-subtitle">Ваш аккаунт в системе Painmetrica был успешно создан.</p>
+
+  <div class="welcome-cards">
+    <div class="welcome-card welcome-card--gray">
+      <div class="card-icon-circle">
+        <img src="/static/icon-welcome-info.svg" alt="">
+      </div>
+      <span class="welcome-card-text">Здесь вы можете отслеживать информацию о своём лечении.</span>
+    </div>
+
+    <div class="welcome-card">
+      <div class="card-icon-circle">
+        <img src="/static/icon-welcome-badge.svg" alt="">
+      </div>
+      <div>
+        <div class="welcome-card-label">Ваш лечащий врач</div>
+        {% if assigned_doctor %}
+        <div class="welcome-card-name">{{ assigned_doctor.get_full_name }}</div>
+        {% else %}
+        <div class="welcome-card-name" style="color:var(--gray-550);font-weight:400;">Не назначен</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <a href="{% url 'patients:detail' patient.pk %}" class="btn-welcome">Перейти в профиль пациента</a>
+</div>
+{% endblock %}

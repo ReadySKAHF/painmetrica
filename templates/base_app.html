@@ -9,8 +9,28 @@
 <style>
 @font-face {
   font-family: 'Proxima Nova';
-  src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
-  font-weight: normal; font-style: normal;
+  src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal;
+}
+@font-face {
+  font-family: 'Proxima Nova';
+  src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+  font-weight: 500; font-style: normal;
+}
+@font-face {
+  font-family: 'Proxima Nova';
+  src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+  font-weight: 600; font-style: normal;
+}
+@font-face {
+  font-family: 'Proxima Nova';
+  src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+  font-weight: 700; font-style: normal;
+}
+@font-face {
+  font-family: 'Manrope';
+  src: url('/static/fonts/Manrope-Regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -45,7 +65,7 @@ body {
   width: 1320px; max-width: calc(100vw - 24px); height: 104px;
   background: var(--white); border-radius: 63px;
   display: flex; justify-content: space-between; align-items: center;
-  padding: 32px 52px; z-index: 100;
+  padding: 32px 24px; z-index: 100;
   box-shadow: 0 2px 16px rgba(0,0,0,0.06);
 }
 
@@ -62,13 +82,13 @@ body {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; color: var(--gray-950);
 }
-.nav-link .nav-label { font-size: 18px; line-height: 18px; font-weight: 400; color: var(--gray-950); }
+.nav-link .nav-label { font-size: 14px; line-height: 14px; font-weight: 600; color: var(--gray-950); }
 .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
 .nav-link.active .nav-icon  { color: var(--blue-400); }
 
 .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
 .user-avatar  { width: 36px; height: 36px; flex-shrink: 0; }
-.user-name    { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
+.user-name    { font-size: 14px; color: var(--gray-950); white-space: nowrap; }
 
 /* ── MAIN ── */
 .main {

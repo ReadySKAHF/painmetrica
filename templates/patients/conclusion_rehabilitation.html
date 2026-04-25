@@ -4,8 +4,32 @@
 {% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
-    font-weight: normal;
+    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope-Regular.ttf') format('truetype');
+    font-weight: 400;
     font-style: normal;
 }
 
@@ -37,55 +61,56 @@ body {
   width: 1320px; max-width: calc(100vw - 24px); height: 104px;
   background: var(--white); border-radius: 63px;
   display: flex; justify-content: space-between; align-items: center;
-  padding: 32px 52px; z-index: 100; box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 32px 24px; z-index: 100; box-shadow: 0 2px 16px rgba(0,0,0,0.06);
 }
 .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
 .nav-links { display: flex; align-items: center; gap: 42px; }
 .nav-link { display: flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer; }
 .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: var(--gray-950); }
-.nav-link .nav-label { font-size: 18px; font-weight: 400; color: var(--gray-950); }
+.nav-link .nav-label { font-size: 14px; font-weight: 600; color: var(--gray-950); }
 .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
 .nav-link.active .nav-icon { color: var(--blue-400); }
 .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
-.user-name { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
+.user-name { font-size: 14px; color: var(--gray-950); white-space: nowrap; }
 
 /* ── MAIN ── */
 .main {
   flex: 1; width: 100%; max-width: 1320px; margin: 0 auto;
-  padding: 128px 12px 220px;
+  padding: 149px 12px 56px;
 }
 
 /* ── BACK LINK ── */
 .back-link {
   display: inline-flex; align-items: center; gap: 6px;
-  color: var(--blue-500); font-size: 14px; font-weight: 600;
-  text-decoration: none; margin-bottom: 24px; transition: opacity 0.15s;
+  color: var(--blue-500); font-size: 14px; font-weight: 400;
+  text-decoration: none; margin-bottom: 33px; transition: opacity 0.15s;
 }
 .back-link:hover { opacity: 0.75; }
 
 /* ── PAGE TITLE ── */
-.page-title { font-size: 30px; font-weight: 700; color: var(--gray-950); margin-bottom: 12px; }
-.page-desc { font-size: 13px; color: var(--gray-950); line-height: 1.65; margin-bottom: 40px; }
+.page-title { font-size: 24px; font-weight: 700; color: var(--gray-950); margin-bottom: 24px; margin-left: 112px; margin-right: 112px; }
+.page-desc { font-size: 12px; font-weight: 700; color: var(--gray-950); line-height: 1.65; margin-bottom: 8px; margin-left: 112px; margin-right: 112px; }
 .page-desc a { color: var(--blue-400); text-decoration: underline; }
 .page-desc a:hover { opacity: 0.8; }
 
 /* ── CONTENT LAYOUT ── */
-.content-layout { display: flex; gap: 24px; align-items: flex-start; }
+.content-layout { display: flex; gap: 20px; align-items: flex-start; margin-left: 112px; margin-right: 112px; }
 
 /* ── LEFT COLUMN ── */
 .left-col { width: 424px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
 
 /* ── THERAPY ITEM ── */
 .therapy-item {
-  background: var(--white); border: 1px solid var(--gray-300); border-radius: 13px;
-  padding: 16px; display: flex; align-items: center; justify-content: space-between;
-  cursor: pointer; transition: box-shadow 0.18s;
+  background: var(--white); border: 1px solid var(--gray-300); border-radius: 14px;
+  padding: 20px 12px; display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; transition: box-shadow 0.18s; position: relative;
 }
+.therapy-item .custom-checkbox { position: absolute; top: 20px; right: 12px; }
 .therapy-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
 .therapy-item.is-selected { border-color: var(--blue-400); }
 .therapy-info { display: flex; flex-direction: column; gap: 4px; }
-.therapy-type-label { font-size: 12px; font-weight: 400; color: var(--gray-550); }
-.therapy-name-label { font-size: 16px; font-weight: 700; color: var(--gray-950); }
+.therapy-type-label { font-size: 12px; font-weight: 400; color: var(--gray-950); }
+.therapy-name-label { font-size: 14px; font-weight: 700; color: var(--gray-950); }
 
 .custom-checkbox { position: relative; width: 20px; height: 20px; flex-shrink: 0; cursor: pointer; }
 .custom-checkbox input[type="checkbox"] {
@@ -106,13 +131,13 @@ body {
 
 /* ── DETAIL CARD ── */
 .detail-card {
-  background: var(--white); border: 1px solid var(--gray-300); border-radius: 16px;
-  padding: 24px 28px; display: flex; flex-direction: column; gap: 16px;
+  background: var(--white); border: 1px solid var(--gray-300); border-radius: 14px;
+  padding: 20px 12px; display: flex; flex-direction: column;
 }
-.detail-type { font-size: 13px; font-weight: 400; color: var(--gray-550); }
-.detail-name { font-size: 18px; font-weight: 700; color: var(--gray-950); margin-top: 2px; }
-.detail-section-title { font-size: 16px; font-weight: 700; color: var(--gray-950); margin-top: 4px; }
-.detail-text { font-size: 13px; color: var(--gray-950); line-height: 1.65; overflow-wrap: break-word; word-break: break-word; }
+.detail-type { font-size: 12px; font-weight: 400; color: var(--gray-950); }
+.detail-name { font-size: 14px; font-weight: 600; color: var(--gray-950); margin-top: 4px; }
+.detail-section-title { font-size: 14px; font-weight: 600; color: var(--gray-950); margin-top: 24px; }
+.detail-text { font-size: 12px; font-weight: 400; color: var(--gray-950); line-height: 1.65; overflow-wrap: break-word; word-break: break-word; margin-top: 12px;}
 .read-more {
   font-size: 12px; color: var(--gray-550); cursor: pointer;
   background: none; border: none; padding: 0; font-family: inherit; text-align: left;
@@ -122,9 +147,9 @@ body {
   background: var(--gray-200); border-radius: 10px; padding: 14px 16px;
   display: flex; flex-direction: column; gap: 6px;
 }
-.scheme-block-item { font-size: 13px; color: var(--gray-950); line-height: 1.5; }
+.scheme-block-item { font-size: 14px; font-weight: 400; color: var(--gray-950); line-height: 1.5; margin-top: 12px; }
 .scheme-edit {
-  font-size: 13px; color: var(--gray-950); line-height: 1.5;
+  font-size: 14px; color: var(--gray-950); line-height: 1.5;
   width: 100%; background: transparent; border: none; outline: none;
   resize: vertical; font-family: inherit; padding: 0; margin: 0; min-height: 3em;
 }
@@ -177,8 +202,8 @@ body {
 
 {% block content %}
 <a href="{% url 'patients:conclusion_medicine' pk=patient.pk %}" class="back-link">
-    <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-      <path d="M6 1L1 6L6 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     Назад к медикаментозному лечению
   </a>

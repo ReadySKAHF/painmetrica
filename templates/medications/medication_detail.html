@@ -4,8 +4,32 @@
 {% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
-    font-weight: normal;
+    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope-Regular.ttf') format('truetype');
+    font-weight: 400;
     font-style: normal;
 }
 
@@ -47,7 +71,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 32px 52px;
+    padding: 32px 24px;
     z-index: 100;
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
@@ -55,11 +79,11 @@
   .nav-links { display: flex; flex-direction: row; align-items: center; gap: 42px; }
   .nav-link { display: flex; flex-direction: row; align-items: center; gap: 6px; cursor: pointer; text-decoration: none; }
   .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;  color: var(--gray-950);}
-  .nav-link .nav-label { font-size: 18px; line-height: 18px; font-weight: 400; color: var(--gray-950); }
+  .nav-link .nav-label { font-size: 14px; line-height: 14px; font-weight: 600; color: var(--gray-950); }
   .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
   .nav-link.active .nav-icon { color: var(--blue-400); }
   .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
-  .user-name { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
+  .user-name { font-size: 14px; color: var(--gray-950); white-space: nowrap; }
 
   /* ── MAIN ── */
   .main {
@@ -67,7 +91,10 @@
     width: 100%;
     max-width: 1320px;
     margin: 0 auto;
-    padding: 136px 12px 40px;
+    padding-top: 148px;
+    padding-bottom: 33px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   /* ── BACK LINK (from template) ── */
@@ -79,9 +106,9 @@
     color: var(--blue-500);
     font-family: 'Proxima Nova', sans-serif;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1;
-    margin-bottom: 24px;
+    margin-bottom: 33px;
   }
 
   /* ── MAIN GRID ── */
@@ -94,12 +121,12 @@
   /* ── LEFT CARD ── */
   .left-card {
     width: 648px;
-    min-height: 451px;
+    min-height: 176px;
     background: var(--white);
     border-radius: 24px;
     position: relative;
     flex-shrink: 0;
-    padding: 49px 25px 30px;
+    padding: 24px 25px 24px;
     font-family: 'Proxima Nova', sans-serif;
   }
 
@@ -111,13 +138,13 @@
     padding-right: 328px;
   }
   .medicine-label {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
     color: var(--gray-550);
     line-height: 1;
   }
   .medicine-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #000;
     line-height: 1.3;
@@ -132,13 +159,13 @@
     gap: 16px;
   }
   .notes-header {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
     color: #000;
     line-height: 1;
   }
   .note-empty-text {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--gray-550);
     font-style: italic;
   }
@@ -151,7 +178,7 @@
     gap: 16px;
   }
   .note-empty-text {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--gray-550);
   }
   .note-input {
@@ -165,7 +192,7 @@
     font-family: 'Proxima Nova', sans-serif;
     font-size: 14px;
     color: var(--gray-950);
-    resize: none;
+    resize: vertical;
     outline: none;
     line-height: 1;
     display: block;
@@ -194,12 +221,13 @@
     background: var(--blue-500);
     color: #fff;
     font-family: 'Proxima Nova', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 400;
     border: none;
     border-radius: 33px;
     cursor: pointer;
     transition: background 0.15s;
+    min-height: 36px;
   }
   .btn-note-primary:hover { background: #1a53e0; }
   .btn-note-delete {
@@ -207,12 +235,13 @@
     background: var(--white);
     color: var(--gray-950);
     font-family: 'Proxima Nova', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 400;
     border: 1px solid var(--gray-950);
     border-radius: 33px;
     cursor: pointer;
     transition: background 0.15s;
+    min-height: 36px;
   }
   .btn-note-delete:hover { background: var(--gray-250); }
 
@@ -279,7 +308,7 @@
     font-family: 'Proxima Nova', sans-serif;
   }
   .card-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #000;
     line-height: 1;
@@ -290,7 +319,7 @@
     gap: 16px;
   }
   .section-title {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--gray-950);
     line-height: 1;
@@ -301,7 +330,7 @@
     gap: 14px;
   }
   .section-text {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
     color: var(--gray-950);
     line-height: 1.6;

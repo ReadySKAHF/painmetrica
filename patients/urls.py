@@ -4,8 +4,10 @@ from patients import views
 app_name = 'patients'
 
 urlpatterns = [
+    path('welcome/', views.PatientWelcomeView.as_view(), name='welcome'),
     path('my-profile/', views.PatientMyProfileView.as_view(), name='my_profile'),
     path('<int:pk>/', views.PatientDetailView.as_view(), name='detail'),
+    path('<int:pk>/history/', views.PatientHistoryView.as_view(), name='history'),
     path('<int:pk>/update/', views.PatientUpdateAPIView.as_view(), name='update'),
     path('<int:pk>/export-excel/', views.PatientExportExcelView.as_view(), name='export_excel'),
     path('<int:pk>/conclusions/', views.ConclusionListView.as_view(), name='conclusion_history'),

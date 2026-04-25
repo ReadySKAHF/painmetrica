@@ -5,8 +5,32 @@
 {% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
-    font-weight: normal;
+    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope-Regular.ttf') format('truetype');
+    font-weight: 400;
     font-style: normal;
 }
 
@@ -29,7 +53,7 @@
       width: 1320px; max-width: calc(100vw - 24px); height: 104px;
       background: var(--white); border-radius: 63px;
       display: flex; justify-content: space-between; align-items: center;
-      padding: 32px 52px; z-index: 100; box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      padding: 32px 24px; z-index: 100; box-shadow: 0 2px 16px rgba(0,0,0,0.06);
     }
     .site-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
     .site-header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
@@ -42,7 +66,7 @@
     .back-link {
       display: inline-flex; align-items: center; gap: 6px;
       font-size: 14px; font-weight: 400; color: var(--blue-500);
-      text-decoration: none; margin-bottom: 32px;
+      text-decoration: none; margin-bottom: 33px;
     }
     .back-link:hover { text-decoration: underline; }
 
@@ -58,7 +82,9 @@
     .qa-section {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
+      margin-left: 112px;
+      margin-right: 112px;
     }
 
     .qa-section-title {
@@ -71,7 +97,7 @@
     .qa-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     .qa-row {
@@ -157,9 +183,9 @@
 {% endblock %}
 
 {% block content %}
-<a href="{% url 'tests:result' session.pk %}{% if from_detail %}?from_detail=1{% endif %}" class="back-link">
+<a href="{% url 'tests:result' session.pk %}{% if from_history %}?from_history=1{% elif from_detail %}?from_detail=1{% endif %}" class="back-link">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M15 19L8 12L15 5" stroke="#2E67F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     Результаты: {{ result.test.title }}
   </a>

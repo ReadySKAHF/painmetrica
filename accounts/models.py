@@ -99,6 +99,7 @@ class PatientProfile(models.Model):
     date_of_birth = models.DateField('Дата рождения', null=True, blank=True)
     phone = models.CharField('Телефон', max_length=20, blank=True)
     address = models.TextField('Адрес', blank=True)
+    has_seen_welcome = models.BooleanField('Видел приветствие', default=False)
 
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)

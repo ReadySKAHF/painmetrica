@@ -538,6 +538,7 @@ class ResultView(LoginRequiredMixin, View):
             'pathotype_text': pathotype_text,
             'is_doctor': user.user_type == 'doctor',
             'from_detail': request.GET.get('from_detail') == '1',
+            'from_history': request.GET.get('from_history') == '1',
         })
 
 
@@ -581,6 +582,7 @@ class ResultDetailView(LoginRequiredMixin, View):
             'answers': answers,
             'sidebar_step': sidebar_step,
             'from_detail': request.GET.get('from_detail') == '1',
+            'from_history': request.GET.get('from_history') == '1',
         })
 
 

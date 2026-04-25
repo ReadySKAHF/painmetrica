@@ -80,14 +80,14 @@ class DashboardView(LoginRequiredMixin, View):
             context['adv_diagnosis'] = adv_diagnosis
 
         elif user.user_type == 'patient':
-            context['is_patient'] = True
             try:
                 patient = user.patient_record
-                context['assigned_doctor'] = patient.assigned_doctor
-                context['patient_pk'] = patient.pk
+                profile = user.patient_profile
+                if not profile.has_seen_welcome:
+                    return redirect('patients:welcome')
+                return redirect('patients:detail', pk=patient.pk)
             except Exception:
-                context['assigned_doctor'] = None
-                context['patient_pk'] = None
+                return redirect('patients:welcome')
 
         from datetime import date
         context['today_iso'] = date.today().isoformat()

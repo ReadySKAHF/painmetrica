@@ -149,6 +149,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Папка с SVG иконками и логотипами
 STATICFILES_DIRS = [
+    BASE_DIR / 'static',
     BASE_DIR / 'logo',
 ]
 

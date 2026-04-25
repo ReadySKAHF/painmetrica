@@ -4,8 +4,32 @@
 {% block extra_style %}
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/ProximaNova-Regular.ttf') format('truetype');
-    font-weight: normal;
+    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Proxima Nova';
+    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Manrope';
+    src: url('/static/fonts/Manrope-Regular.ttf') format('truetype');
+    font-weight: 400;
     font-style: normal;
 }
 
@@ -46,7 +70,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 32px 52px;
+    padding: 32px 24px;
     z-index: 100;
     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
@@ -60,13 +84,13 @@
     gap: 6px; cursor: pointer; text-decoration: none;
   }
   .nav-link .nav-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;  color: var(--gray-950);}
-  .nav-link .nav-label { font-size: 18px; line-height: 18px; font-weight: 400; color: var(--gray-950); }
+  .nav-link .nav-label { font-size: 14px; line-height: 14px; font-weight: 600; color: var(--gray-950); }
   .nav-link.active .nav-label { color: var(--blue-400); font-weight: 700; }
   .nav-link.active .nav-icon { color: var(--blue-400); }
 
   .header-right { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
   .user-avatar { width: 36px; height: 36px; flex-shrink: 0; }
-  .user-name { font-size: 18px; color: var(--gray-950); white-space: nowrap; }
+  .user-name { font-size: 14px; color: var(--gray-950); white-space: nowrap; }
 
   /* ── MAIN ── */
   .main {
@@ -75,7 +99,7 @@
     max-width: 1320px;
     margin: 0 auto;
     padding-top: 148px;
-    padding-bottom: 40px;
+    padding-bottom: 12px;
     padding-left: 12px;
     padding-right: 12px;
   }
@@ -87,17 +111,17 @@
     gap: 6px;
     color: var(--blue-500);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
     text-decoration: none;
-    margin-bottom: 24px;
+    margin-bottom: 33px;
   }
   .back-link:hover { opacity: 0.75; }
   .back-link svg { flex-shrink: 0; }
 
   /* ── PAGE HEADING ── */
-  .page-heading { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+  .page-heading { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; padding-left: 112px; padding-right: 112px; }
   .page-heading h1 { font-size: 24px; font-weight: 700; line-height: 1.3; color: var(--gray-950); }
-  .page-heading p { font-size: 14px; font-weight: 400; line-height: 1.7; color: var(--gray-950); max-width: 860px; }
+  .page-heading p { font-size: 14px; font-weight: 400; line-height: 1.7; color: var(--gray-950); }
 
   /* ── RESULTS LIST ── */
   .results { display: flex; flex-direction: column; gap: 20px; }
@@ -111,11 +135,13 @@
     background: var(--white);
     border: 1px solid var(--gray-300);
     border-radius: 16px;
+    margin-left: 112px;
+    margin-right: 112px;
   }
 
   /* ── BLOCK ── */
   .block { display: flex; flex-direction: column; gap: 12px; }
-  .block-title { font-size: 17px; font-weight: 700; color: var(--gray-950); }
+  .block-title { font-size: 18px; font-weight: 600; color: var(--gray-950); }
   .block-text { font-size: 14px; font-weight: 400; line-height: 1.9; color: var(--gray-950); }
 
   /* ── SUB-BLOCKS ── */
@@ -142,11 +168,11 @@
 
   .ht-cell-left, .ht-cell-right {
     display: flex; align-items: center;
-    padding: 14px 18px; gap: 10px; flex: 1;
+    padding: 16px 14px; gap: 10px; flex: 1;
   }
   .ht-cell-right { border-left: 1px solid var(--gray-300); }
 
-  .ht-test-title { font-size: 15px; font-weight: 700; color: var(--gray-950); }
+  .ht-test-title { font-size: 18px; font-weight: 700; color: var(--gray-950); }
 
   .ht-data-row {
     display: flex; align-items: center;
@@ -157,18 +183,18 @@
 
   .ht-row-left, .ht-row-right {
     display: flex; align-items: center;
-    padding: 12px 18px; gap: 10px; flex: 1;
+    padding: 17px 14px; gap: 10px; flex: 1;
   }
   .ht-row-right { border-left: 1px solid var(--gray-300); }
 
-  .ht-row-label { font-size: 13px; font-weight: 600; color: var(--gray-950); }
+  .ht-row-label { font-size: 14px; font-weight: 400; color: var(--gray-950); }
   .ht-interpretation { font-size: 13px; color: var(--gray-950); }
 
   /* ── FOOTER ── */
   .footer {
     width: 1320px;
     max-width: calc(100vw - 24px);
-    margin: 40px auto 0;
+    margin: 12px auto 0;
     background: var(--white);
     border-radius: 28px 28px 0 0;
     display: flex;
@@ -184,8 +210,8 @@
 
 {% block content %}
 <a href="javascript:history.back()" class="back-link">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M15 18l-6-6 6-6" stroke="#2E67F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     Вернуться назад
   </a>
@@ -204,9 +230,9 @@
         <div class="block-text">
           Используется для оценки субъективной интенсивности боли в момент осмотра.<br>
           0 баллов — боль отсутствует.<br>
-          1–3 балла — лёгкий болевой синдром.<br>
-          4–6 баллов — умеренный болевой синдром.<br>
-          7–9 баллов — выраженный болевой синдром.<br>
+          1 - 3 балла — лёгкий болевой синдром.<br>
+          4 - 6 баллов — умеренный болевой синдром.<br>
+          7 - 9 баллов — выраженный болевой синдром.<br>
           10 баллов — нестерпимая боль.<br><br>
           Также система предусматривает тестирование по специализированным шкалам PAINAD для пациентов с деменцией и NCS-R для пациентов в коме. В случае использования специализированных шкал система опирается только на результаты этих тестов и не требует проведения тестов DN4, CSI и HADS.
         </div>
@@ -248,11 +274,11 @@
         <div class="block-title">3. Опросник CSI (Центральная сенситизация)</div>
         <div class="block-text">
           Оценивает степень чувствительности нервной системы к раздражителям по шкале от 0 до 100 баллов.<br>
-          0–29 баллов — субклинический уровень / низкая вероятность.<br>
-          30–39 баллов — лёгкая степень сенситизации.<br>
-          40–49 баллов — умеренная степень.<br>
-          50–59 баллов — сильная степень.<br>
-          60–100 баллов — экстремальная степень центральной сенситизации.
+          0 - 29 баллов — субклинический уровень / низкая вероятность.<br>
+          30 - 39 баллов — лёгкая степень сенситизации.<br>
+          40 - 49 баллов — умеренная степень.<br>
+          50 - 59 баллов — сильная степень.<br>
+          60 - 100 баллов — экстремальная степень центральной сенситизации.
         </div>
       </div>
     </div>
@@ -263,8 +289,8 @@
         <div class="block-title">4. Госпитальная шкала тревоги и депрессии (HADS)</div>
         <div class="block-text">
           Позволяет выявить сопутствующие эмоциональные нарушения, влияющие на восприятие боли. Результаты рассчитываются отдельно для подшкал Тревоги (А) и Депрессии (D).<br>
-          0–7 баллов — отсутствие достоверно выраженных симптомов.<br>
-          8–10 баллов — субклинически выраженная тревога/депрессия.<br>
+          0 - 7 баллов — отсутствие достоверно выраженных симптомов.<br>
+          8 - 10 баллов — субклинически выраженная тревога/депрессия.<br>
           11 баллов и выше — клинически выраженная тревога/депрессия.
         </div>
       </div>

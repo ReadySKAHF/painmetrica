@@ -89,19 +89,19 @@
   .content {
     display: flex;
     flex-direction: column;
-    gap: 52px;
     width: 425px;
   }
 
   .page-title {
-    font-size: 30px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--gray-950);
     line-height: 1;
+    margin-bottom: 36px;
   }
 
   .verify-text {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 400;
     color: var(--gray-950);
     line-height: 1.55;
@@ -119,7 +119,7 @@
   .otp-input {
     width: 57px;
     height: 52px;
-    border: 1px solid var(--gray-300);
+    border: 1px solid var(--gray-950);
     border-radius: 7px;
     background: var(--white);
     text-align: center;
@@ -139,7 +139,7 @@
     flex-direction: column;
     align-items: center;
     gap: 26px;
-    margin-top: 42px;
+    margin-top: 32px;
   }
   .error-banner.visible ~ .btns-col { margin-top: 0; }
 
@@ -153,8 +153,8 @@
     border: none;
     border-radius: 48px;
     font-family: var(--font);
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     color: var(--gray-250);
     cursor: pointer;
     transition: opacity .15s;
@@ -179,7 +179,7 @@
     border-radius: 48px;
     font-family: var(--font);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--gray-950);
     cursor: pointer;
     transition: background .15s;
@@ -204,8 +204,8 @@
     padding: 13px 14px;
     background: var(--red-bg);
     border: 1px solid var(--red-400);
-    border-radius: 8px;
-    width: calc(4 * 57px + 3 * 20px);
+    border-radius: 6px;
+    width: calc(4 * 62px + 3 * 20px);
     margin: 8px auto 26px;
   }
   .error-banner.visible { display: flex; }
@@ -223,21 +223,6 @@
     color: var(--red-400);
     line-height: 1.4;
   }
-
-  .error-banner-close {
-    width: 20px;
-    height: 20px;
-    background: var(--white);
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: 0;
-  }
-  .error-banner-close:hover { background: var(--gray-250); }
 
   .footer {
     width: 1320px;
@@ -296,11 +281,6 @@
             <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <span class="error-banner-text" id="error-text">Неверный код.</span>
-          <button type="button" class="error-banner-close" id="btn-close-error">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M1 1L9 9M9 1L1 9" stroke="#262626" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
         </div>
 
         <div class="btns-col">
@@ -393,6 +373,7 @@ function checkOTP() {
   const allFilled = otpInputs.every(o => o.value !== '');
   btnVerify.disabled = !allFilled;
   errBanner.classList.remove('visible');
+  otpInputs.forEach(o => o.classList.remove('error'));
 
   if (allFilled) {
     otpCodeHidden.value = otpInputs.map(o => o.value).join('');
@@ -401,33 +382,28 @@ function checkOTP() {
   }
 }
 
-// Close error banner
-document.getElementById('btn-close-error').addEventListener('click', () => {
-  errBanner.classList.remove('visible');
-  otpInputs.forEach(o => o.classList.remove('error'));
-});
-
 // Timer logic
 let timerInterval;
+const TIMER_KEY = 'otp_timer_start';
+const TIMER_DURATION = 60;
+const pad = n => String(n).padStart(2, '0');
 
 function startTimer(seconds) {
   let left = seconds;
   btnResend.disabled = true;
   btnResend.classList.add('muted');
-
   clearInterval(timerInterval);
+
+  resendLabel.innerHTML = `Получить новый код через <span id="timer-val">${pad(Math.floor(left / 60))}:${pad(left % 60)}</span>`;
 
   timerInterval = setInterval(() => {
     left--;
-    const m = String(Math.floor(left / 60)).padStart(2, '0');
-    const s = String(left % 60).padStart(2, '0');
     const timerEl = document.getElementById('timer-val');
-    if (timerEl) {
-      timerEl.textContent = m + ':' + s;
-    }
+    if (timerEl) timerEl.textContent = pad(Math.floor(left / 60)) + ':' + pad(left % 60);
 
     if (left <= 0) {
       clearInterval(timerInterval);
+      sessionStorage.removeItem(TIMER_KEY);
       btnResend.disabled = false;
       btnResend.classList.remove('muted');
       resendLabel.innerHTML = 'Получить новый код';
@@ -439,41 +415,50 @@ function startTimer(seconds) {
 btnResend.addEventListener('click', () => {
   fetch("{% url 'accounts:resend_otp' %}", {
     method: 'POST',
-    headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
-    }
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
   })
   .then(response => response.json())
   .then(data => {
     if (data.success) {
-      // Clear inputs
-      otpInputs.forEach(o => {
-        o.value = '';
-        o.classList.remove('filled', 'error');
-      });
+      otpInputs.forEach(o => { o.value = ''; o.classList.remove('filled', 'error'); });
       btnVerify.disabled = true;
       otpCodeHidden.value = '';
       errBanner.classList.remove('visible');
-
-      // Reset timer
-      resendLabel.innerHTML = 'Получить новый код через <span id="timer-val">01:00</span>';
-      startTimer(60);
-
-      // Focus first input
+      sessionStorage.setItem(TIMER_KEY, Date.now());
+      startTimer(TIMER_DURATION);
       otpInputs[0].focus();
     } else {
       errText.textContent = data.message || 'Ошибка при отправке кода';
       errBanner.classList.add('visible');
     }
   })
-  .catch(err => {
+  .catch(() => {
     errText.textContent = 'Ошибка соединения с сервером';
     errBanner.classList.add('visible');
   });
 });
 
-// Start timer on page load (1 minute)
-startTimer(60);
+// Свежий вход (не после неверного кода) — сбрасываем сохранённый таймер
+let _hasOtpError = false;
+{% for message in messages %}{% if message.tags == 'error' %}_hasOtpError = true;{% endif %}{% endfor %}
+if (!_hasOtpError) sessionStorage.removeItem(TIMER_KEY);
+
+// Инициализация таймера: если страница перезагружена (неверный код) — восстанавливаем остаток
+const _stored = sessionStorage.getItem(TIMER_KEY);
+if (_stored) {
+  const remaining = TIMER_DURATION - Math.floor((Date.now() - +_stored) / 1000);
+  if (remaining > 0) {
+    startTimer(remaining);
+  } else {
+    sessionStorage.removeItem(TIMER_KEY);
+    btnResend.disabled = false;
+    btnResend.classList.remove('muted');
+    resendLabel.innerHTML = 'Получить новый код';
+  }
+} else {
+  sessionStorage.setItem(TIMER_KEY, Date.now());
+  startTimer(TIMER_DURATION);
+}
 
 // Auto-focus first input
 otpInputs[0].focus();

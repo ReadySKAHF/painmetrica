@@ -69,26 +69,26 @@
 
   header { display: flex; justify-content: space-between; align-items: center; padding: 28px 26px; max-width: 1320px; width: 100%; margin: 0 auto; }
   .logo { display: flex; align-items: center; text-decoration: none; }
-  .header-right { display: flex; align-items: center; gap: 10px; }
+  .header-right { display: flex; align-items: center; gap: 6px; }
   .header-hint { font-size: 14px; color: var(--gray-550); }
-  .btn-outline-sm { display: flex; align-items: center; justify-content: center; padding: 9px 18px; border: 1px solid var(--gray-950); border-radius: 11px; background: var(--white); font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--gray-950); cursor: pointer; text-decoration: none; transition: background .15s; }
+  .btn-outline-sm { display: flex; align-items: center; justify-content: center; padding: 9px 18px; border: 1px solid var(--gray-950); border-radius: 33px; background: var(--white); font-family: var(--font); font-size: 12px; font-weight: 400; color: var(--gray-950); cursor: pointer; text-decoration: none; transition: background .15s; }
   .btn-outline-sm:hover { background: var(--gray-250); }
-  main { flex: 1; width: 1320px; max-width: calc(100vw - 24px); margin: 0 auto; padding: 40px 52px 60px 0; display: flex; gap: 136px; align-items: flex-start; }
+  main { flex: 1; width: 1320px; max-width: calc(100vw - 24px); margin-top: 89px; margin-left: auto; margin-right: auto; padding: 40px 0 60px 0; display: flex; gap: 136px; align-items: flex-start; }
 
-  .stepper-panel { width: 424px; height: 440px; flex-shrink: 0; background: var(--gray-200); border-radius: 25px; padding: 24px 20px; display: flex; flex-direction: column; }
+  .stepper-panel { width: 424px; flex-shrink: 0; background: var(--gray-200); border-radius: 20px; padding: 24px 20px; display: flex; flex-direction: column; }
 
-  .steps-list { display: flex; flex-direction: column; padding: 0 16px; flex: 1; }
-  .step-item { display: flex; gap: 12px; flex: 1; }
+  .steps-list { display: flex; flex-direction: column; flex: 1; }
+  .step-item { display: flex; align-items: stretch; gap: 12px; }
   .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 40px; }
   .step-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .step-circle.active { background: var(--blue-400); border: 2px solid var(--blue-200); }
   .step-circle.done { background: var(--blue-400); }
   .step-circle .check-icon { display: none; }
   .step-circle.done .check-icon { display: block; }
-  .step-connector { flex: 1; min-height: 8px; width: 2px; background: var(--gray-300); border-radius: 2px; }
+  .step-connector { flex: 1; min-height: 16px; width: 2px; background: var(--gray-300); border-radius: 2px; margin: 3px 0; }
   .step-connector.done { background: var(--blue-350); }
-  .step-text { flex: 1; padding: 2px 0 0; }
-  .step-label { font-size: 14px; font-weight: 600; color: var(--gray-500); margin-bottom: 3px; line-height: 1; }
+  .step-text { flex: 1; padding: 4px 0 14px; min-height: 0; }
+  .step-label { font-size: 14px; font-weight: 600; color: var(--gray-500); margin-bottom: 8px; line-height: 1; }
   .step-label.active { color: var(--blue-400); }
   .step-label.done { color: var(--gray-950); }
   .step-desc { font-size: 14px; color: var(--gray-500); line-height: 1.35; }
@@ -100,11 +100,11 @@
     max-width: 425px;
     display: flex;
     flex-direction: column;
-    gap: 52px;
+    gap: 36px;
   }
 
   .page-title {
-    font-size: 30px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--gray-950);
     line-height: 1;
@@ -112,6 +112,7 @@
 
   .verify-text {
     font-size: 18px;
+    font-weight: 400;
     color: var(--gray-950);
     line-height: 1.55;
     margin-bottom: 24px;
@@ -129,7 +130,7 @@
   .otp-input {
     width: 57px;
     height: 52px;
-    border: 1px solid var(--gray-300);
+    border: 1px solid var(--gray-950);
     border-radius: 7px;
     background: var(--white);
     text-align: center;
@@ -149,8 +150,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 26px;
-    margin-top: 42px;
+    gap: 24px;
+    margin-top: 32px;
   }
   .error-banner.visible ~ .btns-col { margin-top: 0; }
 
@@ -162,10 +163,10 @@
     padding: 0 24px;
     background: var(--blue-500);
     border: none;
-    border-radius: 48px;
+    border-radius: 33px;
     font-family: var(--font);
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     color: var(--gray-250);
     cursor: pointer;
     transition: opacity .15s;
@@ -187,10 +188,10 @@
     padding: 0 24px;
     background: var(--white);
     border: 1px solid var(--gray-950);
-    border-radius: 48px;
+    border-radius: 33px;
     font-family: var(--font);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--gray-950);
     cursor: pointer;
     max-width: 324px;
@@ -216,7 +217,7 @@
     background: var(--red-bg);
     border: 1px solid var(--red-400);
     border-radius: 8px;
-    width: calc(4 * 57px + 3 * 20px);
+    width: calc(4 * 62px + 3 * 20px);
     margin: 8px auto 26px;
   }
   .error-banner.visible { display: flex; }
@@ -234,21 +235,6 @@
     color: var(--red-400);
     line-height: 1.4;
   }
-
-  .error-banner-close {
-    width: 20px;
-    height: 20px;
-    background: var(--white);
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: 0;
-  }
-  .error-banner-close:hover { background: var(--gray-250); }
 
   /* ── FOOTER ──────────────────────────────────────────────────────── */
   .footer {
@@ -269,7 +255,7 @@
 
   @media (max-width: 900px) {
     main { flex-direction: column; gap: 40px; }
-    .stepper-panel { width: 424px; height: 440px; flex-shrink: 0; background: var(--gray-200); border-radius: 25px; padding: 24px 20px; display: flex; flex-direction: column; }
+    .stepper-panel { width: 424px; flex-shrink: 0; background: var(--gray-200); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; }
   }
 </style>
 </head>
@@ -368,11 +354,6 @@
             <path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <span class="error-banner-text" id="error-text">Неверный код.</span>
-          <button type="button" class="error-banner-close" id="btn-close-error">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M1 1L9 9M9 1L1 9" stroke="#262626" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
         </div>
 
         <div class="btns-col">
@@ -465,6 +446,7 @@ function checkOTP() {
   const allFilled = otpInputs.every(o => o.value !== '');
   btnVerify.disabled = !allFilled;
   errBanner.classList.remove('visible');
+  otpInputs.forEach(o => o.classList.remove('error'));
 
   if (allFilled) {
     otpCodeHidden.value = otpInputs.map(o => o.value).join('');
@@ -473,13 +455,9 @@ function checkOTP() {
   }
 }
 
-// Close error banner
-document.getElementById('btn-close-error').addEventListener('click', () => {
-  errBanner.classList.remove('visible');
-  otpInputs.forEach(o => o.classList.remove('error'));
-});
-
 // Timer logic
+const TIMER_KEY = 'otp_timer_start_verify';
+const TIMER_DURATION = 60;
 let timerInterval;
 
 function startTimer(seconds) {
@@ -488,7 +466,8 @@ function startTimer(seconds) {
   btnResend.classList.add('muted');
 
   clearInterval(timerInterval);
-
+  const elInit = document.getElementById('timer-val');
+  if (elInit) elInit.textContent = String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0');
   timerInterval = setInterval(() => {
     left--;
     const m = String(Math.floor(left / 60)).padStart(2, '0');
@@ -500,6 +479,7 @@ function startTimer(seconds) {
 
     if (left <= 0) {
       clearInterval(timerInterval);
+      sessionStorage.removeItem(TIMER_KEY);
       btnResend.disabled = false;
       btnResend.classList.remove('muted');
       resendLabel.innerHTML = 'Получить новый код';
@@ -529,7 +509,8 @@ btnResend.addEventListener('click', () => {
 
       // Reset timer
       resendLabel.innerHTML = 'Получить новый код через <span id="timer-val">01:00</span>';
-      startTimer(60);
+      sessionStorage.setItem(TIMER_KEY, Date.now());
+      startTimer(TIMER_DURATION);
 
       // Focus first input
       otpInputs[0].focus();
@@ -544,8 +525,25 @@ btnResend.addEventListener('click', () => {
   });
 });
 
-// Start timer on page load (1 minute)
-startTimer(60);
+let _hasOtpError = false;
+{% for message in messages %}{% if message.tags == 'error' %}_hasOtpError = true;{% endif %}{% endfor %}
+if (!_hasOtpError) sessionStorage.removeItem(TIMER_KEY);
+
+const _stored = sessionStorage.getItem(TIMER_KEY);
+if (_stored) {
+  const remaining = TIMER_DURATION - Math.floor((Date.now() - +_stored) / 1000);
+  if (remaining > 0) {
+    startTimer(remaining);
+  } else {
+    sessionStorage.removeItem(TIMER_KEY);
+    btnResend.disabled = false;
+    btnResend.classList.remove('muted');
+    resendLabel.innerHTML = 'Получить новый код';
+  }
+} else {
+  sessionStorage.setItem(TIMER_KEY, Date.now());
+  startTimer(TIMER_DURATION);
+}
 
 // Auto-focus first input
 otpInputs[0].focus();

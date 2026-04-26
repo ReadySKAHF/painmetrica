@@ -61,10 +61,10 @@
     .page-main { flex: 1; max-width: 1320px; margin: 0 auto; padding: 148px 12px 60px; }
 
     /* ── Back link ── */
-    .topbar { display: flex; align-items: center; margin-bottom: 28px; }
+    .topbar { display: flex; align-items: center; margin-bottom: 33px; }
     .back-link {
       display: flex; align-items: center; gap: 6px;
-      font-size: 14px; font-weight: 500; color: #2E67F6; text-decoration: none;
+      font-size: 14px; font-weight: 4 00; color: #2E67F6; text-decoration: none;
     }
     .back-link:hover { text-decoration: underline; }
     .back-link svg { flex-shrink: 0; }
@@ -72,18 +72,18 @@
     /* ── Doctor badge ── */
     .doctor-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: #FFF3CD; border: 1px solid #FFD84D; border-radius: 8px;
-      padding: 6px 12px; font-size: 13px; font-weight: 500; color: #856404;
-      margin-bottom: 20px;
+      background: #FFF3CD; border-radius: 10px;
+      padding: 6px 12px; font-size: 14px; font-weight: 400; color: #856404;
+      margin-bottom: 4px;
     }
 
     /* ── Layout ── */
-    .layout { display: flex; gap: 24px; align-items: flex-start; }
+    .layout { display: flex; gap: 136px; align-items: flex-start; }
 
     /* ── Sidebar ── */
     .sidebar {
       width: 314px; flex-shrink: 0;
-      background: #FEFEFE; border-radius: 16px; padding: 26px 23px;
+      background: #FEFEFE; border-radius: 20px; padding: 16px;
       display: flex; flex-direction: column; gap: 0;
       position: sticky; top: 128px;
     }
@@ -96,30 +96,30 @@
     .step-dot.done    { background: #2E7CF6; }
     .step-dot.active  { background: #2E7CF6; border: 3px solid #D4E6FF; }
     .step-dot.inactive { background: #EAEAEA; }
-    .step-line { width: 1px; flex: 1; min-height: 38px; margin: 4px 0; }
+    .step-line { width: 1px; flex: 1; min-height: 16px; margin: 3px 0; }
     .step-line.done-line  { background: #2E7CF6; }
     .step-line.plain-line { background: #F5F5F5; }
-    .step-text { padding: 6px 0; flex: 1; min-height: 78px; }
-    .step-label { font-size: 18px; font-weight: 600; line-height: 18px; margin-bottom: 8px; }
+    .step-text { padding: 4px 0 14px; flex: 1; min-height: 0; }
+    .step-label { font-size: 14px; font-weight: 600; line-height: 18px; margin-bottom: 8px; }
     .step-label.done    { color: #262626; }
     .step-label.active  { color: #2E7CF6; }
     .step-label.inactive{ color: #C8C8C8; }
-    .step-desc { font-size: 16px; font-weight: 400; line-height: 22px; }
+    .step-desc { font-size: 14px; font-weight: 400; line-height: 14px; }
     .step-desc.done    { color: #000; }
     .step-desc.active  { color: #000; }
     .step-desc.inactive{ color: #C8C8C8; }
 
     /* ── Content ── */
-    .content { flex: 1; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
-    .page-title { font-size: 30px; font-weight: 700; line-height: 30px; color: #262626; }
+    .content { flex: 1; display: flex; flex-direction: column; min-width: 0; margin-right: 198px; }
+    .page-title { font-size: 24px; font-weight: 700; line-height: 24px; color: #262626; margin-bottom: 24px; }
 
     /* ── Info banner ── */
     .info-banner {
       display: flex; align-items: flex-start; justify-content: space-between;
-      padding: 12px; background: #EEF5FF;
-      border: 1px solid #5391F2; border-radius: 8px; gap: 10px;
+      padding: 16px; background: #EEF5FF;
+      border: 1px solid #5391F2; border-radius: 10px; margin-bottom: 36px;
     }
-    .info-banner p { font-size: 14px; font-weight: 400; line-height: 20px; color: #262626; flex: 1; }
+    .info-banner p { font-size: 14px; font-weight: 400; line-height: 14px; color: #262626; flex: 1; }
     .close-btn {
       width: 20px; height: 20px; min-width: 20px;
       background: #FEFEFE; border-radius: 50%; border: none;
@@ -211,19 +211,19 @@
     /* ══════════════════════════════════════
        ВОПРОСЫ С ВАРИАНТАМИ
     ══════════════════════════════════════ */
-    .question-block { display: flex; flex-direction: column; gap: 12px; }
+    .question-block { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
     .block-title { font-size: 18px; font-weight: 600; line-height: 24px; color: #262626; }
 
     .question-card {
       background: #FEFEFE; border-radius: 13px; padding: 26px 24px;
       display: flex; flex-direction: column; gap: 12px;
     }
-    .question-text { font-size: 20px; font-weight: 400; line-height: 24px; color: #000; }
+    .question-text { font-size: 18px; font-weight: 400; line-height: 24px; color: #000; }
     .options { display: flex; flex-direction: column; gap: 15px; }
 
     .option {
       display: flex; align-items: center; gap: 8px;
-      padding: 12px 14px; border-radius: 10px;
+      padding: 8px 12px; border-radius: 10px;
       border: 1px solid #F5F5F5; cursor: pointer;
       transition: background 0.12s, border-color 0.12s; user-select: none;
     }
@@ -231,13 +231,13 @@
     .option.selected { background: #EEF5FF; border-color: #2E7CF6; }
 
     .radio-circle {
-      width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
+      width: 16px; height: 16px; min-width: 16px; border-radius: 50%;
       background: #FEFEFE; border: 1px solid #919191;
       position: relative; flex-shrink: 0; transition: border-color 0.12s;
     }
     .option.selected .radio-circle { border-color: #5391F2; }
     .radio-circle::after {
-      content: ''; position: absolute; width: 12px; height: 12px;
+      content: ''; position: absolute; width: 8px; height: 8px;
       border-radius: 50%; background: #2E7CF6; top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0); transition: transform 0.12s;
     }
@@ -246,19 +246,19 @@
     .option input[type="radio"] { display: none; }
 
     .option-label {
-      font-size: 20px; font-weight: 400; line-height: 20px; color: #919191;
+      font-size: 14px; font-weight: 400; line-height: 14px; color: #919191;
       transition: color 0.12s, font-weight 0.12s;
     }
-    .option.selected .option-label { color: #262626; font-weight: 500; }
+    .option.selected .option-label { color: #262626; font-weight: 600; }
 
     /* ── Кнопка внизу (вопросы) ── */
-    .btn-wrap { display: flex; justify-content: center; margin-top: 32px; }
+    .btn-wrap { display: flex; justify-content: center; }
     .next-btn {
       display: flex; align-items: center; justify-content: center;
       padding: 14px 24px; height: 46px;
       background: #2E67F6; border-radius: 33px; border: none;
       cursor: pointer; font-family: inherit; font-size: 18px;
-      font-weight: 600; color: #F5F5F5;
+      font-weight: 400; color: #F5F5F5;
       transition: background 0.15s; white-space: nowrap;
     }
     .next-btn:hover { background: #1a57e0; }
@@ -290,11 +290,11 @@
       border-radius: 50%; display: flex; align-items: center; justify-content: center;
     }
     .val-title {
-      font-size: 20px; font-weight: 700; text-align: center;
+      font-size: 18px; font-weight: 700; text-align: center;
       color: #262626; line-height: 1.45;
     }
     .val-ok-btn {
-      width: 100%; padding: 14px; background: #2E67F6; color: #FEFEFE;
+      width: 35%; padding: 14px; background: #2E67F6; color: #FEFEFE;
       border: none; border-radius: 33px; font-size: 16px; font-weight: 600;
       font-family: inherit; cursor: pointer; transition: background 0.15s; margin-top: 32px;
     }
@@ -317,7 +317,7 @@
   <div class="topbar">
     <a href="{% url 'patients:detail' patient.pk %}" class="back-link">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M15 19L8 12L15 5" stroke="#2E67F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       В карточку пациента: {{ patient.user.get_full_name }}
     </a>

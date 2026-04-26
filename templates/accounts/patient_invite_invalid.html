@@ -56,21 +56,43 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    color: var(--gray-950);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 42px 24px;
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gray-950);
+    padding: 24px;
   }
 
   .card {
     background: var(--white);
     border-radius: 20px;
-    padding: 56px 48px;
+    padding: 24px 16px;
     max-width: 520px;
-    width: calc(100% - 32px);
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: 16px;
     box-shadow: 0 4px 32px rgba(0,0,0,0.07);
   }
 
@@ -85,7 +107,7 @@
   }
 
   .card-title {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 700;
     text-align: center;
     color: var(--gray-950);
@@ -93,7 +115,7 @@
   }
 
   .card-desc {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 400;
     color: var(--gray-550);
     text-align: center;
@@ -101,13 +123,10 @@
     max-width: 360px;
   }
 
-  .logo {
-    margin-top: 8px;
-  }
-
   @media (max-width: 560px) {
     .card { padding: 40px 24px; }
     .card-title { font-size: 18px; }
+    header { padding: 20px; }
   }
 
   .footer {
@@ -129,27 +148,29 @@
 </head>
 <body>
 
-<div class="card">
-  <div class="icon-wrap">
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <path d="M20 8L20 22" stroke="#E43D3D" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="20" cy="30" r="2" fill="#E43D3D"/>
-      <circle cx="20" cy="20" r="17" stroke="#E43D3D" stroke-width="2.5"/>
-    </svg>
-  </div>
-
-  <p class="card-title">Ссылка недействительна или<br>срок её действия истёк</p>
-
-  <p class="card-desc">
-    Ссылка для регистрации, по которой вы перешли, либо уже была использована,
-    либо устарела (ссылки действительны 7 дней).
-    Пожалуйста, обратитесь к вашему врачу для получения новой ссылки.
-  </p>
-
-  <div class="logo">
+<header>
+  <a href="{% url 'core:home' %}" class="logo" title="Painmetrica">
     <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="172" height="43" style="display:block;">
+  </a>
+</header>
+
+<main>
+  <div class="card">
+    <div class="icon-wrap">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M20 8L20 22" stroke="#E43D3D" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="20" cy="30" r="2" fill="#E43D3D"/>
+        <circle cx="20" cy="20" r="17" stroke="#E43D3D" stroke-width="2.5"/>
+      </svg>
+    </div>
+    <p class="card-title">Ссылка недействительна или<br>срок её действия истёк</p>
+    <p class="card-desc">
+      Ссылка для регистрации, по которой вы перешли, либо уже была использована,
+      либо устарела (ссылки действительны 7 дней).
+      Пожалуйста, обратитесь к вашему врачу для получения новой ссылки.
+    </p>
   </div>
-</div>
+</main>
 
 <footer class="footer">
   <div class="footer-logo">

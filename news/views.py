@@ -1,5 +1,10 @@
 import datetime
+import uuid
 
+from django.core.cache import cache
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import ListView
@@ -9,6 +14,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from accounts.mixins import DoctorRequiredMixin
 from news.models import Article
 
+_DETAIL_TTL = 60 * 10  # 10 мин — статья меняется редко
+_COUNT_TTL  = 60 * 5   # 5 мин  — счётчик опубликованных
+
+
+def _article_cache_key(pk):
+    return f'news:article:{pk}'
+
+
+def _invalidate_article(pk):
+    """Сбрасывает кэш конкретной статьи и счётчика опубликованных."""
+    cache.delete(_article_cache_key(pk))
+    cache.delete('news:published_count')
+
 
 class NewsListView(LoginRequiredMixin, ListView):
     model               = Article
@@ -17,7 +35,8 @@ class NewsListView(LoginRequiredMixin, ListView):
     paginate_by         = 10
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        # defer 'content' — крупное HTML-поле, в списке не нужно
+        qs = super().get_queryset().defer('content', 'created_at', 'updated_at')
         if self.request.user.user_type == 'patient':
             qs = qs.filter(status=Article.STATUS_PUBLISHED)
         return qs
@@ -25,7 +44,11 @@ class NewsListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         if self.request.user.user_type == 'patient':
-            ctx['total_articles'] = Article.objects.filter(status=Article.STATUS_PUBLISHED).count()
+            count = cache.get('news:published_count')
+            if count is None:
+                count = Article.objects.filter(status=Article.STATUS_PUBLISHED).count()
+                cache.set('news:published_count', count, _COUNT_TTL)
+            ctx['total_articles'] = count
         else:
             ctx['total_articles'] = Article.objects.count()
         return ctx
@@ -47,6 +70,7 @@ class ArticleFormView(DoctorRequiredMixin, View):
         article = get_object_or_404(Article, pk=pk) if pk else None
 
         if action == 'delete' and article:
+            _invalidate_article(article.pk)
             article.delete()
             return redirect('news:list')
 
@@ -65,13 +89,31 @@ class ArticleFormView(DoctorRequiredMixin, View):
             article.cover_image = None
 
         article.save()
+        _invalidate_article(article.pk)
         return redirect('news:list')
 
 
 class ArticleDetailView(View):
     def get(self, request, pk):
-        article = get_object_or_404(Article, pk=pk, status=Article.STATUS_PUBLISHED)
+        key = _article_cache_key(pk)
+        article = cache.get(key)
+        if article is None:
+            article = get_object_or_404(Article, pk=pk, status=Article.STATUS_PUBLISHED)
+            cache.set(key, article, _DETAIL_TTL)
         return render(request, 'news/article_detail.html', {'article': article})
+
+
+class ArticleInlineImageUploadView(DoctorRequiredMixin, View):
+    def post(self, request):
+        image = request.FILES.get('image')
+        if not image:
+            return JsonResponse({'error': 'No image'}, status=400)
+        ext = image.name.rsplit('.', 1)[-1].lower() if '.' in image.name else 'jpg'
+        path = default_storage.save(
+            f'news/inline/{uuid.uuid4().hex}.{ext}',
+            ContentFile(image.read()),
+        )
+        return JsonResponse({'url': default_storage.url(path)})
 
 
 class ArticlePublishView(DoctorRequiredMixin, View):
@@ -82,4 +124,5 @@ class ArticlePublishView(DoctorRequiredMixin, View):
         else:
             article.status = Article.STATUS_DRAFT
         article.save()
+        _invalidate_article(pk)
         return redirect('news:list')

@@ -14,7 +14,7 @@ class Article(models.Model):
     content     = models.TextField(blank=True, verbose_name='Полный текст')
     cover_image = models.ImageField(upload_to='news/', blank=True, null=True, verbose_name='Обложка')
     date        = models.DateField(null=True, blank=True, verbose_name='Дата публикации')
-    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT, verbose_name='Статус')
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True, verbose_name='Статус')
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
 

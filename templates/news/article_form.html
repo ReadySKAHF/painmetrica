@@ -99,20 +99,19 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 28px;
-    height: 28px;
-    background: rgba(0,0,0,0.45);
+    width: 36px;
+    height: 36px;
+    background: var(--blue-500);
     border: none;
     border-radius: 50%;
     cursor: pointer;
     display: none;
     align-items: center;
     justify-content: center;
-    color: #fff;
     z-index: 1;
-    transition: background 0.15s;
+    transition: background .18s, transform .15s;
   }
-  .image-remove-btn:hover { background: rgba(0,0,0,0.65); }
+  .image-remove-btn:hover { background: #1a52e0; transform: scale(1.07); }
   .image-remove-btn.visible { display: flex; }
 
   /* ── Field block ── */
@@ -242,20 +241,22 @@
 
   .toolbar-preview-btn {
     margin-left: auto;
-    height: 26px;
-    padding: 0 10px;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    font-size: 14px;
     font-weight: 400;
     color: var(--blue-500);
-    border: 1px solid var(--blue-400) !important;
-    border-radius: 20px;
     background: none;
+    border: none;
     cursor: pointer;
     font-family: inherit;
-    transition: background 0.12s;
+    white-space: nowrap;
     flex-shrink: 0;
+    transition: opacity 0.15s;
   }
-  .toolbar-preview-btn:hover { background: #EEF5FF; }
+  .toolbar-preview-btn:hover { opacity: 0.75; }
 
   /* ── Editor contenteditable div ── */
   .editor-div {
@@ -446,15 +447,14 @@
   }
   .preview-label { font-size: 14px; font-weight: 600; color: var(--gray-950); }
   .preview-close {
-    width: 32px; height: 32px;
-    background: none; border: none;
-    border-radius: 8px; cursor: pointer;
-    font-size: 22px; color: var(--gray-550);
+    width: 36px; height: 36px;
+    background: var(--blue-500); border: none;
+    border-radius: 50%; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-    line-height: 1;
+    transition: background .18s, transform .15s;
+    flex-shrink: 0;
   }
-  .preview-close:hover { background: var(--gray-300); }
+  .preview-close:hover { background: #1a52e0; transform: scale(1.07); }
 
   .preview-body { padding: 32px 48px 48px; }
 
@@ -485,6 +485,13 @@
     font-style: italic;
   }
   .preview-art-content p { margin: 0 0 8px; }
+  .preview-art-content figure.art-img-block {
+    display: block; margin: 20px 0; padding: 0; background: none; border: none;
+  }
+  .preview-art-content figure.art-img-block .art-img-actual {
+    display: block; width: 100%; border-radius: 12px;
+  }
+  .preview-art-content figure.art-img-block .art-img-label { display: none; }
 
   /* ── Art image block: placeholder in editor ── */
   .editor-div .art-img-block {
@@ -608,17 +615,13 @@
       {% if article and article.cover_image %}
         <img id="imagePreviewImg" class="image-preview-img visible" src="{{ article.cover_image.url }}" alt="">
         <button type="button" class="image-remove-btn visible" id="imageRemoveBtn" onclick="removeImage(event)">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 1L11 11M11 1L1 11" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
         </button>
         <input type="hidden" name="keep_image" value="1" id="keepImageInput">
       {% else %}
         <img id="imagePreviewImg" class="image-preview-img" src="" alt="">
         <button type="button" class="image-remove-btn" id="imageRemoveBtn" onclick="removeImage(event)">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 1L11 11M11 1L1 11" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
         </button>
       {% endif %}
       <div class="image-placeholder" id="imagePlaceholder" {% if article and article.cover_image %}style="display:none"{% endif %}>
@@ -714,7 +717,9 @@
             </svg>
           </button>
 
-          <button type="button" class="toolbar-preview-btn" id="previewBtn">Предпросмотр</button>
+          <button type="button" class="toolbar-preview-btn" id="previewBtn">
+            Предпросмотр<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
 
         <!-- Contenteditable editor -->
@@ -764,9 +769,7 @@
       <input type="file" id="imgModalFileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
       <img id="imgModalPreviewImg" class="image-preview-img" src="" alt="">
       <button type="button" class="image-remove-btn" id="imgModalRemoveBtn" onclick="clearImgModalPreview(event)">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M1 1L11 11M11 1L1 11" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
-        </svg>
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
       </button>
       <div class="image-placeholder" id="imgModalPlaceholder">
         <svg width="44" height="40" viewBox="0 0 54 48" fill="none">
@@ -801,7 +804,9 @@
   <div class="preview-modal">
     <div class="preview-header">
       <span class="preview-label">Предпросмотр статьи</span>
-      <button type="button" class="preview-close" onclick="closePreview()" title="Закрыть">&#x2715;</button>
+      <button type="button" class="preview-close" onclick="closePreview()" title="Закрыть">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
     </div>
     <div class="preview-body">
       <h1 class="preview-art-title" id="previewArtTitle"></h1>
@@ -1008,10 +1013,17 @@ editor.addEventListener('mouseup', updateToolbarState);
 // ── Image modal ──
 var currentImgBlock = null;
 var imgModalDataSrc = null;
+var imgSavedRange   = null;
 
 function openImgModal(editBlock) {
   currentImgBlock = editBlock || null;
   imgModalDataSrc = null;
+
+  // Save cursor position so we can insert at the right place after async upload
+  if (!editBlock) {
+    var _sel = window.getSelection();
+    imgSavedRange = (_sel && _sel.rangeCount) ? _sel.getRangeAt(0).cloneRange() : null;
+  }
 
   // Reset upload zone
   document.getElementById('imgModalFileInput').value = '';
@@ -1096,6 +1108,19 @@ imgModalZone.addEventListener('drop', function(e) {
   }
 });
 
+var ART_IMG_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 14.25L8.78 10.47C9.09 10.16 9.51 9.98 9.95 9.98C10.39 9.98 10.81 10.16 11.12 10.47L14.9 14.25M13.8 13.15L14.83 12.12C15.46 11.49 16.54 11.49 17.17 12.12L19.3 14.25M6.1 17H18.2C18.74 17 19.3 16.46 19.3 15.9V7.1C19.3 6.54 18.74 6 18.2 6H6.1C5.56 6 5 6.54 5 7.1V15.9C5 16.46 5.56 17 6.1 17Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function renumberImages() {
+  editor.querySelectorAll('.art-img-block').forEach(function(block, i) {
+    var num = i + 1;
+    var label = block.querySelector('.art-img-label');
+    if (label) label.innerHTML = ART_IMG_ICON + '[Изображение ' + num + ']';
+    var img = block.querySelector('.art-img-actual');
+    if (img) img.alt = 'Изображение ' + num;
+  });
+  syncContent();
+}
+
 function buildImgFigure(src) {
   var figure = document.createElement('figure');
   figure.className = 'art-img-block';
@@ -1104,11 +1129,9 @@ function buildImgFigure(src) {
   var img = document.createElement('img');
   img.className = 'art-img-actual';
   img.src = src;
-  img.alt = 'Изображение';
 
   var label = document.createElement('span');
   label.className = 'art-img-label';
-  label.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 14.25L8.78 10.47C9.09 10.16 9.51 9.98 9.95 9.98C10.39 9.98 10.81 10.16 11.12 10.47L14.9 14.25M13.8 13.15L14.83 12.12C15.46 11.49 16.54 11.49 17.17 12.12L19.3 14.25M6.1 17H18.2C18.74 17 19.3 16.46 19.3 15.9V7.1C19.3 6.54 18.74 6 18.2 6H6.1C5.56 6 5 6.54 5 7.1V15.9C5 16.46 5.56 17 6.1 17Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>Изображение';
 
   figure.appendChild(img);
   figure.appendChild(label);
@@ -1118,24 +1141,44 @@ function buildImgFigure(src) {
 }
 
 function saveImgBlock() {
-  if (!imgModalDataSrc) { closeImgModal(); return; }
+  var fileInput  = document.getElementById('imgModalFileInput');
+  var hasNewFile = fileInput.files && fileInput.files[0];
 
-  if (currentImgBlock) {
-    // Replace image in existing block
-    var existingImg = currentImgBlock.querySelector('.art-img-actual');
-    if (existingImg) existingImg.src = imgModalDataSrc;
+  if (!hasNewFile && !imgModalDataSrc) { closeImgModal(); return; }
+
+  if (hasNewFile) {
+    var fd = new FormData();
+    fd.append('image', fileInput.files[0]);
+    fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    fetch('{% url "news:upload_inline" %}', {method: 'POST', body: fd})
+      .then(function(r) { return r.json(); })
+      .then(function(data) { if (data.url) applyImgBlock(data.url); else closeImgModal(); })
+      .catch(function() { closeImgModal(); });
   } else {
-    // Insert new figure at cursor
-    var figure = buildImgFigure(imgModalDataSrc);
+    applyImgBlock(imgModalDataSrc);
+  }
+}
+
+function applyImgBlock(src) {
+  if (currentImgBlock) {
+    var existingImg = currentImgBlock.querySelector('.art-img-actual');
+    if (existingImg) existingImg.src = src;
+  } else {
+    var figure = buildImgFigure(src);
     editor.focus();
     ensureBlockStructure();
 
     var sel = window.getSelection();
+    if (imgSavedRange) {
+      sel.removeAllRanges();
+      sel.addRange(imgSavedRange);
+      imgSavedRange = null;
+    }
+    sel = window.getSelection();
     if (sel && sel.rangeCount) {
       var range = sel.getRangeAt(0);
       range.deleteContents();
       range.insertNode(figure);
-      // Add an empty paragraph after the figure so cursor can continue
       var after = document.createElement('p');
       after.innerHTML = '<br>';
       if (figure.nextSibling) {
@@ -1152,27 +1195,27 @@ function saveImgBlock() {
       editor.appendChild(figure);
     }
   }
-
   closeImgModal();
-  syncContent();
+  renumberImages();
 }
 
 function deleteImgBlock() {
   if (currentImgBlock && currentImgBlock.parentNode) {
     currentImgBlock.parentNode.removeChild(currentImgBlock);
-    syncContent();
   }
   closeImgModal();
+  renumberImages();
 }
 
 document.getElementById('imgModal').addEventListener('click', function(e) {
   if (e.target === this) closeImgModal();
 });
 
-// Wire click handlers to any image blocks already present in editor (edit mode)
+// Wire click handlers and renumber blocks already present in editor (edit mode)
 editor.querySelectorAll('.art-img-block').forEach(function(block) {
   block.addEventListener('click', function() { openImgModal(this); });
 });
+renumberImages();
 
 // ── Link modal ──
 var savedRange = null;

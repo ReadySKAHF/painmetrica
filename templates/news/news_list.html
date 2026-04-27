@@ -1,0 +1,561 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Новости неврологии — Painmetrica{% endblock %}
+
+{% block extra_style %}
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 24px;
+    color: var(--gray-950);
+    margin-bottom: 36px;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+
+  .news-count {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 22px;
+    color: var(--gray-950);
+  }
+  .news-count strong { font-weight: 700; }
+
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px 8px;
+    background: var(--blue-500);
+    border-radius: 33px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-250);
+    font-family: inherit;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+    min-height: 36px;
+    text-decoration: none;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+
+  .cards-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  /* ── PAGINATION ── */
+  .pagination-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .pagination {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 24px;
+    gap: 12px;
+    background: var(--white);
+    border-radius: 24px;
+    user-select: none;
+  }
+
+  .pagination__btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 7px 12px;
+    gap: 4px;
+    height: 29px;
+    background: #F9F9F9;
+    border-radius: 17px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 15px;
+    color: var(--gray-950);
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .pagination__btn:hover { background: #EFEFEF; }
+  .pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .pagination__pages {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 8px;
+    min-width: 26px;
+    height: 27px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 19px;
+    color: var(--gray-950);
+    background: #F9F9F9;
+    transition: background 0.15s, color 0.15s;
+  }
+  .page:hover:not(.page--active) { background: #EFEFEF; }
+  .page--active { background: #2E67F6; color: #FEFEFE; cursor: default; }
+  .page--dots { background: transparent; cursor: default; color: var(--gray-950); padding: 4px 2px; min-width: 16px; }
+  .page--dots:hover { background: transparent; }
+
+  .news-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 24px;
+    gap: 24px;
+    background: #FEFEFE;
+    border: 1px solid var(--gray-300);
+    border-radius: 20px;
+    position: relative;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .news-card:hover {
+    box-shadow: 0 4px 20px rgba(46,124,246,0.08);
+    transform: translateY(-1px);
+  }
+  .news-card-link {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    z-index: 0;
+  }
+  .news-card-cover,
+  .news-card-actions,
+  .news-card-actions * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .news-card-cover {
+    width: 164px;
+    height: 114px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #EEF2FB;
+    overflow: hidden;
+  }
+  .news-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .news-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .news-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-950);
+    line-height: 1.3;
+  }
+
+  .news-card-preview {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-950);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .news-card-date {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--blue-100);
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--blue-500);
+    width: fit-content;
+  }
+
+  .news-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .news-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .actions-divider {
+    width: 1px;
+    height: 30px;
+    background: var(--gray-300);
+    flex-shrink: 0;
+  }
+
+  .news-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .news-status.draft     { background: #F0F0F0; color: var(--gray-550); }
+  .news-status.published { background: #DFF8E6; color: #36A653; }
+
+  .news-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray-950);
+    padding: 0;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .news-action-btn:hover { opacity: 0.6; }
+
+  .news-card-actions form { display: contents; }
+
+  .news-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 0;
+    font-size: 16px;
+    color: var(--gray-550);
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-card {
+    background: #FEFEFE;
+    border-radius: 14px;
+    padding: 16px;
+    width: 288px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-title {
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-950);
+    text-align: center;
+    line-height: 1.45;
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-btn-primary {
+    width: 100%;
+    height: 48px;
+    background: var(--blue-500);
+    border: none;
+    border-radius: 33px;
+    cursor: pointer;
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #FEFEFE;
+    transition: opacity 0.15s;
+  }
+  .modal-btn-primary:hover { opacity: 0.88; }
+
+  .modal-btn-cancel {
+    width: 100%;
+    height: 48px;
+    background: #FEFEFE;
+    border: 1px solid var(--gray-950);
+    border-radius: 33px;
+    cursor: pointer;
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-950);
+    transition: background 0.15s;
+  }
+  .modal-btn-cancel:hover { background: var(--gray-250); }
+
+{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title">Новости неврологии</h1>
+
+{% if request.user.user_type == 'doctor' %}
+<div class="toolbar">
+  <span class="news-count">Всего статей: <strong>{{ total_articles|default:"0" }}</strong></span>
+  <a href="{% url 'news:add' %}" class="btn-primary">Добавить статью</a>
+</div>
+{% endif %}
+
+<div class="cards-section">
+  {% for article in articles %}
+  <div class="news-card">
+    <a class="news-card-link" href="{% url 'news:detail' article.pk %}?ref=list" aria-label="{{ article.title }}"></a>
+
+    {% if forloop.first and article.cover_image %}
+    <div class="news-card-cover">
+      <img src="{{ article.cover_image.url }}" alt="{{ article.title }}">
+    </div>
+    {% endif %}
+
+    <div class="news-card-body">
+      <div class="news-card-header">
+        <span class="news-card-title">{{ article.title }}</span>
+        {% if request.user.user_type == 'doctor' %}
+        <div class="news-card-actions">
+
+          {% if article.status == 'draft' %}
+            <span class="news-status draft">Черновик</span>
+            <button type="button" class="news-action-btn" onclick="openPublishModal('{% url 'news:toggle_publish' pk=article.pk %}')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.1875 12.3031L7.72657 14.7641C7.46407 15.0266 7.15213 15.1526 6.79075 15.1421C6.42938 15.1316 6.11788 14.9946 5.85625 14.7313C5.61563 14.4688 5.48963 14.1625 5.47825 13.8125C5.46688 13.4625 5.59288 13.1563 5.85625 12.8938L10.5813 8.16875C10.7125 8.0375 10.8547 7.94475 11.0078 7.8905C11.1609 7.83625 11.325 7.80869 11.5 7.80781C11.675 7.80781 11.8391 7.83538 11.9922 7.8905C12.1453 7.94563 12.2875 8.03838 12.4188 8.16875L17.1438 12.8938C17.4063 13.1563 17.5323 13.4625 17.5218 13.8125C17.5113 14.1625 17.3853 14.4688 17.1438 14.7313C16.8813 14.9938 16.5693 15.1307 16.2079 15.1421C15.8466 15.1534 15.5351 15.0274 15.2734 14.7641L12.8125 12.3031V21.6875C12.8125 22.0594 12.6865 22.3713 12.4345 22.6233C12.1825 22.8753 11.871 23.0009 11.5 23C11.1281 23 10.8162 22.874 10.5642 22.622C10.3122 22.37 10.1866 22.0585 10.1875 21.6875V12.3031ZM1 7.25V4.625C1 3.90313 1.25725 3.28494 1.77175 2.77044C2.28625 2.25594 2.904 1.99913 3.625 2H19.375C20.0969 2 20.7151 2.25725 21.2296 2.77175C21.7441 3.28625 22.0009 3.904 22 4.625V7.25C22 7.62188 21.874 7.93382 21.622 8.18581C21.37 8.43781 21.0585 8.56338 20.6875 8.5625C20.3156 8.5625 20.0037 8.4365 19.7517 8.1845C19.4997 7.9325 19.3741 7.621 19.375 7.25V4.625H3.625V7.25C3.625 7.62188 3.499 7.93382 3.247 8.18581C2.995 8.43781 2.6835 8.56338 2.3125 8.5625C1.94063 8.5625 1.62869 8.4365 1.37669 8.1845C1.12469 7.9325 0.99913 7.621 1 7.25Z" fill="black" stroke="white" stroke-width="1.2"/>
+              </svg>
+              Опубликовать
+            </button>
+          {% else %}
+            <span class="news-status published">Опубликована</span>
+            <form method="post" action="{% url 'news:toggle_publish' pk=article.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="news-action-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.00008 4L20.0001 20M16.5001 16.756C15.1471 17.485 13.6181 18 12.0001 18C8.47008 18 5.36608 15.548 3.58708 13.779C3.11708 13.312 2.88208 13.079 2.73308 12.62C2.62608 12.293 2.62608 11.707 2.73308 11.38C2.88308 10.921 3.11808 10.687 3.58808 10.22C4.48508 9.328 5.71808 8.264 7.17208 7.427M19.5001 14.634C19.8331 14.341 20.1381 14.052 20.4121 13.78L20.4151 13.777C20.8831 13.311 21.1181 13.077 21.2671 12.621C21.3741 12.294 21.3741 11.707 21.2671 11.38C21.1171 10.922 20.8831 10.688 20.4131 10.221C18.6331 8.452 15.5301 6 12.0001 6C11.6621 6 11.3291 6.022 11.0001 6.064M13.3231 13.5C12.9357 13.842 12.4311 14.0209 11.9148 13.999C11.3985 13.9772 10.9107 13.7564 10.5536 13.3829C10.1965 13.0094 9.99788 12.5122 9.99927 11.9955C10.0007 11.4787 10.202 10.9826 10.5611 10.611" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Скрыть
+              </button>
+            </form>
+          {% endif %}
+
+          <div class="actions-divider"></div>
+
+          <a href="{% url 'news:edit' pk=article.pk %}" class="news-action-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13.9 3H4.9C4.40294 3 4 3.40294 4 3.9V20.1C4 20.5971 4.40294 21 4.9 21H17.5C17.9971 21 18.4 20.5971 18.4 20.1V10.2021" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M6.69995 9.30005H10.3" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M6.69995 13.8H12.1" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M19.2992 3.90039L13.9016 9.29806" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Редактировать
+          </a>
+
+          <button type="button" class="news-action-btn" onclick="openDeleteModal('{% url 'news:edit' pk=article.pk %}')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.68676 6.21311L6.79976 18.9761C6.89641 19.5604 7.19735 20.0914 7.64896 20.4745C8.10057 20.8576 8.67353 21.068 9.26576 21.0681H12.6138M19.3118 6.21311L17.1998 18.9761C17.1031 19.5604 16.8022 20.0914 16.3506 20.4745C15.8989 20.8576 15.326 21.068 14.7338 21.0681H11.3858M10.0218 11.1161V16.1651M13.9778 11.1161V16.1651M2.74976 6.21311H21.2498M14.7768 6.21311V4.43311C14.7768 4.03528 14.6187 3.65375 14.3374 3.37245C14.0561 3.09114 13.6746 2.93311 13.2768 2.93311H10.7228C10.3249 2.93311 9.9434 3.09114 9.6621 3.37245C9.38079 3.65375 9.22276 4.03528 9.22276 4.43311V6.21311H14.7768Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Удалить
+          </button>
+
+        </div>
+        {% endif %}
+      </div>
+      <span class="news-card-preview">{{ article.preview }}</span>
+      {% if article.date %}<span class="news-card-date">{{ article.date|date:"d.m.Y" }}</span>{% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="news-empty">Статьи пока не добавлены</div>
+  {% endfor %}
+</div>
+
+  {% if request.user.user_type == 'doctor' %}
+  <!-- SHARED FORMS FOR MODALS -->
+  <form id="deleteNewsForm" method="post" action="">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete">
+  </form>
+  <form id="publishNewsForm" method="post" action="">
+    {% csrf_token %}
+  </form>
+
+  <!-- DELETE MODAL -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal-card">
+      <p class="modal-title">Вы уверены, что хотите удалить статью?</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn-primary" onclick="document.getElementById('deleteNewsForm').submit()">Удалить</button>
+        <button type="button" class="modal-btn-cancel" onclick="closeNewsModal('deleteModal')">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUBLISH MODAL -->
+  <div class="modal-overlay" id="publishModal">
+    <div class="modal-card">
+      <p class="modal-title">Вы уверены, что хотите опубликовать черновик?</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn-primary" onclick="document.getElementById('publishNewsForm').submit()">Опубликовать</button>
+        <button type="button" class="modal-btn-cancel" onclick="closeNewsModal('publishModal')">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openDeleteModal(actionUrl) {
+      document.getElementById('deleteNewsForm').action = actionUrl;
+      document.getElementById('deleteModal').classList.add('open');
+    }
+    function openPublishModal(actionUrl) {
+      document.getElementById('publishNewsForm').action = actionUrl;
+      document.getElementById('publishModal').classList.add('open');
+    }
+    function closeNewsModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('open');
+      });
+    });
+  </script>
+  {% endif %}
+
+  <!-- PAGINATION -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="pagination-wrap">
+    <nav class="pagination" id="pagination" aria-label="Навигация по страницам"></nav>
+  </div>
+  <script>
+    (function () {
+      var TOTAL_PAGES = {{ page_obj.paginator.num_pages }};
+      var CURRENT_PAGE = {{ page_obj.number }};
+
+      function getPageUrl(page) {
+        var params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        return window.location.pathname + '?' + params.toString();
+      }
+
+      function getVisiblePages(current, total) {
+        if (total <= 7) {
+          var all = [];
+          for (var i = 1; i <= total; i++) all.push(i);
+          return all;
+        }
+        var pages = [];
+        if (current <= 4) {
+          for (var i = 1; i <= 5; i++) pages.push(i);
+          pages.push('…');
+          pages.push(total);
+        } else if (current >= total - 3) {
+          pages.push(1);
+          pages.push('…');
+          for (var i = total - 4; i <= total; i++) pages.push(i);
+        } else {
+          pages.push(1);
+          pages.push('…');
+          pages.push(current - 1);
+          pages.push(current);
+          pages.push(current + 1);
+          pages.push('…');
+          pages.push(total);
+        }
+        return pages;
+      }
+
+      var nav = document.getElementById('pagination');
+
+      var prev = document.createElement('button');
+      prev.className = 'pagination__btn';
+      prev.innerHTML = 'Предыдущая';
+      prev.disabled = CURRENT_PAGE === 1;
+      if (CURRENT_PAGE > 1) {
+        prev.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE - 1); });
+      }
+      nav.appendChild(prev);
+
+      var pagesDiv = document.createElement('div');
+      pagesDiv.className = 'pagination__pages';
+      getVisiblePages(CURRENT_PAGE, TOTAL_PAGES).forEach(function (p) {
+        var btn = document.createElement('button');
+        if (p === '…') {
+          btn.className = 'page page--dots';
+          btn.textContent = '...';
+          btn.disabled = true;
+        } else {
+          btn.className = 'page' + (p === CURRENT_PAGE ? ' page--active' : '');
+          btn.textContent = p;
+          if (p !== CURRENT_PAGE) {
+            btn.addEventListener('click', function (page) {
+              return function () { window.location.href = getPageUrl(page); };
+            }(p));
+          }
+        }
+        pagesDiv.appendChild(btn);
+      });
+      nav.appendChild(pagesDiv);
+
+      var next = document.createElement('button');
+      next.className = 'pagination__btn';
+      next.innerHTML = 'Следующая';
+      next.disabled = CURRENT_PAGE === TOTAL_PAGES;
+      if (CURRENT_PAGE < TOTAL_PAGES) {
+        next.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE + 1); });
+      }
+      nav.appendChild(next);
+    })();
+  </script>
+  {% endif %}
+
+{% endblock %}

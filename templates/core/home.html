@@ -51,7 +51,7 @@
 
   body {
     font-family: var(--font);
-    background: var(--white);
+    background: var(--gray-250);
     color: var(--gray-950);
     min-height: 100vh;
     display: flex;
@@ -60,14 +60,24 @@
 
   /* ── HEADER ─────────────────────────────────────────────────────── */
   header {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1320px;
+    max-width: calc(100vw - 24px);
+    height: 104px;
+    background: var(--white);
+    border-radius: 63px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 28px 24px;
-    max-width: 1320px;
-    width: 100%;
-    margin: 0 auto;
+    padding: 32px 24px;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   }
+
+  main { padding-top: 149px; }
 
   .logo {
     display: flex;
@@ -115,8 +125,170 @@
   .footer-tagline { font-size: 14px; color: var(--gray-950); text-align: center; line-height: 1.5; padding: 0 24px; }
   .footer-copy { font-size: 14px; color: var(--gray-950); text-align: center; }
 
+  /* ── NEWS SECTION ── */
+  .news-section {
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px 48px;
+  }
+
+  .news-section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gray-950);
+    margin-bottom: 33px;
+  }
+
+  .cards-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .news-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 24px;
+    gap: 24px;
+    background: #FEFEFE;
+    border: 1px solid var(--gray-300);
+    border-radius: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .news-card:hover {
+    box-shadow: 0 4px 20px rgba(46,124,246,0.08);
+    transform: translateY(-1px);
+  }
+
+  .news-card-cover {
+    width: 164px;
+    height: 114px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #EEF2FB;
+    overflow: hidden;
+  }
+  .news-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .news-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .news-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-950);
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+
+  .news-card-preview {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-950);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .news-card-date {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #EEF2FB;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--blue-500);
+    width: fit-content;
+  }
+
+  /* ── PAGINATION ── */
+  .pagination-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .pagination {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 24px;
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid #EAEAEA;
+    border-radius: 24px;
+    user-select: none;
+  }
+
+  .pagination__btn {
+    display: flex;
+    align-items: center;
+    padding: 7px 12px;
+    height: 29px;
+    background: #F9F9F9;
+    border-radius: 17px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font);
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--gray-950);
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .pagination__btn:hover { background: #EFEFEF; }
+  .pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .pagination__pages {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 8px;
+    min-width: 26px;
+    height: 27px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--gray-950);
+    background: #F9F9F9;
+    transition: background 0.15s, color 0.15s;
+  }
+  .page:hover:not(.page--active) { background: #EFEFEF; }
+  .page--active { background: #2E67F6; color: #FEFEFE; cursor: default; }
+  .page--dots { background: transparent; cursor: default; padding: 4px 2px; min-width: 16px; }
+  .page--dots:hover { background: transparent; }
+
   @media (max-width: 600px) {
     header { padding: 20px; }
+    .news-section { padding: 0 12px 32px; }
+    .news-card { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
@@ -131,7 +303,120 @@
 </header>
 
 <!-- MAIN -->
-<main></main>
+<main>
+  {% if articles %}
+  <section class="news-section">
+    <h2 class="news-section-title">Новости неврологии</h2>
+
+    <div class="cards-section">
+      {% for article in articles %}
+      <a class="news-card" href="{% url 'news:detail' article.pk %}">
+
+        {% if forloop.first and article.cover_image %}
+        <div class="news-card-cover">
+          <img src="{{ article.cover_image.url }}" alt="{{ article.title }}">
+        </div>
+        {% endif %}
+
+        <div class="news-card-body">
+          <span class="news-card-title">{{ article.title }}</span>
+          <span class="news-card-preview">{{ article.preview }}</span>
+          {% if article.date %}<span class="news-card-date">{{ article.date|date:"d.m.Y" }}</span>{% endif %}
+        </div>
+
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination-wrap">
+      <nav class="pagination" id="pagination" aria-label="Навигация по страницам"></nav>
+    </div>
+    <script>
+      (function () {
+        var TOTAL_PAGES = {{ page_obj.paginator.num_pages }};
+        var CURRENT_PAGE = {{ page_obj.number }};
+
+        function getPageUrl(page) {
+          var params = new URLSearchParams(window.location.search);
+          params.set('page', page);
+          return window.location.pathname + '?' + params.toString();
+        }
+
+        function getVisiblePages(current, total) {
+          if (total <= 7) {
+            var all = [];
+            for (var i = 1; i <= total; i++) all.push(i);
+            return all;
+          }
+          var pages = [];
+          if (current <= 4) {
+            for (var i = 1; i <= 5; i++) pages.push(i);
+            pages.push('…');
+            pages.push(total);
+          } else if (current >= total - 3) {
+            pages.push(1);
+            pages.push('…');
+            for (var i = total - 4; i <= total; i++) pages.push(i);
+          } else {
+            pages.push(1);
+            pages.push('…');
+            pages.push(current - 1);
+            pages.push(current);
+            pages.push(current + 1);
+            pages.push('…');
+            pages.push(total);
+          }
+          return pages;
+        }
+
+        var nav = document.getElementById('pagination');
+
+        var prev = document.createElement('button');
+        prev.className = 'pagination__btn';
+        prev.textContent = 'Предыдущая';
+        prev.disabled = CURRENT_PAGE === 1;
+        if (CURRENT_PAGE > 1) {
+          prev.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE - 1); });
+        }
+        nav.appendChild(prev);
+
+        var pagesDiv = document.createElement('div');
+        pagesDiv.className = 'pagination__pages';
+        getVisiblePages(CURRENT_PAGE, TOTAL_PAGES).forEach(function (p) {
+          var btn = document.createElement('button');
+          if (p === '…') {
+            btn.className = 'page page--dots';
+            btn.textContent = '...';
+            btn.disabled = true;
+          } else {
+            btn.className = 'page' + (p === CURRENT_PAGE ? ' page--active' : '');
+            btn.textContent = p;
+            if (p !== CURRENT_PAGE) {
+              btn.addEventListener('click', function (page) {
+                return function () { window.location.href = getPageUrl(page); };
+              }(p));
+            }
+          }
+          pagesDiv.appendChild(btn);
+        });
+        nav.appendChild(pagesDiv);
+
+        var next = document.createElement('button');
+        next.className = 'pagination__btn';
+        next.textContent = 'Следующая';
+        next.disabled = CURRENT_PAGE === TOTAL_PAGES;
+        if (CURRENT_PAGE < TOTAL_PAGES) {
+          next.addEventListener('click', function () { window.location.href = getPageUrl(CURRENT_PAGE + 1); });
+        }
+        nav.appendChild(next);
+      })();
+    </script>
+    {% endif %}
+
+  </section>
+  {% endif %}
+</main>
 
 <!-- FOOTER -->
 <footer class="footer">

@@ -13,7 +13,11 @@ class HomeView(TemplateView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect('core:dashboard')
-        return super().get(request, *args, **kwargs)
+        from news.models import Article
+        articles_qs = Article.objects.filter(status=Article.STATUS_PUBLISHED)
+        paginator = Paginator(articles_qs, 10)
+        page_obj = paginator.get_page(request.GET.get('page', 1))
+        return render(request, self.template_name, {'articles': page_obj, 'page_obj': page_obj})
 
 
 class DashboardView(LoginRequiredMixin, View):

@@ -1,0 +1,1312 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}{% if article %}Редактирование статьи{% else %}Добавление статьи{% endif %} — Painmetrica{% endblock %}
+
+{% block extra_style %}
+
+  .main { padding-top: 149px; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    color: var(--blue-500);
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 33px;
+    transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 0.72; }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gray-950);
+    margin-bottom: 38px;
+    margin-left: 112px;
+    margin-right: 112px;
+  }
+
+  .form-card {
+    background: #FEFEFE;
+    border: 1px solid #F0F0F0;
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin-bottom: 24px;
+    margin-left: 112px;
+    margin-right: 112px;
+  }
+
+  /* ── Image upload ── */
+  .image-upload-zone {
+    width: 100%;
+    min-height: 158px;
+    background: var(--gray-200);
+    border: 1.5px dashed var(--gray-300);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .image-upload-zone:hover { border-color: var(--blue-350); background: var(--blue-100); }
+  .image-upload-zone.drag-over { border-color: var(--blue-400); background: var(--blue-100); }
+
+  .image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    color: var(--gray-550);
+  }
+  .image-placeholder-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-550);
+    margin-top: 4px;
+  }
+  .image-placeholder-hint {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-550);
+  }
+
+  .image-preview-img {
+    display: none;
+    width: 100%;
+    max-height: 480px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .image-preview-img.visible { display: block; }
+
+  .image-upload-zone.has-image {
+    min-height: unset;
+    cursor: default;
+    padding: 0;
+    border-style: solid;
+  }
+
+  .image-remove-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0,0,0,0.45);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    z-index: 1;
+    transition: background 0.15s;
+  }
+  .image-remove-btn:hover { background: rgba(0,0,0,0.65); }
+  .image-remove-btn.visible { display: flex; }
+
+  /* ── Field block ── */
+  .field-block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-950);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .field-hint {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-950);
+    white-space: nowrap;
+  }
+
+  /* ── Inputs ── */
+  .text-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    background: var(--gray-200);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-950);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .text-input:focus { border-color: var(--blue-400); }
+  .text-input::placeholder { color: var(--gray-550); }
+
+  .text-area {
+    width: 100%;
+    padding: 13px 16px;
+    background: var(--gray-200);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-950);
+    outline: none;
+    resize: vertical;
+    line-height: 1.55;
+    transition: border-color 0.15s;
+  }
+  .text-area:focus { border-color: var(--blue-400); }
+  .text-area::placeholder { color: var(--gray-550); }
+
+  /* ── Counter ── */
+  .counter-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .counter {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-950);
+    margin-top: 8px;
+  }
+
+  /* ── Editor ── */
+  .editor-container {
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .editor-container:focus-within { border-color: var(--blue-400); }
+
+  .editor-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 10px;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    flex-wrap: wrap;
+  }
+
+  .toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 6px;
+    min-width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-950);
+    transition: background 0.12s, color 0.12s;
+    flex-shrink: 0;
+  }
+  .toolbar-btn:hover { background: var(--gray-300); }
+  .toolbar-btn.active { background: #EEF5FF; color: var(--blue-500); }
+
+  .toolbar-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--gray-300);
+    margin: 0 3px;
+    flex-shrink: 0;
+  }
+
+  .toolbar-preview-btn {
+    margin-left: auto;
+    height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--blue-500);
+    border: 1px solid var(--blue-400) !important;
+    border-radius: 20px;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.12s;
+    flex-shrink: 0;
+  }
+  .toolbar-preview-btn:hover { background: #EEF5FF; }
+
+  /* ── Editor contenteditable div ── */
+  .editor-div {
+    width: 100%;
+    min-height: 200px;
+    max-height: 560px;
+    overflow-y: auto;
+    padding: 14px 16px;
+    background: var(--gray-200);
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-950);
+    outline: none;
+    line-height: 1.65;
+  }
+  .editor-div:empty::before {
+    content: 'Начните вводить текст статьи...';
+    color: var(--gray-550);
+    pointer-events: none;
+    display: block;
+  }
+  .editor-div h2 { font-size: 20px; font-weight: 400; margin: 10px 0 4px; line-height: 1.35; }
+  .editor-div h3 { font-size: 18px; font-weight: 400; margin: 8px 0 3px; line-height: 1.35; }
+  .editor-div b, .editor-div strong { font-weight: 600; }
+  .editor-div em, .editor-div i { font-style: italic; }
+  .editor-div a { color: var(--blue-500); text-decoration: underline; }
+  .editor-div ol { list-style: decimal; padding-left: 22px; margin: 6px 0; }
+  .editor-div ul { list-style: disc; padding-left: 22px; margin: 6px 0; }
+  .editor-div li { margin-bottom: 2px; }
+  .editor-div blockquote {
+    border-left: 3px solid var(--blue-400);
+    padding: 4px 14px;
+    margin: 8px 0;
+    color: var(--gray-550);
+    font-style: italic;
+  }
+  .editor-div hr { border: none; border-top: 1.5px solid var(--gray-300); margin: 14px 0; }
+  .editor-div p { margin: 0 0 4px; }
+
+  /* ── Error states ── */
+  .text-input.error { border-color: #E43D3D; }
+  .text-area.error  { border-color: #E43D3D; }
+  .editor-container.error { border-color: #E43D3D; }
+
+  .error-block {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #FFEBEB;
+    border-radius: 8px;
+    margin-top: 6px;
+    width: 100%;
+  }
+  .error-block.visible { display: flex; }
+  .error-icon { width: 18px; height: 18px; flex-shrink: 0; }
+  .error-text { font-size: 12px; color: #E43D3D; line-height: 1.4; }
+
+  /* ── Modal (delete draft) ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-card {
+    background: #FEFEFE;
+    border-radius: 14px;
+    padding: 16px;
+    width: 288px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-title {
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-950);
+    text-align: center;
+    line-height: 1.45;
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-btn-primary {
+    width: 100%;
+    height: 48px;
+    background: var(--blue-500);
+    border: none;
+    border-radius: 33px;
+    cursor: pointer;
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #FEFEFE;
+    transition: opacity 0.15s;
+  }
+  .modal-btn-primary:hover { opacity: 0.88; }
+
+  .modal-btn-cancel {
+    width: 100%;
+    height: 48px;
+    background: #FEFEFE;
+    border: 1px solid var(--gray-950);
+    border-radius: 33px;
+    cursor: pointer;
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-950);
+    transition: background 0.15s;
+  }
+  .modal-btn-cancel:hover { background: var(--gray-250); }
+
+  /* ── Link modal ── */
+  .link-modal-card {
+    background: #FEFEFE;
+    border-radius: 14px;
+    padding: 20px 16px 16px;
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .link-modal-card .modal-title { margin-bottom: 2px; }
+  .link-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    background: var(--gray-200);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-950);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .link-input:focus { border-color: var(--blue-400); }
+
+  /* ── Preview modal ── */
+  .preview-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 40px 24px 60px;
+  }
+  .preview-overlay.open { display: flex; }
+
+  .preview-modal {
+    background: var(--white);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 860px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--gray-300);
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 1;
+  }
+  .preview-label { font-size: 14px; font-weight: 600; color: var(--gray-950); }
+  .preview-close {
+    width: 32px; height: 32px;
+    background: none; border: none;
+    border-radius: 8px; cursor: pointer;
+    font-size: 22px; color: var(--gray-550);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    line-height: 1;
+  }
+  .preview-close:hover { background: var(--gray-300); }
+
+  .preview-body { padding: 32px 48px 48px; }
+
+  .preview-art-title {
+    font-size: 24px; font-weight: 700;
+    color: var(--gray-950); margin-bottom: 20px;
+    line-height: 1.3;
+  }
+
+  .preview-art-content {
+    font-size: 14px; font-weight: 400;
+    color: var(--gray-950); line-height: 1.7;
+  }
+  .preview-art-content h2 { font-size: 20px; font-weight: 400; margin: 18px 0 8px; line-height: 1.35; }
+  .preview-art-content h3 { font-size: 18px; font-weight: 400; margin: 14px 0 6px; line-height: 1.35; }
+  .preview-art-content b, .preview-art-content strong { font-weight: 600; }
+  .preview-art-content em, .preview-art-content i { font-style: italic; }
+  .preview-art-content a { color: var(--blue-500); text-decoration: underline; }
+  .preview-art-content ol { list-style: decimal; padding-left: 22px; margin: 8px 0; }
+  .preview-art-content ul { list-style: disc; padding-left: 22px; margin: 8px 0; }
+  .preview-art-content li { margin-bottom: 4px; }
+  .preview-art-content hr { border: none; border-top: 1.5px solid var(--gray-300); margin: 20px 0; }
+  .preview-art-content blockquote {
+    border-left: 3px solid var(--blue-400);
+    padding: 4px 16px;
+    margin: 14px 0;
+    color: var(--gray-550);
+    font-style: italic;
+  }
+  .preview-art-content p { margin: 0 0 8px; }
+
+  /* ── Art image block: placeholder in editor ── */
+  .editor-div .art-img-block {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    background: #EEF5FF;
+    border: 1.5px solid var(--blue-400);
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .editor-div .art-img-block:hover { background: #daeaff; }
+  .editor-div .art-img-block .art-img-actual { display: none; }
+  .editor-div .art-img-block .art-img-label {
+    font-size: 13px; font-weight: 400;
+    color: var(--blue-500);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ── Image toolbar modal ── */
+  .img-modal-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 20px;
+    width: 460px;
+    max-width: calc(100vw - 48px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .img-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .img-modal-title { font-size: 14px; font-weight: 600; color: var(--gray-950); }
+  .img-modal-close {
+    width: 28px; height: 28px;
+    background: none; border: none; border-radius: 6px;
+    cursor: pointer; font-size: 20px; color: var(--gray-550);
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; transition: background 0.15s;
+  }
+  .img-modal-close:hover { background: var(--gray-300); }
+  .img-modal-actions { display: flex; flex-direction: row; gap: 12px; }
+  .img-modal-actions .modal-btn-primary,
+  .img-modal-actions .modal-btn-cancel { flex: 1; }
+  .img-modal-actions .modal-btn-cancel.hidden { display: none; }
+
+  /* ── Form actions ── */
+  .form-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 28px;
+    height: 44px;
+    background: var(--blue-500);
+    border-radius: 33px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-250);
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+
+  .btn-outline-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 28px;
+    height: 44px;
+    background: var(--white);
+    border: 1px solid var(--gray-950);
+    border-radius: 33px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--gray-950);
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-outline-action:hover { background: var(--gray-250); }
+
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'news:list' %}" class="back-link">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  Новости неврологии
+</a>
+
+<h1 class="page-title">Добавление/редактирование статьи</h1>
+
+<form method="post" enctype="multipart/form-data" id="articleForm">
+  {% csrf_token %}
+  <input type="hidden" name="action" id="formAction" value="save">
+
+  <div class="form-card">
+
+    <!-- Загрузка фото -->
+    <div class="image-upload-zone{% if article and article.cover_image %} has-image{% endif %}" id="imageDropZone" onclick="triggerFileInput()">
+      <input type="file" id="imageInput" name="cover_image" accept="image/jpeg,image/png,image/webp" style="display:none">
+      {% if article and article.cover_image %}
+        <img id="imagePreviewImg" class="image-preview-img visible" src="{{ article.cover_image.url }}" alt="">
+        <button type="button" class="image-remove-btn visible" id="imageRemoveBtn" onclick="removeImage(event)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1L11 11M11 1L1 11" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <input type="hidden" name="keep_image" value="1" id="keepImageInput">
+      {% else %}
+        <img id="imagePreviewImg" class="image-preview-img" src="" alt="">
+        <button type="button" class="image-remove-btn" id="imageRemoveBtn" onclick="removeImage(event)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1L11 11M11 1L1 11" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      {% endif %}
+      <div class="image-placeholder" id="imagePlaceholder" {% if article and article.cover_image %}style="display:none"{% endif %}>
+        <svg width="54" height="48" viewBox="0 0 54 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.4517 29.6129L19.2386 20.826C19.5945 20.4701 20.0169 20.1879 20.4819 19.9953C20.9468 19.8027 21.4452 19.7035 21.9484 19.7035C22.4517 19.7035 22.95 19.8027 23.415 19.9953C23.8799 20.1879 24.3024 20.4701 24.6583 20.826L33.4452 29.6129M30.8904 27.0581L33.2902 24.6583C33.6461 24.3024 34.0685 24.0201 34.5335 23.8275C34.9984 23.6349 35.4968 23.5358 36 23.5358C36.5033 23.5358 37.0016 23.6349 37.4666 23.8275C37.9316 24.0201 38.354 24.3024 38.7099 24.6583L43.6646 29.6129M13.0065 36H41.1097C41.7873 36 42.4371 35.7309 42.9163 35.2518C43.3954 34.7726 43.6646 34.1228 43.6646 33.4452V13.0065C43.6646 12.3289 43.3954 11.6791 42.9163 11.2C42.4371 10.7208 41.7873 10.4517 41.1097 10.4517H13.0065C12.3289 10.4517 11.6791 10.7208 11.2 11.2C10.7208 11.6791 10.4517 12.3289 10.4517 13.0065V33.4452C10.4517 34.1228 10.7208 34.7726 11.2 35.2518C11.6791 35.7309 12.3289 36 13.0065 36ZM30.8904 16.8388H30.904V16.8524H30.8904V16.8388ZM31.5291 16.8388C31.5291 17.0082 31.4618 17.1706 31.342 17.2904C31.2222 17.4102 31.0598 17.4775 30.8904 17.4775C30.721 17.4775 30.5585 17.4102 30.4387 17.2904C30.319 17.1706 30.2517 17.0082 30.2517 16.8388C30.2517 16.6694 30.319 16.5069 30.4387 16.3871C30.5585 16.2673 30.721 16.2 30.8904 16.2C31.0598 16.2 31.2222 16.2673 31.342 16.3871C31.4618 16.5069 31.5291 16.6694 31.5291 16.8388Z" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="image-placeholder-title">Загрузите фото к статье</span>
+        <span class="image-placeholder-hint">PNG, JPG рекомендуется 1200 x 630 px</span>
+      </div>
+    </div>
+
+    <!-- Заголовок статьи -->
+    <div class="field-block">
+      <label class="field-label" for="titleInput">Заголовок статьи</label>
+      <input type="text" id="titleInput" name="title" class="text-input"
+             placeholder="Введите заголовок статьи" maxlength="100"
+             value="{{ article.title|default:'' }}">
+      <div class="error-block" id="titleErr">
+        <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="error-text"></span>
+      </div>
+      <div class="counter-row">
+        <span class="counter" id="titleCounter">{{ article.title|length|default:"0" }}/100</span>
+      </div>
+    </div>
+
+    <!-- Краткое превью -->
+    <div class="field-block">
+      <div class="field-label-row">
+        <label class="field-label" for="previewInput">Краткое превью</label>
+        <span class="field-hint">Отображается в карточке статьи на странице «Новости неврологии»</span>
+      </div>
+      <textarea id="previewInput" name="preview" class="text-area"
+                placeholder="Введите краткое описание к статье" maxlength="250"
+                rows="3">{{ article.preview|default:'' }}</textarea>
+      <div class="error-block" id="previewErr">
+        <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="error-text"></span>
+      </div>
+      <div class="counter-row">
+        <span class="counter" id="previewCounter">{{ article.preview|length|default:"0" }}/250</span>
+      </div>
+    </div>
+
+    <!-- Текст статьи -->
+    <div class="field-block">
+      <label class="field-label">Текст статьи</label>
+      <div class="editor-container" id="editorContainer">
+
+        <div class="editor-toolbar">
+          <button type="button" class="toolbar-btn" data-action="h2" title="Заголовок H2">H2</button>
+          <button type="button" class="toolbar-btn" data-action="h3" title="Заголовок H3">H3</button>
+
+          <div class="toolbar-sep"></div>
+
+          <button type="button" class="toolbar-btn" data-action="bold" title="Жирный" style="font-weight:700;">Ж</button>
+          <button type="button" class="toolbar-btn" data-action="italic" title="Курсив" style="font-style:italic;font-weight:400;">К</button>
+
+          <div class="toolbar-sep"></div>
+
+          <button type="button" class="toolbar-btn" data-action="link" title="Ссылка">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M8.10746 17.1114C7.23112 17.1143 6.38945 16.769 5.76725 16.1512C5.13559 15.4795 4.79429 14.5854 4.81752 13.6631C4.84074 12.7409 5.22662 11.8651 5.89129 11.2261L9.00054 8.08891C9.67637 7.39056 10.6011 6.98874 11.5723 6.97144C12.0085 6.97435 12.4399 7.06361 12.8415 7.23408C13.2431 7.40456 13.6071 7.65288 13.9125 7.96474C14.5528 8.64043 14.8992 9.54267 14.876 10.4737C14.8527 11.4047 14.4616 12.2885 13.7885 12.9313L12.7465 13.9742C12.6897 14.0352 12.6213 14.0842 12.5452 14.1181C12.4691 14.152 12.387 14.1703 12.3037 14.1717C12.2204 14.1732 12.1377 14.1579 12.0605 14.1267C11.9833 14.0954 11.9131 14.049 11.8542 13.99C11.7953 13.9311 11.7489 13.8608 11.7177 13.7835C11.6865 13.7062 11.6712 13.6234 11.6727 13.5401C11.6742 13.4567 11.6924 13.3745 11.7263 13.2984C11.7602 13.2222 11.809 13.1537 11.87 13.0968L12.8788 12.0207C13.3127 11.6131 13.5683 11.0505 13.59 10.4553C13.6117 9.86005 13.3977 9.28032 12.9946 8.84216C12.5539 8.45751 11.983 8.25609 11.3988 8.27917C10.8146 8.30226 10.2613 8.5481 9.85228 8.96633L6.76784 12.0952C6.34207 12.5019 6.09106 13.0584 6.06791 13.647C6.04476 14.2356 6.25129 14.8101 6.6438 15.249C6.85952 15.4624 7.11951 15.6257 7.40533 15.7272C7.69115 15.8288 7.99579 15.8662 8.29765 15.8367C8.37808 15.8287 8.45929 15.8368 8.53659 15.8604C8.61389 15.884 8.68575 15.9227 8.74803 15.9743C8.81031 16.0258 8.86176 16.0892 8.89943 16.1608C8.93709 16.2324 8.96021 16.3107 8.96746 16.3913C8.98364 16.5548 8.9344 16.718 8.83055 16.8453C8.7267 16.9725 8.5767 17.0533 8.41342 17.0701L8.10746 17.1114Z" fill="currentColor"/>
+              <path d="M12.5318 16.9046C12.0956 16.9017 11.6643 16.8124 11.2626 16.6419C10.861 16.4715 10.497 16.2232 10.1916 15.9113C9.55138 15.2356 9.2049 14.3334 9.22815 13.4024C9.2514 12.4714 9.64249 11.5876 10.3157 10.9448L11.3576 9.90178C11.4144 9.84079 11.4829 9.79187 11.5589 9.75793C11.635 9.724 11.7171 9.70576 11.8004 9.70429C11.8837 9.70282 11.9664 9.71815 12.0436 9.74937C12.1209 9.7806 12.191 9.82707 12.2499 9.88602C12.3088 9.94498 12.3552 10.0152 12.3864 10.0925C12.4176 10.1698 12.4329 10.2526 12.4315 10.336C12.43 10.4193 12.4118 10.5015 12.3779 10.5777C12.344 10.6538 12.2951 10.7224 12.2342 10.7792L11.2253 11.8553C10.7914 12.2629 10.5358 12.8255 10.5142 13.4207C10.4925 14.016 10.7064 14.5957 11.1095 15.0339C11.5502 15.4185 12.1211 15.6199 12.7053 15.5969C13.2896 15.5738 13.8429 15.3279 14.2519 14.9097L17.3694 11.7808C17.7905 11.3698 18.0355 10.8109 18.0525 10.2223C18.0694 9.6338 17.8571 9.06171 17.4603 8.62704C17.2446 8.41364 16.9846 8.25036 16.6988 8.14879C16.413 8.04723 16.1083 8.00986 15.8065 8.03933C15.7261 8.04731 15.6448 8.03926 15.5675 8.01565C15.4902 7.99204 15.4184 7.95334 15.3561 7.90177C15.2938 7.85021 15.2424 7.78681 15.2047 7.71523C15.167 7.64365 15.1439 7.56531 15.1367 7.48474C15.1205 7.32124 15.1697 7.15799 15.2736 7.03076C15.3774 6.90353 15.5274 6.8227 15.6907 6.80598C16.1721 6.75603 16.6585 6.81242 17.1157 6.97118C17.573 7.12994 17.9898 7.38719 18.3369 7.72478C18.9685 8.39653 19.3098 9.29067 19.2866 10.2129C19.2634 11.1351 18.8775 12.0109 18.2128 12.6499L15.1036 15.7871C14.4278 16.4855 13.503 16.8873 12.5318 16.9046Z" fill="currentColor"/>
+            </svg>
+          </button>
+
+          <div class="toolbar-sep"></div>
+
+          <button type="button" class="toolbar-btn" data-action="ol" title="Нумерованный список">1.</button>
+
+          <button type="button" class="toolbar-btn" data-action="ul" title="Маркированный список">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M9.76515 6.53788H17.8333M9.76515 10.8409H14.6061M9.76515 15.1439H17.8333M7.07576 15.1439C7.07576 15.2866 7.01909 15.4234 6.91822 15.5243C6.81734 15.6251 6.68053 15.6818 6.53788 15.6818C6.39522 15.6818 6.25841 15.6251 6.15754 15.5243C6.05667 15.4234 6 15.2866 6 15.1439C6 15.0013 6.05667 14.8645 6.15754 14.7636C6.25841 14.6627 6.39522 14.6061 6.53788 14.6061C6.68053 14.6061 6.81734 14.6627 6.91822 14.7636C7.01909 14.8645 7.07576 15.0013 7.07576 15.1439ZM7.07576 10.8409C7.07576 10.9836 7.01909 11.1204 6.91822 11.2212C6.81734 11.3221 6.68053 11.3788 6.53788 11.3788C6.39522 11.3788 6.25841 11.3221 6.15754 11.2212C6.05667 11.1204 6 10.9836 6 10.8409C6 10.6983 6.05667 10.5614 6.15754 10.4606C6.25841 10.3597 6.39522 10.303 6.53788 10.303C6.68053 10.303 6.81734 10.3597 6.91822 10.4606C7.01909 10.5614 7.07576 10.6983 7.07576 10.8409ZM7.07576 6.53788C7.07576 6.68053 7.01909 6.81734 6.91822 6.91822C6.81734 7.01909 6.68053 7.07576 6.53788 7.07576C6.39522 7.07576 6.25841 7.01909 6.15754 6.91822C6.05667 6.81734 6 6.68053 6 6.53788C6 6.39522 6.05667 6.25841 6.15754 6.15754C6.25841 6.05667 6.39522 6 6.53788 6C6.68053 6 6.81734 6.05667 6.91822 6.15754C7.01909 6.25841 7.07576 6.39522 7.07576 6.53788Z" stroke="currentColor" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+          <button type="button" class="toolbar-btn" data-action="image" title="Изображение">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M5 14.25L8.78327 10.4667C8.93648 10.3135 9.11838 10.192 9.31857 10.1091C9.51876 10.0261 9.73332 9.98345 9.95 9.98345C10.1667 9.98345 10.3812 10.0261 10.5814 10.1091C10.7816 10.192 10.9635 10.3135 11.1167 10.4667L14.9 14.25M13.8 13.15L14.8333 12.1167C14.9865 11.9635 15.1684 11.842 15.3686 11.7591C15.5688 11.6761 15.7833 11.6335 16 11.6335C16.2167 11.6335 16.4312 11.6761 16.6314 11.7591C16.8316 11.842 17.0135 11.9635 17.1667 12.1167L19.3 14.25M6.1 17H18.2C18.4917 17 18.7715 16.8841 18.9778 16.6778C19.1841 16.4715 19.3 16.1917 19.3 15.9V7.1C19.3 6.80826 19.1841 6.52847 18.9778 6.32218C18.7715 6.11589 18.4917 6 18.2 6H6.1C5.80826 6 5.52847 6.11589 5.32218 6.32218C5.11589 6.52847 5 6.80826 5 7.1V15.9C5 16.1917 5.11589 16.4715 5.32218 16.6778C5.52847 16.8841 5.80826 17 6.1 17ZM13.8 8.75H13.8059V8.75587H13.8V8.75ZM14.075 8.75C14.075 8.82293 14.046 8.89288 13.9945 8.94445C13.9429 8.99603 13.8729 9.025 13.8 9.025C13.7271 9.025 13.6571 8.99603 13.6055 8.94445C13.554 8.89288 13.525 8.82293 13.525 8.75C13.525 8.67707 13.554 8.60712 13.6055 8.55555C13.6571 8.50397 13.7271 8.475 13.8 8.475C13.8729 8.475 13.9429 8.50397 13.9945 8.55555C14.046 8.60712 14.075 8.67707 14.075 8.75Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <button type="button" class="toolbar-btn" data-action="hr" title="Разделитель">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M6 12H19" stroke="currentColor" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+          <button type="button" class="toolbar-btn" data-action="quote" title="Цитата">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6.64286C4 6.47236 4.06773 6.30885 4.18829 6.18829C4.30885 6.06773 4.47236 6 4.64286 6H16.2143C16.3848 6 16.5483 6.06773 16.6689 6.18829C16.7894 6.30885 16.8571 6.47236 16.8571 6.64286C16.8571 6.81335 16.7894 6.97687 16.6689 7.09743C16.5483 7.21799 16.3848 7.28571 16.2143 7.28571H4.64286C4.47236 7.28571 4.30885 7.21799 4.18829 7.09743C4.06773 6.97687 4 6.81335 4 6.64286ZM8.28571 11.8397C8.28571 11.6692 8.35344 11.5057 8.474 11.3851C8.59456 11.2646 8.75808 11.1969 8.92857 11.1969H18.7857C18.9562 11.1969 19.1197 11.2646 19.2403 11.3851C19.3608 11.5057 19.4286 11.6692 19.4286 11.8397C19.4286 12.0102 19.3608 12.1737 19.2403 12.2943C19.1197 12.4148 18.9562 12.4826 18.7857 12.4826H8.92857C8.75808 12.4826 8.59456 12.4148 8.474 12.2943C8.35344 12.1737 8.28571 12.0102 8.28571 11.8397ZM8.28571 16.9286C8.28571 16.7581 8.35344 16.5946 8.474 16.474C8.59456 16.3534 8.75808 16.2857 8.92857 16.2857H18.7857C18.9562 16.2857 19.1197 16.3534 19.2403 16.474C19.3608 16.5946 19.4286 16.7581 19.4286 16.9286C19.4286 17.0991 19.3608 17.2626 19.2403 17.3831C19.1197 17.5037 18.9562 17.5037 18.7857 17.5714H8.92857C8.75808 17.5714 8.59456 17.5037 8.474 17.3831C8.35344 17.2626 8.28571 17.0991 8.28571 16.9286ZM4.64286 10.7143C4.81335 10.7143 4.97687 10.782 5.09743 10.9026C5.21799 11.0231 5.28571 11.1866 5.28571 11.3571V17.3571C5.28571 17.5276 5.21799 17.6912 5.09743 17.8117C4.97687 17.9323 4.81335 18 4.64286 18C4.47236 18 4.30885 17.9323 4.18829 17.8117C4.06773 17.6912 4 17.5276 4 17.3571V11.3571C4 11.1866 4.06773 11.0231 4.18829 10.9026C4.30885 10.782 4.47236 10.7143 4.64286 10.7143Z" fill="currentColor"/>
+            </svg>
+          </button>
+
+          <button type="button" class="toolbar-preview-btn" id="previewBtn">Предпросмотр</button>
+        </div>
+
+        <!-- Contenteditable editor -->
+        <div id="contentEditor" class="editor-div" contenteditable="true">{% if article and article.content %}{{ article.content|safe }}{% endif %}</div>
+        <!-- Hidden textarea synced to editor for form submission -->
+        <textarea id="contentInput" name="content" hidden>{{ article.content|default:'' }}</textarea>
+      </div>
+
+      <div class="error-block" id="contentErr">
+        <svg class="error-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8.5" stroke="#E43D3D"/><path d="M9 5v4M9 13h.01" stroke="#E43D3D" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="error-text"></span>
+      </div>
+      <div class="counter-row">
+        <span class="counter" id="contentCounter">{{ article.content|length|default:"0" }}</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-outline-action" id="deleteDraftBtn" onclick="deleteDraft()">Удалить черновик</button>
+      <button type="submit" class="btn-primary">Сохранить черновик</button>
+    </div>
+
+  </div>
+
+</form>
+
+<!-- DELETE DRAFT MODAL -->
+<div class="modal-overlay" id="deleteDraftModal">
+  <div class="modal-card">
+    <p class="modal-title">Вы уверены, что хотите удалить черновик статьи?</p>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn-primary" onclick="confirmDeleteDraft()">Удалить</button>
+      <button type="button" class="modal-btn-cancel" onclick="document.getElementById('deleteDraftModal').classList.remove('open')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="modal-overlay" id="imgModal">
+  <div class="img-modal-card">
+    <div class="img-modal-header">
+      <span class="img-modal-title">Изображение</span>
+      <button type="button" class="img-modal-close" onclick="closeImgModal()">&#x2715;</button>
+    </div>
+
+    <div class="image-upload-zone" id="imgModalDropZone" onclick="triggerImgModalInput()">
+      <input type="file" id="imgModalFileInput" accept="image/jpeg,image/png,image/webp" style="display:none">
+      <img id="imgModalPreviewImg" class="image-preview-img" src="" alt="">
+      <button type="button" class="image-remove-btn" id="imgModalRemoveBtn" onclick="clearImgModalPreview(event)">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1 1L11 11M11 1L1 11" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="image-placeholder" id="imgModalPlaceholder">
+        <svg width="44" height="40" viewBox="0 0 54 48" fill="none">
+          <path d="M10.4517 29.6129L19.2386 20.826C19.5945 20.4701 20.0169 20.1879 20.4819 19.9953C20.9468 19.8027 21.4452 19.7035 21.9484 19.7035C22.4517 19.7035 22.95 19.8027 23.415 19.9953C23.8799 20.1879 24.3024 20.4701 24.6583 20.826L33.4452 29.6129M30.8904 27.0581L33.2902 24.6583C33.6461 24.3024 34.0685 24.0201 34.5335 23.8275C34.9984 23.6349 35.4968 23.5358 36 23.5358C36.5033 23.5358 37.0016 23.6349 37.4666 23.8275C37.9316 24.0201 38.354 24.3024 38.7099 24.6583L43.6646 29.6129M13.0065 36H41.1097C41.7873 36 42.4371 35.7309 42.9163 35.2518C43.3954 34.7726 43.6646 34.1228 43.6646 33.4452V13.0065C43.6646 12.3289 43.3954 11.6791 42.9163 11.2C42.4371 10.7208 41.7873 10.4517 41.1097 10.4517H13.0065C12.3289 10.4517 11.6791 10.7208 11.2 11.2C10.7208 11.6791 10.4517 12.3289 10.4517 13.0065V33.4452C10.4517 34.1228 10.7208 34.7726 11.2 35.2518C11.6791 35.7309 12.3289 36 13.0065 36Z" stroke="#C8C8C8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="image-placeholder-title">Загрузите изображение</span>
+        <span class="image-placeholder-hint">PNG, JPG</span>
+      </div>
+    </div>
+
+    <div class="img-modal-actions">
+      <button type="button" class="modal-btn-cancel hidden" id="imgModalDeleteBtn" onclick="deleteImgBlock()">Удалить</button>
+      <button type="button" class="modal-btn-primary" onclick="saveImgBlock()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- LINK MODAL -->
+<div class="modal-overlay" id="linkModal">
+  <div class="link-modal-card">
+    <p class="modal-title">Вставить ссылку</p>
+    <input type="text" id="linkUrlInput" class="link-input" placeholder="https://">
+    <div class="modal-actions">
+      <button type="button" class="modal-btn-primary" onclick="confirmLink()">Вставить</button>
+      <button type="button" class="modal-btn-cancel" onclick="closeLinkModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="preview-overlay" id="previewModal">
+  <div class="preview-modal">
+    <div class="preview-header">
+      <span class="preview-label">Предпросмотр статьи</span>
+      <button type="button" class="preview-close" onclick="closePreview()" title="Закрыть">&#x2715;</button>
+    </div>
+    <div class="preview-body">
+      <h1 class="preview-art-title" id="previewArtTitle"></h1>
+      <div class="preview-art-content" id="previewArtContent"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// ── Image upload ──
+var imageInput       = document.getElementById('imageInput');
+var imagePreview     = document.getElementById('imagePreviewImg');
+var imagePlaceholder = document.getElementById('imagePlaceholder');
+var imageRemoveBtn   = document.getElementById('imageRemoveBtn');
+var dropZone         = document.getElementById('imageDropZone');
+
+function triggerFileInput() {
+  if (!imagePreview.classList.contains('visible')) imageInput.click();
+}
+
+function showPreview(src) {
+  imagePreview.src = src;
+  imagePreview.classList.add('visible');
+  imagePlaceholder.style.display = 'none';
+  imageRemoveBtn.classList.add('visible');
+  dropZone.classList.add('has-image');
+}
+
+function removeImage(e) {
+  e.stopPropagation();
+  imagePreview.src = '';
+  imagePreview.classList.remove('visible');
+  imagePlaceholder.style.display = '';
+  imageRemoveBtn.classList.remove('visible');
+  imageInput.value = '';
+  dropZone.classList.remove('has-image');
+  var keepInput = document.getElementById('keepImageInput');
+  if (keepInput) keepInput.value = '0';
+}
+
+imageInput.addEventListener('change', function() {
+  if (this.files && this.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) { showPreview(e.target.result); };
+    reader.readAsDataURL(this.files[0]);
+  }
+});
+
+dropZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+['dragleave', 'dragend'].forEach(function(ev) {
+  dropZone.addEventListener(ev, function() { this.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+  var file = e.dataTransfer.files[0];
+  if (file && file.type.match('image.*')) {
+    var dt = new DataTransfer();
+    dt.items.add(file);
+    imageInput.files = dt.files;
+    var reader = new FileReader();
+    reader.onload = function(ev) { showPreview(ev.target.result); };
+    reader.readAsDataURL(file);
+  }
+});
+
+// ── Counters: title & preview ──
+var titleInput   = document.getElementById('titleInput');
+var previewInput = document.getElementById('previewInput');
+
+titleInput.addEventListener('input', function() {
+  document.getElementById('titleCounter').textContent = this.value.length + '/100';
+  clearFieldError(this, 'titleErr');
+});
+previewInput.addEventListener('input', function() {
+  document.getElementById('previewCounter').textContent = this.value.length + '/250';
+  clearFieldError(this, 'previewErr');
+});
+
+// ── Editor ──
+var editor          = document.getElementById('contentEditor');
+var contentInput    = document.getElementById('contentInput');
+var contentCounter  = document.getElementById('contentCounter');
+var editorContainer = document.getElementById('editorContainer');
+
+// Ensure Enter creates <p>, not <div>
+document.execCommand('defaultParagraphSeparator', false, 'p');
+
+// Initial sync
+contentInput.value = editor.innerHTML;
+contentCounter.textContent = editor.innerText.trim().length;
+
+function syncContent() {
+  contentInput.value = editor.innerHTML;
+  contentCounter.textContent = editor.innerText.trim().length;
+}
+
+editor.addEventListener('input', function() {
+  syncContent();
+  editorContainer.classList.remove('error');
+  var blk = document.getElementById('contentErr');
+  blk.querySelector('.error-text').textContent = '';
+  blk.classList.remove('visible');
+});
+
+// ── Toolbar buttons ──
+document.querySelectorAll('.toolbar-btn[data-action]').forEach(function(btn) {
+  btn.addEventListener('mousedown', function(e) {
+    e.preventDefault(); // keep editor focus
+    executeAction(this.dataset.action);
+  });
+});
+
+function executeAction(action) {
+  editor.focus();
+  switch (action) {
+    case 'h2':     toggleBlock('h2');   break;
+    case 'h3':     toggleBlock('h3');   break;
+    case 'bold':   document.execCommand('bold');               break;
+    case 'italic': document.execCommand('italic');             break;
+    case 'link':   openLinkModal();                            break;
+    case 'ol':     document.execCommand('insertOrderedList');  break;
+    case 'ul':     document.execCommand('insertUnorderedList'); break;
+    case 'image':  openImgModal(null); break;
+    case 'hr':     document.execCommand('insertHorizontalRule'); break;
+    case 'quote':  toggleBlock('blockquote'); break;
+  }
+  updateToolbarState();
+  syncContent();
+}
+
+// Wrap orphaned text nodes (direct children of editor) in <p>
+// so formatBlock applies only to the current paragraph, not the whole editor.
+function ensureBlockStructure() {
+  var sel = window.getSelection();
+  var savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+
+  Array.from(editor.childNodes).forEach(function(node) {
+    if (node.nodeType === 3) { // bare text node
+      var p = document.createElement('p');
+      editor.insertBefore(p, node);
+      p.appendChild(node);
+    }
+  });
+
+  if (savedRange) {
+    try { sel.removeAllRanges(); sel.addRange(savedRange); } catch(e) {}
+  }
+}
+
+function toggleBlock(tag) {
+  var sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+
+  // Normalize so there are no bare text nodes in the editor root
+  ensureBlockStructure();
+
+  // Re-read selection after normalization
+  sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+
+  var node = sel.getRangeAt(0).commonAncestorContainer;
+  if (node.nodeType === 3) node = node.parentNode;
+
+  // Find if cursor is already inside the target tag (but within our editor)
+  var inside = null;
+  if (node.closest) {
+    var candidate = node.closest(tag);
+    if (candidate && editor.contains(candidate)) inside = candidate;
+  }
+
+  document.execCommand('formatBlock', false, inside ? 'p' : tag);
+}
+
+// ── Toolbar active state ──
+function updateToolbarState() {
+  var sel = window.getSelection();
+  var node = null;
+  if (sel && sel.rangeCount) {
+    node = sel.getRangeAt(0).commonAncestorContainer;
+    if (node && node.nodeType === 3) node = node.parentNode;
+  }
+
+  setActive('bold',   document.queryCommandState('bold'));
+  setActive('italic', document.queryCommandState('italic'));
+  setActive('ol',     document.queryCommandState('insertOrderedList'));
+  setActive('ul',     document.queryCommandState('insertUnorderedList'));
+  setActive('h2',     !!(node && node.closest && node.closest('h2')));
+  setActive('h3',     !!(node && node.closest && node.closest('h3')));
+  setActive('quote',  !!(node && node.closest && node.closest('blockquote')));
+}
+
+function setActive(action, isActive) {
+  var btn = document.querySelector('.toolbar-btn[data-action="' + action + '"]');
+  if (btn) btn.classList.toggle('active', !!isActive);
+}
+
+editor.addEventListener('keyup',   updateToolbarState);
+editor.addEventListener('mouseup', updateToolbarState);
+
+// ── Image modal ──
+var currentImgBlock = null;
+var imgModalDataSrc = null;
+
+function openImgModal(editBlock) {
+  currentImgBlock = editBlock || null;
+  imgModalDataSrc = null;
+
+  // Reset upload zone
+  document.getElementById('imgModalFileInput').value = '';
+  var prev = document.getElementById('imgModalPreviewImg');
+  prev.src = '';
+  prev.classList.remove('visible');
+  document.getElementById('imgModalPlaceholder').style.display = '';
+  document.getElementById('imgModalRemoveBtn').classList.remove('visible');
+  document.getElementById('imgModalDropZone').classList.remove('has-image');
+
+  var deleteBtn = document.getElementById('imgModalDeleteBtn');
+  if (editBlock) {
+    var existingImg = editBlock.querySelector('.art-img-actual');
+    if (existingImg && existingImg.src) {
+      imgModalDataSrc = existingImg.src;
+      setImgModalPreview(existingImg.src);
+    }
+    deleteBtn.classList.remove('hidden');
+  } else {
+    deleteBtn.classList.add('hidden');
+  }
+
+  document.getElementById('imgModal').classList.add('open');
+}
+
+function closeImgModal() {
+  document.getElementById('imgModal').classList.remove('open');
+  currentImgBlock = null;
+  imgModalDataSrc = null;
+}
+
+function setImgModalPreview(src) {
+  var prev = document.getElementById('imgModalPreviewImg');
+  prev.src = src;
+  prev.classList.add('visible');
+  document.getElementById('imgModalPlaceholder').style.display = 'none';
+  document.getElementById('imgModalRemoveBtn').classList.add('visible');
+  document.getElementById('imgModalDropZone').classList.add('has-image');
+  imgModalDataSrc = src;
+}
+
+function clearImgModalPreview(e) {
+  e.stopPropagation();
+  document.getElementById('imgModalFileInput').value = '';
+  var prev = document.getElementById('imgModalPreviewImg');
+  prev.src = '';
+  prev.classList.remove('visible');
+  document.getElementById('imgModalPlaceholder').style.display = '';
+  document.getElementById('imgModalRemoveBtn').classList.remove('visible');
+  document.getElementById('imgModalDropZone').classList.remove('has-image');
+  imgModalDataSrc = null;
+}
+
+function triggerImgModalInput() {
+  if (!document.getElementById('imgModalPreviewImg').classList.contains('visible')) {
+    document.getElementById('imgModalFileInput').click();
+  }
+}
+
+document.getElementById('imgModalFileInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) { setImgModalPreview(e.target.result); };
+    reader.readAsDataURL(this.files[0]);
+  }
+});
+
+// Drag & drop inside modal upload zone
+var imgModalZone = document.getElementById('imgModalDropZone');
+imgModalZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+['dragleave', 'dragend'].forEach(function(ev) {
+  imgModalZone.addEventListener(ev, function() { this.classList.remove('drag-over'); });
+});
+imgModalZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+  var file = e.dataTransfer.files[0];
+  if (file && file.type.match('image.*')) {
+    var reader = new FileReader();
+    reader.onload = function(ev) { setImgModalPreview(ev.target.result); };
+    reader.readAsDataURL(file);
+  }
+});
+
+function buildImgFigure(src) {
+  var figure = document.createElement('figure');
+  figure.className = 'art-img-block';
+  figure.setAttribute('contenteditable', 'false');
+
+  var img = document.createElement('img');
+  img.className = 'art-img-actual';
+  img.src = src;
+  img.alt = 'Изображение';
+
+  var label = document.createElement('span');
+  label.className = 'art-img-label';
+  label.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 14.25L8.78 10.47C9.09 10.16 9.51 9.98 9.95 9.98C10.39 9.98 10.81 10.16 11.12 10.47L14.9 14.25M13.8 13.15L14.83 12.12C15.46 11.49 16.54 11.49 17.17 12.12L19.3 14.25M6.1 17H18.2C18.74 17 19.3 16.46 19.3 15.9V7.1C19.3 6.54 18.74 6 18.2 6H6.1C5.56 6 5 6.54 5 7.1V15.9C5 16.46 5.56 17 6.1 17Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>Изображение';
+
+  figure.appendChild(img);
+  figure.appendChild(label);
+
+  figure.addEventListener('click', function() { openImgModal(this); });
+  return figure;
+}
+
+function saveImgBlock() {
+  if (!imgModalDataSrc) { closeImgModal(); return; }
+
+  if (currentImgBlock) {
+    // Replace image in existing block
+    var existingImg = currentImgBlock.querySelector('.art-img-actual');
+    if (existingImg) existingImg.src = imgModalDataSrc;
+  } else {
+    // Insert new figure at cursor
+    var figure = buildImgFigure(imgModalDataSrc);
+    editor.focus();
+    ensureBlockStructure();
+
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      var range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(figure);
+      // Add an empty paragraph after the figure so cursor can continue
+      var after = document.createElement('p');
+      after.innerHTML = '<br>';
+      if (figure.nextSibling) {
+        figure.parentNode.insertBefore(after, figure.nextSibling);
+      } else {
+        editor.appendChild(after);
+      }
+      var newRange = document.createRange();
+      newRange.setStart(after, 0);
+      newRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+    } else {
+      editor.appendChild(figure);
+    }
+  }
+
+  closeImgModal();
+  syncContent();
+}
+
+function deleteImgBlock() {
+  if (currentImgBlock && currentImgBlock.parentNode) {
+    currentImgBlock.parentNode.removeChild(currentImgBlock);
+    syncContent();
+  }
+  closeImgModal();
+}
+
+document.getElementById('imgModal').addEventListener('click', function(e) {
+  if (e.target === this) closeImgModal();
+});
+
+// Wire click handlers to any image blocks already present in editor (edit mode)
+editor.querySelectorAll('.art-img-block').forEach(function(block) {
+  block.addEventListener('click', function() { openImgModal(this); });
+});
+
+// ── Link modal ──
+var savedRange = null;
+
+function openLinkModal() {
+  var sel = window.getSelection();
+  if (!sel || sel.isCollapsed) {
+    // Nothing selected — show hint via placeholder
+    document.getElementById('linkUrlInput').placeholder = 'Выделите текст перед вставкой ссылки';
+  } else {
+    document.getElementById('linkUrlInput').placeholder = 'https://';
+  }
+  if (sel && sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+  document.getElementById('linkUrlInput').value = '';
+  document.getElementById('linkModal').classList.add('open');
+  setTimeout(function() { document.getElementById('linkUrlInput').focus(); }, 60);
+}
+
+function confirmLink() {
+  var url = document.getElementById('linkUrlInput').value.trim();
+  closeLinkModal();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  editor.focus();
+  if (savedRange) {
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+  document.execCommand('createLink', false, url);
+  editor.querySelectorAll('a').forEach(function(a) {
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+  });
+  syncContent();
+  savedRange = null;
+}
+
+function closeLinkModal() {
+  document.getElementById('linkModal').classList.remove('open');
+}
+
+document.getElementById('linkModal').addEventListener('click', function(e) {
+  if (e.target === this) closeLinkModal();
+});
+document.getElementById('linkUrlInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') confirmLink();
+  if (e.key === 'Escape') closeLinkModal();
+});
+
+// ── Preview modal ──
+document.getElementById('previewBtn').addEventListener('click', function() {
+  document.getElementById('previewArtTitle').textContent =
+    titleInput.value.trim() || 'Без заголовка';
+  document.getElementById('previewArtContent').innerHTML = editor.innerHTML;
+  document.getElementById('previewModal').classList.add('open');
+});
+
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('open');
+}
+
+document.getElementById('previewModal').addEventListener('click', function(e) {
+  if (e.target === this) closePreview();
+});
+
+// ── Validation helpers ──
+function setFieldError(inputEl, errId, message) {
+  inputEl.classList.add('error');
+  var blk = document.getElementById(errId);
+  blk.querySelector('.error-text').textContent = message;
+  blk.classList.add('visible');
+}
+
+function clearFieldError(inputEl, errId) {
+  inputEl.classList.remove('error');
+  var blk = document.getElementById(errId);
+  blk.querySelector('.error-text').textContent = '';
+  blk.classList.remove('visible');
+}
+
+document.getElementById('articleForm').addEventListener('submit', function(e) {
+  syncContent();
+  var valid = true;
+
+  if (!titleInput.value.trim()) {
+    setFieldError(titleInput, 'titleErr', 'Вы не ввели заголовок статьи');
+    valid = false;
+  } else {
+    clearFieldError(titleInput, 'titleErr');
+  }
+
+  if (!previewInput.value.trim()) {
+    setFieldError(previewInput, 'previewErr', 'Вы не ввели краткое превью статьи');
+    valid = false;
+  } else {
+    clearFieldError(previewInput, 'previewErr');
+  }
+
+  if (!editor.innerText.trim()) {
+    editorContainer.classList.add('error');
+    var blk = document.getElementById('contentErr');
+    blk.querySelector('.error-text').textContent = 'Вы не ввели текст статьи';
+    blk.classList.add('visible');
+    valid = false;
+  } else {
+    editorContainer.classList.remove('error');
+    document.getElementById('contentErr').classList.remove('visible');
+  }
+
+  if (!valid) {
+    e.preventDefault();
+    var firstErr = document.querySelector('.error-block.visible');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+
+// ── Delete draft ──
+function deleteDraft() {
+  {% if article and article.pk %}
+  document.getElementById('deleteDraftModal').classList.add('open');
+  {% else %}
+  window.location.href = "{% url 'news:list' %}";
+  {% endif %}
+}
+
+function confirmDeleteDraft() {
+  document.getElementById('formAction').value = 'delete';
+  document.getElementById('articleForm').submit();
+}
+
+document.getElementById('deleteDraftModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+{% endblock %}

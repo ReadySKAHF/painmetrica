@@ -3,25 +3,25 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="/static/favicon-nobg.svg" type="image/svg+xml">
+<link rel="icon" href="{% static 'favicon-nobg.svg' %}" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ article.title }} — Painmetrica</title>
 <style>
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/Proxima-Nova-Regular.ttf') format('truetype');
+    src: url('{% static "fonts/Proxima-Nova-Regular.ttf" %}') format('truetype');
     font-weight: 400;
     font-style: normal;
 }
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/Proxima-Nova-Semibold.ttf') format('truetype');
+    src: url('{% static "fonts/Proxima-Nova-Semibold.ttf" %}') format('truetype');
     font-weight: 600;
     font-style: normal;
 }
 @font-face {
     font-family: 'Proxima Nova';
-    src: url('/static/fonts/Proxima-Nova-Bold.ttf') format('truetype');
+    src: url('{% static "fonts/Proxima-Nova-Bold.ttf" %}') format('truetype');
     font-weight: 700;
     font-style: normal;
 }
@@ -282,7 +282,7 @@
 <!-- HEADER -->
 <header>
   <a href="{% if request.user.is_authenticated %}{% url 'core:dashboard' %}{% else %}{% url 'core:home' %}{% endif %}" class="logo" title="Painmetrica">
-    <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="172" height="43" style="display:block;">
+    <img src="{% static 'logo-header-nobg.svg' %}" alt="Painmetrica" width="172" height="43" style="display:block;">
   </a>
 
   {% if request.user.is_authenticated %}
@@ -382,7 +382,7 @@
 <!-- FOOTER -->
 <footer class="footer">
   <div>
-    <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="114" height="28" style="display:block;">
+    <img src="{% static 'logo-header-nobg.svg' %}" alt="Painmetrica" width="114" height="28" style="display:block;">
   </div>
   <span class="footer-tagline">Система управления пациентами для врачей и специалистов</span>
   <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>

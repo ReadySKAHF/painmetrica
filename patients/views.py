@@ -900,7 +900,7 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
 
         # ── Заключение: список результатов через запятую ───────────────────
         if test_results_data:
-            conclusion_parts = [r['label'] for r in test_results_data]
+            conclusion_parts = [r['label'][0].lower() + r['label'][1:] if r['label'] else '' for r in test_results_data]
             conclusion_text = f"Заключение: у пациента имеется {', '.join(conclusion_parts)}."
         else:
             conclusion_text = 'Заключение: –'

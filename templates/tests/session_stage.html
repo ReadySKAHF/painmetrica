@@ -329,7 +329,7 @@
   </div>
   {% endif %}
 
-  <div class="layout">
+  <div class="layout"{% if is_scale_stage %} style="gap: 23px"{% endif %}>
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -356,7 +356,7 @@
     </div>
 
     <!-- Content -->
-    <div class="content">
+    <div class="content"{% if is_scale_stage %} style="margin-right: 0"{% endif %}>
       <div class="page-title">{{ stage.page_title }}</div>
 
       {% if stage.annotation %}

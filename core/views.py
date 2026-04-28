@@ -20,6 +20,16 @@ class HomeView(TemplateView):
         return render(request, self.template_name, {'articles': page_obj, 'page_obj': page_obj})
 
 
+class DocumentsView(LoginRequiredMixin, View):
+    template_name = 'core/documents.html'
+
+    def get(self, request, *args, **kwargs):
+        doc_type = request.GET.get('doc', 'agreement')
+        if doc_type not in ('agreement', 'policy'):
+            doc_type = 'agreement'
+        return render(request, self.template_name, {'doc_type': doc_type})
+
+
 class DashboardView(LoginRequiredMixin, View):
     """Dashboard после входа — единая страница для докторов и пациентов"""
 

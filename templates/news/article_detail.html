@@ -73,18 +73,70 @@
   .nav-link.active .nav-icon  { color: var(--blue-400); }
 
   /* ── HEADER RIGHT ── */
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    flex-shrink: 0;
+  .header-right { display: flex; align-items: center; flex-shrink: 0; }
+
+  /* User dropdown */
+  .user-dropdown { position: relative; }
+
+  .user-dropdown-trigger {
+    display: flex; align-items: center; gap: 10px;
+    padding: 5px 12px 5px 5px;
+    border-radius: 60px;
+    cursor: pointer; user-select: none;
+    transition: background 0.2s;
+  }
+  .user-dropdown-trigger:hover { background: var(--gray-250); }
+
+  .user-avatar { width: 36px; height: 36px; flex-shrink: 0; }
+
+  .user-name { font-size: 14px; font-weight: 500; color: var(--gray-950); white-space: nowrap; }
+
+  .user-chevron { flex-shrink: 0; transition: transform 0.25s ease; }
+  .user-dropdown.open .user-chevron { transform: rotate(180deg); }
+
+  .user-dropdown-menu {
+    display: none;
+    position: absolute; right: 0; top: calc(100% + 10px);
+    width: 191px;
+    background: var(--white);
+    border: 1px solid var(--gray-250);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+    overflow: hidden; z-index: 200;
+  }
+  .user-dropdown.open .user-dropdown-menu { display: block; }
+
+  .dropdown-items { padding: 8px 0 8px; }
+
+  .dropdown-item {
+    display: block; width: 100%;
+    padding: 7px 16px;
+    font-family: 'Proxima Nova', sans-serif; font-size: 12px; font-weight: 400;
+    color: var(--gray-950); text-decoration: none;
+    background: none; border: none; text-align: left;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .dropdown-item:hover { background: var(--gray-250); }
+  .dropdown-item.disabled { color: #B8B8B8; pointer-events: none; cursor: default; }
+
+  .dropdown-divider {
+    width: 175px; height: 1px;
+    background: var(--gray-300);
+    margin: 0 auto;
   }
 
-  .user-name {
-    font-size: 14px;
-    color: var(--gray-950);
-    white-space: nowrap;
+  .dropdown-footer { padding: 6px 8px 8px; }
+
+  .dropdown-logout {
+    display: block; width: 100%;
+    padding: 8px;
+    font-family: 'Proxima Nova', sans-serif; font-size: 12px; font-weight: 400;
+    color: var(--gray-950); text-align: center; text-decoration: none;
+    background: none; border: 1.5px solid var(--gray-950);
+    border-radius: 40px; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
   }
+  .dropdown-logout:hover { background: var(--gray-950); color: var(--white); }
 
   body {
     font-family: var(--font);
@@ -327,14 +379,35 @@
   {% endif %}
 
   <div class="header-right">
-    <div class="user-avatar">
-      <svg width="36" height="36" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
-        <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <div class="user-dropdown" id="userDropdown">
+      <div class="user-dropdown-trigger" id="userDropdownTrigger">
+        <div class="user-avatar">
+          <svg width="36" height="36" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="30" height="28.6667" rx="14.3333" fill="#F5F5F5"/>
+            <path d="M15 13C16.1046 13 17 12.1046 17 11C17 9.89543 16.1046 9 15 9C13.8954 9 13 9.89543 13 11C13 12.1046 13.8954 13 15 13Z" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 19.6665C19.6833 13.4445 10.3167 13.4445 10 19.6665" stroke="#262626" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
+        <svg class="user-chevron" width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.40066 4.40079C4.45423 4.34708 4.51788 4.30446 4.58796 4.27539C4.65803 4.24631 4.73316 4.23134 4.80903 4.23134C4.88489 4.23134 4.96002 4.24631 5.03009 4.27539C5.10017 4.30446 5.16382 4.34708 5.21739 4.40079L10.0002 9.18472L14.7829 4.40079C14.8912 4.29249 15.0381 4.23164 15.1913 4.23164C15.3445 4.23164 15.4914 4.29249 15.5997 4.40079C15.708 4.5091 15.7688 4.656 15.7688 4.80916C15.7688 4.96233 15.708 5.10923 15.5997 5.21753L10.4085 10.4087C10.355 10.4624 10.2913 10.505 10.2212 10.5341C10.1512 10.5632 10.076 10.5781 10.0002 10.5781C9.92429 10.5781 9.84917 10.5632 9.7791 10.5341C9.70902 10.505 9.64537 10.4624 9.59179 10.4087L4.40066 5.21753C4.34694 5.16395 4.30432 5.1003 4.27525 5.03023C4.24617 4.96015 4.2312 4.88503 4.2312 4.80916C4.2312 4.7333 4.24617 4.65817 4.27525 4.5881C4.30432 4.51802 4.34694 4.45437 4.40066 4.40079Z" fill="#262626"/>
+        </svg>
+      </div>
+      <div class="user-dropdown-menu">
+        <div class="dropdown-items">
+          <a href="{% url 'core:documents' %}" class="dropdown-item">Документы</a>
+          <span class="dropdown-item disabled">Создатели</span>
+          <span class="dropdown-item disabled">Тех. поддержка</span>
+          {% if user.user_type == 'patient' %}
+          <a href="{% url 'news:list' %}" class="dropdown-item">Новости</a>
+          {% endif %}
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-footer">
+          <a href="{% url 'accounts:logout' %}" class="dropdown-logout">Выйти</a>
+        </div>
+      </div>
     </div>
-    <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
   </div>
 
   {% else %}
@@ -388,5 +461,22 @@
   <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
 </footer>
 
+<script>
+(function () {
+  var dropdown = document.getElementById('userDropdown');
+  if (!dropdown) return;
+  var trigger = document.getElementById('userDropdownTrigger');
+  trigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+  document.addEventListener('click', function () {
+    dropdown.classList.remove('open');
+  });
+  dropdown.querySelector('.user-dropdown-menu').addEventListener('click', function (e) {
+    e.stopPropagation();
+  });
+})();
+</script>
 </body>
 </html>

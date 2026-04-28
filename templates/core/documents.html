@@ -1,0 +1,266 @@
+{% extends 'base_app.html' %}
+{% load static %}
+{% block title %}Документы — Painmetrica{% endblock %}
+
+{% block extra_style %}
+  .main { padding-top: 148px; padding-bottom: 40px; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--blue-500); font-size: 14px; font-weight: 400;
+    text-decoration: none; margin-bottom: 33px;
+    transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 0.75; }
+
+  .page-body { display: flex; gap: 24px; align-items: flex-start; }
+
+  .sidebar {
+    width: 305px; flex-shrink: 0;
+    background: var(--white); border-radius: 20px;
+    padding: 28px 16px;
+    display: flex; flex-direction: column;
+    position: sticky; top: 128px;
+  }
+
+  .sidebar-section-title {
+    font-size: 18px; font-weight: 700;
+    color: var(--gray-950); margin-bottom: 20px;
+  }
+
+  .sidebar-elements { display: flex; flex-direction: column; gap: 12px; }
+
+  .sidebar-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 10px; border-radius: 12px;
+    font-size: 18px; font-weight: 400; line-height: 1.35;
+    color: var(--gray-950); background: var(--gray-200);
+    cursor: pointer; border: 1.5px solid transparent;
+    text-decoration: none; transition: border-color 0.15s, background 0.15s;
+  }
+  .sidebar-item svg { width: 24px; height: 24px; flex-shrink: 0; }
+  .sidebar-item.active {
+    background: var(--white); border-color: var(--blue-400); color: var(--blue-400);
+  }
+  .sidebar-item.active svg path { fill: var(--blue-400); }
+
+  .doc-content { flex: 1; min-width: 0; }
+
+  .doc-title {
+    font-size: 24px; font-weight: 700;
+    color: var(--gray-950); margin-bottom: 24px;
+  }
+
+  /* PDF viewer */
+  .pdf-viewer { border: 1px solid var(--gray-300); border-radius: 12px; overflow: hidden; }
+  .pdf-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px; background: var(--gray-250);
+    border-bottom: 1px solid var(--gray-300); gap: 12px;
+  }
+  .pdf-toolbar-group { display: flex; align-items: center; gap: 6px; }
+  .pdf-tb-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    border: 1px solid var(--gray-300); border-radius: 8px;
+    background: var(--white); cursor: pointer; color: var(--gray-950);
+    transition: background .15s, border-color .15s; flex-shrink: 0; padding: 0;
+  }
+  .pdf-tb-btn:hover:not(:disabled) { background: var(--gray-300); border-color: var(--gray-550); }
+  .pdf-tb-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .pdf-zoom-val { min-width: 46px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gray-950); }
+  .pdf-page-counter { font-size: 14px; font-weight: 600; color: var(--gray-950); white-space: nowrap; }
+  .pdf-page-counter span { color: var(--blue-400); }
+  .pdf-canvas-wrap {
+    height: 600px; overflow-y: auto; overflow-x: auto;
+    background: #e0e0e0; position: relative;
+    scrollbar-width: thin; scrollbar-color: var(--blue-400) transparent;
+  }
+  .pdf-canvas-wrap::-webkit-scrollbar { width: 6px; }
+  .pdf-canvas-wrap::-webkit-scrollbar-track { background: transparent; }
+  .pdf-canvas-wrap::-webkit-scrollbar-thumb { background: var(--blue-400); border-radius: 4px; }
+  .pdf-pages {
+    display: flex; flex-direction: column;
+    align-items: flex-start; padding: 16px; gap: 12px; min-width: max-content;
+  }
+  .pdf-pages canvas { box-shadow: 0 2px 10px rgba(0,0,0,.25); display: block; }
+  .pdf-spinner {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .pdf-spinner-ring {
+    width: 32px; height: 32px;
+    border: 3px solid var(--gray-300); border-top-color: var(--blue-400);
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  .pdf-spinner-text { font-size: 13px; color: var(--gray-550); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+{% endblock %}
+
+{% block content %}
+
+<a href="javascript:history.back()" class="back-link">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  Назад
+</a>
+
+<div class="page-body">
+
+  <aside class="sidebar">
+    <div class="sidebar-section-title">Документы</div>
+    <div class="sidebar-elements">
+
+      <a href="?doc=agreement" onclick="event.preventDefault(); window.location.replace('?doc=agreement')" class="sidebar-item{% if doc_type == 'agreement' %} active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <mask id="doc-mask-1" fill="white">
+            <path d="M5.1332 1.2666C4.70886 1.2666 4.30189 1.43517 4.00183 1.73523C3.70177 2.03529 3.5332 2.44226 3.5332 2.8666V12.4666C3.5332 12.8909 3.70177 13.2979 4.00183 13.598C4.30189 13.898 4.70886 14.0666 5.1332 14.0666H11.5332C11.9575 14.0666 12.3645 13.898 12.6646 13.598C12.9646 13.2979 13.1332 12.8909 13.1332 12.4666V5.5978C13.1329 5.27965 13.0063 4.97463 12.7812 4.7498L9.65 1.6178C9.42504 1.39299 9.12004 1.26667 8.802 1.2666H5.1332ZM4.3332 2.8666C4.3332 2.65443 4.41749 2.45095 4.56752 2.30092C4.71755 2.15089 4.92103 2.0666 5.1332 2.0666H8.3332V4.8666C8.3332 5.18486 8.45963 5.49009 8.68467 5.71513C8.90972 5.94017 9.21494 6.0666 9.5332 6.0666H12.3332V12.4666C12.3332 12.6788 12.2489 12.8823 12.0989 13.0323C11.9489 13.1823 11.7454 13.2666 11.5332 13.2666H5.1332C4.92103 13.2666 4.71755 13.1823 4.56752 13.0323C4.41749 12.8823 4.3332 12.6788 4.3332 12.4666V2.8666ZM12.1676 5.2666H9.5332C9.42712 5.2666 9.32537 5.22446 9.25036 5.14944C9.17535 5.07443 9.1332 4.97269 9.1332 4.8666V2.2322L12.1676 5.2666Z"/>
+          </mask>
+          <path d="M5.1332 1.2666C4.70886 1.2666 4.30189 1.43517 4.00183 1.73523C3.70177 2.03529 3.5332 2.44226 3.5332 2.8666V12.4666C3.5332 12.8909 3.70177 13.2979 4.00183 13.598C4.30189 13.898 4.70886 14.0666 5.1332 14.0666H11.5332C11.9575 14.0666 12.3645 13.898 12.6646 13.598C12.9646 13.2979 13.1332 12.8909 13.1332 12.4666V5.5978C13.1329 5.27965 13.0063 4.97463 12.7812 4.7498L9.65 1.6178C9.42504 1.39299 9.12004 1.26667 8.802 1.2666H5.1332ZM4.3332 2.8666C4.3332 2.65443 4.41749 2.45095 4.56752 2.30092C4.71755 2.15089 4.92103 2.0666 5.1332 2.0666H8.3332V4.8666C8.3332 5.18486 8.45963 5.49009 8.68467 5.71513C8.90972 5.94017 9.21494 6.0666 9.5332 6.0666H12.3332V12.4666C12.3332 12.6788 12.2489 12.8823 12.0989 13.0323C11.9489 13.1823 11.7454 13.2666 11.5332 13.2666H5.1332C4.92103 13.2666 4.71755 13.1823 4.56752 13.0323C4.41749 12.8823 4.3332 12.6788 4.3332 12.4666V2.8666ZM12.1676 5.2666H9.5332C9.42712 5.2666 9.32537 5.22446 9.25036 5.14944C9.17535 5.07443 9.1332 4.97269 9.1332 4.8666V2.2322L12.1676 5.2666Z" fill="currentColor" mask="url(#doc-mask-1)"/>
+        </svg>
+        Пользовательское соглашение
+      </a>
+
+      <a href="?doc=policy" onclick="event.preventDefault(); window.location.replace('?doc=policy')" class="sidebar-item{% if doc_type == 'policy' %} active{% endif %}">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <mask id="doc-mask-2" fill="white">
+            <path d="M5.1332 1.2666C4.70886 1.2666 4.30189 1.43517 4.00183 1.73523C3.70177 2.03529 3.5332 2.44226 3.5332 2.8666V12.4666C3.5332 12.8909 3.70177 13.2979 4.00183 13.598C4.30189 13.898 4.70886 14.0666 5.1332 14.0666H11.5332C11.9575 14.0666 12.3645 13.898 12.6646 13.598C12.9646 13.2979 13.1332 12.8909 13.1332 12.4666V5.5978C13.1329 5.27965 13.0063 4.97463 12.7812 4.7498L9.65 1.6178C9.42504 1.39299 9.12004 1.26667 8.802 1.2666H5.1332ZM4.3332 2.8666C4.3332 2.65443 4.41749 2.45095 4.56752 2.30092C4.71755 2.15089 4.92103 2.0666 5.1332 2.0666H8.3332V4.8666C8.3332 5.18486 8.45963 5.49009 8.68467 5.71513C8.90972 5.94017 9.21494 6.0666 9.5332 6.0666H12.3332V12.4666C12.3332 12.6788 12.2489 12.8823 12.0989 13.0323C11.9489 13.1823 11.7454 13.2666 11.5332 13.2666H5.1332C4.92103 13.2666 4.71755 13.1823 4.56752 13.0323C4.41749 12.8823 4.3332 12.6788 4.3332 12.4666V2.8666ZM12.1676 5.2666H9.5332C9.42712 5.2666 9.32537 5.22446 9.25036 5.14944C9.17535 5.07443 9.1332 4.97269 9.1332 4.8666V2.2322L12.1676 5.2666Z"/>
+          </mask>
+          <path d="M5.1332 1.2666C4.70886 1.2666 4.30189 1.43517 4.00183 1.73523C3.70177 2.03529 3.5332 2.44226 3.5332 2.8666V12.4666C3.5332 12.8909 3.70177 13.2979 4.00183 13.598C4.30189 13.898 4.70886 14.0666 5.1332 14.0666H11.5332C11.9575 14.0666 12.3645 13.898 12.6646 13.598C12.9646 13.2979 13.1332 12.8909 13.1332 12.4666V5.5978C13.1329 5.27965 13.0063 4.97463 12.7812 4.7498L9.65 1.6178C9.42504 1.39299 9.12004 1.26667 8.802 1.2666H5.1332ZM4.3332 2.8666C4.3332 2.65443 4.41749 2.45095 4.56752 2.30092C4.71755 2.15089 4.92103 2.0666 5.1332 2.0666H8.3332V4.8666C8.3332 5.18486 8.45963 5.49009 8.68467 5.71513C8.90972 5.94017 9.21494 6.0666 9.5332 6.0666H12.3332V12.4666C12.3332 12.6788 12.2489 12.8823 12.0989 13.0323C11.9489 13.1823 11.7454 13.2666 11.5332 13.2666H5.1332C4.92103 13.2666 4.71755 13.1823 4.56752 13.0323C4.41749 12.8823 4.3332 12.6788 4.3332 12.4666V2.8666ZM12.1676 5.2666H9.5332C9.42712 5.2666 9.32537 5.22446 9.25036 5.14944C9.17535 5.07443 9.1332 4.97269 9.1332 4.8666V2.2322L12.1676 5.2666Z" fill="currentColor" mask="url(#doc-mask-2)"/>
+        </svg>
+        Политика обработки персональных данных
+      </a>
+
+    </div>
+  </aside>
+
+  <div class="doc-content">
+    <h1 class="doc-title">
+      {% if doc_type == 'agreement' %}Пользовательское соглашение
+      {% else %}Политика обработки персональных данных{% endif %}
+    </h1>
+
+    <div class="pdf-viewer">
+      <div class="pdf-toolbar">
+        <div class="pdf-toolbar-group">
+          <button class="pdf-tb-btn" id="btn-zoom-out" title="Уменьшить" disabled>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6.5" width="10" height="1.5" rx="0.75" fill="currentColor"/></svg>
+          </button>
+          <span class="pdf-zoom-val" id="zoom-display">…</span>
+          <button class="pdf-tb-btn" id="btn-zoom-in" title="Увеличить" disabled>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="6.25" y="2" width="1.5" height="10" rx="0.75" fill="currentColor"/><rect x="2" y="6.25" width="10" height="1.5" rx="0.75" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <div class="pdf-page-counter">Страница <span id="page-current">—</span> из <span id="page-total">—</span></div>
+      </div>
+      <div class="pdf-canvas-wrap" id="pdf-canvas-wrap">
+        <div class="pdf-spinner" id="pdf-spinner">
+          <div class="pdf-spinner-ring"></div>
+          <span class="pdf-spinner-text">Загрузка документа…</span>
+        </div>
+        <div class="pdf-pages" id="pdf-pages"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+{% if doc_type == 'agreement' %}
+const PDF_URL = "{% static 'accounts/docs/User_Agreement.pdf' %}";
+{% else %}
+const PDF_URL = "{% static 'accounts/docs/Personal_Data_Processing_Policy.pdf' %}";
+{% endif %}
+
+const MIN_SCALE = 0.5, MAX_SCALE = 3.0, SCALE_STEP = 0.25;
+let pdfDoc = null, scale = 1.0, canvases = [];
+
+const canvasWrap  = document.getElementById('pdf-canvas-wrap');
+const pagesEl     = document.getElementById('pdf-pages');
+const spinner     = document.getElementById('pdf-spinner');
+const btnZoomIn   = document.getElementById('btn-zoom-in');
+const btnZoomOut  = document.getElementById('btn-zoom-out');
+const zoomDisplay = document.getElementById('zoom-display');
+const pageCurrent = document.getElementById('page-current');
+const pageTotal   = document.getElementById('page-total');
+
+function getVisiblePage() {
+  const wrapTop = canvasWrap.getBoundingClientRect().top;
+  const wrapMid = wrapTop + canvasWrap.clientHeight / 2;
+  let best = 0, bestDist = Infinity;
+  canvases.forEach((c, i) => {
+    const r = c.getBoundingClientRect();
+    const cMid = (r.top + r.bottom) / 2;
+    const dist = Math.abs(cMid - wrapMid);
+    if (dist < bestDist) { bestDist = dist; best = i; }
+  });
+  return best + 1;
+}
+
+function updatePageCounter() {
+  if (pdfDoc) pageCurrent.textContent = getVisiblePage();
+}
+
+async function renderAllPages() {
+  pagesEl.innerHTML = '';
+  canvases = [];
+  for (let num = 1; num <= pdfDoc.numPages; num++) {
+    const page = await pdfDoc.getPage(num);
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    pagesEl.appendChild(canvas);
+    canvases.push(canvas);
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  }
+  spinner.style.display = 'none';
+  zoomDisplay.textContent = Math.round(scale * 100) + '%';
+  btnZoomOut.disabled = scale <= MIN_SCALE;
+  btnZoomIn.disabled  = scale >= MAX_SCALE;
+  pageCurrent.textContent = '1';
+}
+
+async function init() {
+  try {
+    pdfDoc = await pdfjsLib.getDocument(PDF_URL).promise;
+    pageTotal.textContent = pdfDoc.numPages;
+    const firstPage = await pdfDoc.getPage(1);
+    const unscaled = firstPage.getViewport({ scale: 1 });
+    const wrapW = canvasWrap.clientWidth - 32;
+    scale = wrapW > 0 ? Math.min(wrapW / unscaled.width, 2.0) : 1.0;
+    await renderAllPages();
+  } catch (e) {
+    spinner.innerHTML = '<span class="pdf-spinner-text">Не удалось загрузить документ.</span>';
+    console.error(e);
+  }
+}
+
+async function applyZoom() {
+  if (!pdfDoc) return;
+  zoomDisplay.textContent = '…';
+  btnZoomIn.disabled = btnZoomOut.disabled = true;
+  const scrollTopRatio  = canvasWrap.scrollTop  / (canvasWrap.scrollHeight || 1);
+  const scrollLeftRatio = canvasWrap.scrollLeft / (canvasWrap.scrollWidth  || 1);
+  await renderAllPages();
+  canvasWrap.scrollTop  = scrollTopRatio  * canvasWrap.scrollHeight;
+  canvasWrap.scrollLeft = scrollLeftRatio * canvasWrap.scrollWidth;
+}
+
+btnZoomIn.addEventListener('click', async () => {
+  if (scale < MAX_SCALE) { scale = +(Math.min(scale + SCALE_STEP, MAX_SCALE).toFixed(2)); await applyZoom(); }
+});
+btnZoomOut.addEventListener('click', async () => {
+  if (scale > MIN_SCALE) { scale = +(Math.max(scale - SCALE_STEP, MIN_SCALE).toFixed(2)); await applyZoom(); }
+});
+canvasWrap.addEventListener('scroll', updatePageCounter);
+
+init();
+</script>
+{% endblock %}

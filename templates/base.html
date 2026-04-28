@@ -218,6 +218,137 @@
             border-color: var(--primary-blue);
         }
 
+        /* User dropdown */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-dropdown-trigger {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 14px 6px 6px;
+            border-radius: 60px;
+            background: var(--light-gray);
+            border: 1.5px solid #E0E0E0;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .user-dropdown-trigger:hover {
+            background: #EBEBEB;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #E8E8E8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-avatar svg {
+            width: 22px;
+            height: 22px;
+            color: #8E8E8E;
+        }
+
+        .user-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--dark-gray);
+            white-space: nowrap;
+        }
+
+        .user-chevron {
+            flex-shrink: 0;
+            transition: transform 0.25s ease;
+        }
+
+        .user-dropdown.open .user-chevron {
+            transform: rotate(180deg);
+        }
+
+        .user-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            min-width: 240px;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .user-dropdown.open .user-dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-items {
+            padding: 12px 0 8px;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 13px 24px;
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--dark-gray);
+            text-decoration: none;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: var(--light-gray);
+        }
+
+        .dropdown-item.disabled {
+            color: #B0B0B0;
+            pointer-events: none;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #E8E8E8;
+            margin: 8px 0;
+        }
+
+        .dropdown-footer {
+            padding: 8px 16px 16px;
+        }
+
+        .dropdown-logout {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--dark-gray);
+            text-align: center;
+            text-decoration: none;
+            background: none;
+            border: 1.5px solid var(--dark-gray);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .dropdown-logout:hover {
+            background: var(--dark-gray);
+            color: var(--white);
+        }
+
         {% block extra_style %}{% endblock %}
     </style>
 </head>
@@ -236,8 +367,33 @@
                         <li><a href="{% url 'patients:my_profile' %}">Моя карточка</a></li>
                     {% endif %}
 
-                    <li><span style="color: var(--medium-gray);">{{ user.get_full_name }}</span></li>
-                    <li><a href="{% url 'accounts:logout' %}">Выход</a></li>
+                    <li>
+                        <div class="user-dropdown" id="userDropdown">
+                            <div class="user-dropdown-trigger" id="userDropdownTrigger">
+                                <div class="user-avatar">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                                    </svg>
+                                </div>
+                                <span class="user-name">{{ user.last_name }} {{ user.first_name }}</span>
+                                <svg class="user-chevron" width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.40066 4.40079C4.45423 4.34708 4.51788 4.30446 4.58796 4.27539C4.65803 4.24631 4.73316 4.23134 4.80903 4.23134C4.88489 4.23134 4.96002 4.24631 5.03009 4.27539C5.10017 4.30446 5.16382 4.34708 5.21739 4.40079L10.0002 9.18472L14.7829 4.40079C14.8912 4.29249 15.0381 4.23164 15.1913 4.23164C15.3445 4.23164 15.4914 4.29249 15.5997 4.40079C15.708 4.5091 15.7688 4.656 15.7688 4.80916C15.7688 4.96233 15.708 5.10923 15.5997 5.21753L10.4085 10.4087C10.355 10.4624 10.2913 10.505 10.2212 10.5341C10.1512 10.5632 10.076 10.5781 10.0002 10.5781C9.92429 10.5781 9.84917 10.5632 9.7791 10.5341C9.70902 10.505 9.64537 10.4624 9.59179 10.4087L4.40066 5.21753C4.34694 5.16395 4.30432 5.1003 4.27525 5.03023C4.24617 4.96015 4.2312 4.88503 4.2312 4.80916C4.2312 4.7333 4.24617 4.65817 4.27525 4.5881C4.30432 4.51802 4.34694 4.45437 4.40066 4.40079Z" fill="#262626"/>
+                                </svg>
+                            </div>
+                            <div class="user-dropdown-menu">
+                                <div class="dropdown-items">
+                                    <span class="dropdown-item disabled">Документы</span>
+                                    <span class="dropdown-item disabled">Создатели</span>
+                                    <span class="dropdown-item disabled">Тех. поддержка</span>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-footer">
+                                    <a href="{% url 'accounts:logout' %}" class="dropdown-logout">Выйти</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
                 {% else %}
                     <li><a href="{% url 'accounts:login' %}">Вход</a></li>
                     <li><a href="{% url 'accounts:register_step_one' %}" class="btn btn-primary">Регистрация</a></li>
@@ -274,6 +430,23 @@
         <span class="footer-copy">© Painmetrica 2026. Все права защищены</span>
     </footer>
 
+    <script>
+        (function () {
+            var dropdown = document.getElementById('userDropdown');
+            if (!dropdown) return;
+            var trigger = document.getElementById('userDropdownTrigger');
+            trigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', function () {
+                dropdown.classList.remove('open');
+            });
+            dropdown.querySelector('.user-dropdown-menu').addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        })();
+    </script>
     {% block extra_script %}{% endblock %}
 </body>
 </html>

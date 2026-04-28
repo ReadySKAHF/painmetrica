@@ -270,6 +270,25 @@
     color: var(--gray-550);
   }
 
+  {% if request.user.user_type == 'patient' %}
+  .main { padding-top: 149px; }
+  {% else %}
+  .main { padding-top: 184px; }
+  {% endif %}
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    color: var(--blue-500);
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 33px;
+    transition: opacity 0.15s;
+  }
+  .back-link:hover { opacity: 0.72; }
+
   /* ── MODAL ── */
   .modal-overlay {
     display: none;
@@ -340,6 +359,15 @@
 {% endblock %}
 
 {% block content %}
+
+{% if request.user.user_type == 'patient' %}
+<a href="{% url 'core:dashboard' %}" class="back-link">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M15 18L9 12L15 6" stroke="#2E67F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  В личный кабинет
+</a>
+{% endif %}
 
 <h1 class="page-title">Новости неврологии</h1>
 

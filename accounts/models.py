@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
-import random
+import secrets
 import uuid
 
 
@@ -139,7 +139,7 @@ class OTPCode(models.Model):
     @classmethod
     def generate_code(cls):
         """Генерация 4-значного OTP кода"""
-        return str(random.randint(1000, 9999))
+        return str(secrets.randbelow(9000) + 1000)
 
     def is_valid(self):
         """Проверка действительности кода"""

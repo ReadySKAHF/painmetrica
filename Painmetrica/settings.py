@@ -268,6 +268,11 @@ AUTHENTICATION_BACKENDS = [
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Painmetrica <noreply@painmetrica.by>')
 
+# Адреса для оповещений о подозрительной активности (через запятую)
+SECURITY_ALERT_EMAILS = [
+    e.strip() for e in os.environ.get('SECURITY_ALERT_EMAILS', '').split(',') if e.strip()
+]
+
 # URLs для аутентификации
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'core:dashboard'

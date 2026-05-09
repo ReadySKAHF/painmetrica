@@ -11,6 +11,8 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 
+from django.core.cache import cache
+
 from accounts.forms import (
     RegisterStepOneForm,
     DoctorProfileForm,
@@ -21,9 +23,69 @@ from accounts.forms import (
     PasswordResetRequestForm,
     PasswordResetSetForm,
 )
-from accounts.models import DoctorProfile, PatientProfile
+from accounts.models import DoctorProfile, PatientProfile, UserSession
 from accounts.services.otp_service import OTPService
 from patients.models import Patient
+
+
+def _get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR')
+
+
+def _send_login_notification(request, user):
+    from accounts.models import PasswordResetToken
+    from django.utils import timezone
+    from datetime import timedelta
+
+    # Инвалидируем старые неиспользованные токены
+    PasswordResetToken.objects.filter(user=user, is_used=False).update(is_used=True)
+
+    # Создаём токен с временем жизни 1 час
+    token = PasswordResetToken.objects.create(
+        user=user,
+        expires_at=timezone.now() + timedelta(hours=1),
+    )
+    reset_url = request.build_absolute_uri(
+        reverse('accounts:password_reset_set', kwargs={'token': token.token})
+    )
+
+    subject = 'Вход в аккаунт Painmetrica'
+    text = (
+        'В ваш аккаунт был произведен вход.\n'
+        'В случае, если вы не совершали вход, то перейдите по этой ссылке '
+        f'для сброса пароля: {reset_url}'
+    )
+    try:
+        send_email(user.email, subject, text)
+    except Exception:
+        pass
+
+
+def _terminate_all_user_sessions(user):
+    """Завершает все активные сессии пользователя в Redis и БД."""
+    from django.contrib.sessions.backends.cache import SessionStore
+    sessions = UserSession.objects.filter(user=user)
+    for s in sessions:
+        SessionStore(s.session_key).delete()
+    sessions.delete()
+
+
+def _send_security_alert(email):
+    alert_emails = getattr(settings, 'SECURITY_ALERT_EMAILS', [])
+    if not alert_emails:
+        return
+    subject = 'Подозрительная активность Painmetrica'
+    text = (
+        f'Аккаунт с email: {email} совершил 5 или более неудачных попыток для входа'
+    )
+    for admin_email in alert_emails:
+        try:
+            send_email(admin_email, subject, text)
+        except Exception:
+            pass
 
 
 class RegisterStepOneView(View):
@@ -285,6 +347,9 @@ class LoginView(View):
             user = authenticate(request, email=email, password=password)
 
             if user is not None:
+                # Сбрасываем счётчик неудачных попыток
+                cache.delete(f'login_fails:{email}')
+
                 # Отправляем OTP для второго фактора
                 OTPService.generate_and_send_otp(user, purpose='login')
 
@@ -294,6 +359,13 @@ class LoginView(View):
                 messages.success(request, 'Код подтверждения отправлен на ваш email.')
                 return redirect('accounts:login_verify')
             else:
+                # Считаем неудачные попытки; оповещаем при достижении 5
+                fails_key = f'login_fails:{email}'
+                fails = (cache.get(fails_key) or 0) + 1
+                cache.set(fails_key, fails, 60 * 60)
+                if fails == 5:
+                    _send_security_alert(email)
+
                 messages.error(request, 'Неверный email или пароль.')
 
         return render(request, self.template_name, {'form': form})
@@ -348,8 +420,21 @@ class LoginVerifyOTPView(View):
                 # Устанавливаем бэкенд для аутентификации
                 otp_user.backend = 'accounts.backends.EmailBackend'
 
-                # Авторизуем пользователя
+                # Авторизуем пользователя (Django ротирует ключ сессии)
                 login(request, otp_user)
+
+                # Сохраняем запись об активной сессии
+                UserSession.objects.update_or_create(
+                    session_key=request.session.session_key,
+                    defaults={
+                        'user': otp_user,
+                        'ip_address': _get_client_ip(request),
+                        'user_agent': request.META.get('HTTP_USER_AGENT', ''),
+                    },
+                )
+
+                # Уведомляем пользователя о входе
+                _send_login_notification(request, otp_user)
 
                 messages.success(request, f'Добро пожаловать, {otp_user.first_name}!')
                 return redirect('core:dashboard')
@@ -363,6 +448,8 @@ class LogoutView(View):
     """Выход из системы"""
 
     def get(self, request):
+        if request.user.is_authenticated:
+            UserSession.objects.filter(session_key=request.session.session_key).delete()
         logout(request)
         messages.success(request, 'Вы успешно вышли из системы.')
         return redirect('core:home')
@@ -823,6 +910,8 @@ class PasswordResetSetView(View):
 
             token_obj.is_used = True
             token_obj.save()
+
+            _terminate_all_user_sessions(user)
 
             return render(request, self.template_name, {
                 'form': form,

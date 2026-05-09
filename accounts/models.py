@@ -172,12 +172,39 @@ class PasswordResetToken(models.Model):
         return f'Сброс пароля для {self.user.email}'
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.pk and not self.expires_at:
             self.expires_at = timezone.now() + timedelta(hours=24)
         super().save(*args, **kwargs)
 
     def is_valid(self):
         return not self.is_used and timezone.now() < self.expires_at
+
+
+class UserSession(models.Model):
+    """Отслеживание активных сессий пользователей"""
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='active_sessions', verbose_name='Пользователь'
+    )
+    session_key = models.CharField('Ключ сессии', max_length=40, unique=True)
+    ip_address = models.GenericIPAddressField('IP адрес', null=True, blank=True)
+    user_agent = models.TextField('User Agent', blank=True)
+    created_at = models.DateTimeField('Создана', auto_now_add=True)
+    last_activity = models.DateTimeField('Последняя активность', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Сессия пользователя'
+        verbose_name_plural = 'Сессии пользователей'
+        ordering = ['-last_activity']
+
+    def __str__(self):
+        return f'{self.user.email} | {self.ip_address} | {self.created_at:%d.%m.%Y %H:%M}'
+
+    def terminate(self):
+        from django.contrib.sessions.backends.cache import SessionStore
+        SessionStore(self.session_key).delete()
+        self.delete()
 
 
 class PatientInvitation(models.Model):

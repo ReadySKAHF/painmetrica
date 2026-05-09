@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from accounts.models import User, DoctorProfile, PatientProfile, OTPCode
+from accounts.models import User, DoctorProfile, PatientProfile, OTPCode, UserSession
 
 
 class DoctorProfileInline(admin.StackedInline):
@@ -69,3 +69,32 @@ class OTPCodeAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         """Только просмотр"""
         return False
+
+
+@admin.register(UserSession)
+class UserSessionAdmin(admin.ModelAdmin):
+    """Управление активными сессиями пользователей"""
+
+    list_display = ['user', 'ip_address', 'short_user_agent', 'created_at', 'last_activity']
+    list_filter = ['created_at']
+    search_fields = ['user__email', 'ip_address']
+    readonly_fields = ['user', 'session_key', 'ip_address', 'user_agent', 'created_at', 'last_activity']
+    ordering = ['-last_activity']
+    actions = ['terminate_sessions']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description='Браузер / устройство')
+    def short_user_agent(self, obj):
+        return obj.user_agent[:80] + '…' if len(obj.user_agent) > 80 else obj.user_agent
+
+    @admin.action(description='Завершить выбранные сессии')
+    def terminate_sessions(self, request, queryset):
+        count = queryset.count()
+        for session in queryset:
+            session.terminate()
+        self.message_user(request, f'Завершено сессий: {count}')

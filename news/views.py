@@ -121,6 +121,7 @@ class ArticlePublishView(DoctorRequiredMixin, View):
         article = get_object_or_404(Article, pk=pk)
         if article.status == Article.STATUS_DRAFT:
             article.status = Article.STATUS_PUBLISHED
+            article.date = datetime.date.today()
         else:
             article.status = Article.STATUS_DRAFT
         article.save()

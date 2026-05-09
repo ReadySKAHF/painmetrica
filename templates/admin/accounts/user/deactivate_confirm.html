@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>Подтверждение удаления аккаунтов</h1>
+
+{% if active_qs %}
+<p>Следующие аккаунты будут <strong>необратимо деактивированы</strong>:</p>
+<ul>
+  {% for user in active_qs %}
+  <li>
+    <strong>{{ user.get_full_name }}</strong> — {{ user.email }}
+    {% if user.user_type == 'doctor' %}
+      <em>(врач — стираются ФИО, email, пароль, профессиональные данные)</em>
+    {% else %}
+      <em>(пациент — стираются ФИО, email, пароль, дата рождения; медданные архивируются на 25 лет)</em>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:12px 16px;margin:16px 0;">
+  <strong>Внимание!</strong> Это действие необратимо. Персональные данные будут стёрты немедленно,
+  а пользователи получат уведомление на email.
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="{{ action }}">
+  {% for user in active_qs %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ user.pk }}">
+  {% endfor %}
+  <input type="hidden" name="confirm" value="yes">
+  <button type="submit" class="button default" style="background:#ba2121;color:#fff;border:none;padding:8px 16px;cursor:pointer;border-radius:4px;">
+    Подтвердить удаление
+  </button>
+  <a href="../" class="button" style="margin-left:8px;padding:8px 16px;">Отмена</a>
+</form>
+{% endif %}
+
+{% if already_deactivated.exists %}
+<hr>
+<p style="color:#666;">
+  <strong>Уже деактивированы (будут пропущены):</strong>
+  {% for user in already_deactivated %}{{ user.email }}{% if not forloop.last %}, {% endif %}{% endfor %}
+</p>
+{% endif %}
+{% endblock %}

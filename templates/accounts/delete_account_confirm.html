@@ -1,0 +1,136 @@
+{% extends 'base_app.html' %}
+{% block title %}Удаление аккаунта — Painmetrica{% endblock %}
+
+{% block extra_style %}
+  .main { padding-top: 148px; padding-bottom: 40px; display: flex; align-items: flex-start; justify-content: center; }
+
+  .delete-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px 32px;
+    max-width: 560px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+  }
+
+  .icon-wrap {
+    width: 84px; height: 84px;
+    background: #FFF0F0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-size: 22px; font-weight: 700;
+    color: var(--gray-950); text-align: center; line-height: 1.35;
+  }
+
+  .card-desc {
+    font-size: 14px; font-weight: 400;
+    color: var(--gray-550); text-align: center;
+    line-height: 1.6; max-width: 440px;
+  }
+
+  .card-desc strong { color: var(--gray-950); }
+
+  .info-block {
+    width: 100%;
+    background: #FFF8F8;
+    border: 1px solid #FBDCDC;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px; line-height: 1.6; color: var(--gray-950);
+  }
+
+  .info-block ul { padding-left: 18px; margin-top: 6px; }
+  .info-block li { margin-bottom: 4px; }
+
+  .actions {
+    display: flex; flex-direction: column; gap: 10px; width: 100%;
+  }
+
+  .btn-delete {
+    display: block; width: 100%; padding: 14px;
+    font-family: 'Proxima Nova', sans-serif; font-size: 15px; font-weight: 600;
+    color: var(--white); background: var(--red-400);
+    border: none; border-radius: 40px; cursor: pointer;
+    text-align: center; transition: opacity 0.2s;
+  }
+  .btn-delete:hover { opacity: 0.88; }
+
+  .btn-cancel {
+    display: block; width: 100%; padding: 14px;
+    font-family: 'Proxima Nova', sans-serif; font-size: 15px; font-weight: 400;
+    color: var(--gray-950); background: none;
+    border: 1.5px solid var(--gray-300); border-radius: 40px; cursor: pointer;
+    text-align: center; text-decoration: none; transition: background 0.2s;
+  }
+  .btn-cancel:hover { background: var(--gray-200); }
+
+  .error-msg {
+    font-size: 13px; color: var(--red-400); text-align: center;
+  }
+{% endblock %}
+
+{% block content %}
+<div class="delete-card">
+  <div class="icon-wrap">
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <path d="M20 8L20 22" stroke="#E43D3D" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="20" cy="30" r="2" fill="#E43D3D"/>
+      <circle cx="20" cy="20" r="17" stroke="#E43D3D" stroke-width="2.5"/>
+    </svg>
+  </div>
+
+  <p class="card-title">Удаление аккаунта</p>
+
+  {% if user.user_type == 'doctor' %}
+  <p class="card-desc">
+    Это действие <strong>необратимо</strong>. Ваши персональные данные будут немедленно стёрты
+    из базы данных, а аккаунт — деактивирован.
+  </p>
+  <div class="info-block">
+    <strong>Что будет удалено немедленно:</strong>
+    <ul>
+      <li>Email, ФИО, пароль</li>
+      <li>Должность, специальность, место работы, город, сфера интересов</li>
+    </ul>
+  </div>
+  {% else %}
+  <p class="card-desc">
+    Это действие <strong>необратимо</strong>. Ваши персональные данные будут немедленно стёрты,
+    а медицинские данные — архивированы.
+  </p>
+  <div class="info-block">
+    <strong>Что будет удалено немедленно:</strong>
+    <ul>
+      <li>Email, ФИО, пароль, дата рождения</li>
+    </ul>
+    <strong>Что будет архивировано (физически удалено через 25 лет):</strong>
+    <ul>
+      <li>Диагноз, локализация боли, длительность боли</li>
+      <li>Результаты тестовых сессий</li>
+      <li>Заключения, сформированные вашим врачом</li>
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <p class="error-msg">Пожалуйста, подтвердите удаление аккаунта.</p>
+  {% endif %}
+
+  <div class="actions">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="confirm" value="yes">
+      <button type="submit" class="btn-delete">Удалить мой аккаунт</button>
+    </form>
+    <a href="{% url 'core:dashboard' %}" class="btn-cancel">Отмена</a>
+  </div>
+</div>
+{% endblock %}

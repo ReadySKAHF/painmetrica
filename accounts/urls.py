@@ -28,6 +28,10 @@ urlpatterns = [
     path('password-reset/', views.PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('password-reset/<uuid:token>/', views.PasswordResetSetView.as_view(), name='password_reset_set'),
 
+    # Удаление аккаунта
+    path('delete-account/', views.DeleteAccountView.as_view(), name='delete_account'),
+    path('account-deleted/', views.AccountDeletedView.as_view(), name='account_deleted'),
+
     # Регистрация пациентов
     path('api/send-patient-invitation/', views.SendPatientInvitationView.as_view(), name='send_patient_invitation'),
     path('api/manual-patient-create/', views.ManualPatientCreateView.as_view(), name='manual_patient_create'),

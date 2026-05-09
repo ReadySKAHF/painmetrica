@@ -71,6 +71,24 @@ class User(AbstractUser):
         return f'{self.last_name} {self.first_name}'
 
 
+class Organization(models.Model):
+    """Медицинское учреждение"""
+
+    name = models.CharField('Название учреждения', max_length=500)
+    city = models.CharField('Город', max_length=100, blank=True)
+    address = models.TextField('Адрес', blank=True)
+    is_active = models.BooleanField('Активно', default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Учреждение'
+        verbose_name_plural = 'Учреждения'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class DoctorProfile(models.Model):
     """Профиль доктора"""
 
@@ -80,6 +98,14 @@ class DoctorProfile(models.Model):
     workplace = models.CharField('Место работы', max_length=300)
     city = models.CharField('Город', max_length=100)
     area_of_interest = models.TextField('Область интересов', blank=True)
+    organization = models.ForeignKey(
+        'Organization',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='doctors',
+        verbose_name='Учреждение',
+    )
 
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)

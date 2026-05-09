@@ -28,6 +28,13 @@ from accounts.services.otp_service import OTPService
 from patients.models import Patient
 
 
+def _get_doctor_organization(user):
+    try:
+        return user.doctor_profile.organization
+    except Exception:
+        return None
+
+
 def _get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -517,6 +524,13 @@ class SendPatientInvitationView(LoginRequiredMixin, View):
         if request.user.user_type != 'doctor':
             return JsonResponse({'success': False, 'message': 'Нет доступа.'}, status=403)
 
+        org = _get_doctor_organization(request.user)
+        if org is None:
+            return JsonResponse({
+                'success': False,
+                'message': 'Вы не привязаны к учреждению. Обратитесь к администратору.'
+            }, status=403)
+
         email = request.POST.get('email', '').strip().lower()
 
         if not email:
@@ -567,6 +581,13 @@ class ManualPatientCreateView(LoginRequiredMixin, View):
         if request.user.user_type != 'doctor':
             return JsonResponse({'success': False, 'message': 'Нет доступа.'}, status=403)
 
+        org = _get_doctor_organization(request.user)
+        if org is None:
+            return JsonResponse({
+                'success': False,
+                'message': 'Вы не привязаны к учреждению. Обратитесь к администратору.'
+            }, status=403)
+
         form = PatientManualCreateForm(request.POST)
 
         if form.is_valid():
@@ -593,6 +614,7 @@ class ManualPatientCreateView(LoginRequiredMixin, View):
             Patient.objects.create(
                 user=user,
                 assigned_doctor=request.user,
+                organization=org,
                 medical_history=form.cleaned_data.get('diagnosis', ''),
                 pain_location=form.cleaned_data.get('pain_location', ''),
                 pain_duration=form.cleaned_data.get('pain_duration', ''),
@@ -672,7 +694,11 @@ class PatientRegisterViaInviteStep1View(View):
                 user=user,
                 date_of_birth=form.cleaned_data.get('date_of_birth'),
             )
-            Patient.objects.create(user=user, assigned_doctor=invitation.doctor)
+            Patient.objects.create(
+                user=user,
+                assigned_doctor=invitation.doctor,
+                organization=_get_doctor_organization(invitation.doctor),
+            )
 
             request.session['patient_invite_user_id'] = user.id
             request.session['patient_invite_token'] = str(token)
@@ -873,6 +899,46 @@ class PasswordResetRequestView(View):
             })
 
         return render(request, self.template_name, {'form': form})
+
+
+class DeleteAccountView(LoginRequiredMixin, View):
+    """Самостоятельное удаление аккаунта пользователем из дропдауна."""
+
+    template_name = 'accounts/delete_account_confirm.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        if request.POST.get('confirm') != 'yes':
+            return render(request, self.template_name, {'error': True})
+
+        from accounts.services.account_deletion_service import deactivate_user_account
+        user = request.user
+
+        if user.is_superuser or user.is_staff:
+            messages.error(request, 'Аккаунты сотрудников нельзя удалить через интерфейс.')
+            return redirect('core:dashboard')
+
+        try:
+            deactivate_user_account(user)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception('Self-deletion failed for user pk=%s', user.pk)
+            messages.error(request, 'Произошла ошибка. Обратитесь в поддержку.')
+            return redirect('core:dashboard')
+
+        logout(request)
+        return redirect('accounts:account_deleted')
+
+
+class AccountDeletedView(View):
+    """Страница подтверждения успешного удаления аккаунта."""
+
+    template_name = 'accounts/account_deleted.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
 
 
 class PasswordResetSetView(View):

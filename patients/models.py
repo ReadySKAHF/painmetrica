@@ -21,10 +21,22 @@ class Patient(models.Model):
         related_name='patients',
         verbose_name='Лечащий врач'
     )
+    organization = models.ForeignKey(
+        'accounts.Organization',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='patients',
+        verbose_name='Учреждение',
+    )
     medical_history = models.TextField('Медицинская история', blank=True)
     pain_location = models.CharField('Локализация боли', max_length=200, blank=True)
     pain_duration = models.CharField('Длительность боли', max_length=20, blank=True)
     notes = models.TextField('Заметки', blank=True)
+
+    is_archived = models.BooleanField('Архивирован', default=False)
+    archived_at = models.DateTimeField('Дата архивации', null=True, blank=True)
+    scheduled_deletion_at = models.DateTimeField('Плановое физическое удаление', null=True, blank=True)
 
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)

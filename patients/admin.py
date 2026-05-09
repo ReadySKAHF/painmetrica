@@ -6,15 +6,15 @@ from patients.models import Patient
 class PatientAdmin(admin.ModelAdmin):
     """Админка для пациентов"""
 
-    list_display = ['get_patient_name', 'assigned_doctor', 'created_at']
-    list_filter = ['assigned_doctor', 'created_at']
+    list_display = ['get_patient_name', 'assigned_doctor', 'organization', 'created_at']
+    list_filter = ['organization', 'assigned_doctor', 'created_at']
     search_fields = ['user__email', 'user__first_name', 'user__last_name', 'medical_history']
     readonly_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('user', 'assigned_doctor')
+            'fields': ('user', 'assigned_doctor', 'organization')
         }),
         ('Медицинские данные', {
             'fields': ('medical_history', 'notes')

@@ -154,6 +154,17 @@ body {
 }
 .dropdown-logout:hover { background: var(--gray-950); color: var(--white); }
 
+.dropdown-delete {
+  display: block; width: 100%; box-sizing: border-box;
+  padding: 8px; margin-bottom: 6px;
+  font-family: 'Proxima Nova', sans-serif; font-size: 12px; font-weight: 400;
+  color: var(--red-400); text-align: center; text-decoration: none;
+  background: none; border: 1.5px solid var(--red-400);
+  border-radius: 40px; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.dropdown-delete:hover { background: var(--red-400); color: var(--white); }
+
 /* ── MAIN ── */
 .main {
   max-width: 1320px; width: 100%; margin: 0 auto;
@@ -263,6 +274,7 @@ body {
         </div>
         <div class="dropdown-divider"></div>
         <div class="dropdown-footer">
+          <a href="{% url 'accounts:delete_account' %}" class="dropdown-item dropdown-delete">Удалить аккаунт</a>
           <a href="{% url 'accounts:logout' %}" class="dropdown-logout">Выйти</a>
         </div>
       </div>

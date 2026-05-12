@@ -359,9 +359,9 @@
     <div class="content"{% if is_scale_stage %} style="margin-right: 0"{% endif %}>
       <div class="page-title">{{ stage.page_title }}</div>
 
-      {% if stage.annotation %}
+      {% if banner_annotation %}
       <div class="info-banner">
-        <p>{{ stage.annotation }}</p>
+        <p>{{ banner_annotation }}</p>
       </div>
       {% endif %}
 
@@ -443,7 +443,7 @@
 
         <div class="btn-wrap">
           <button type="submit" class="next-btn">
-            {% if is_last_stage %}Сохранить и перейти к результатам{% elif stage.order == 2 %}Осмотр пациента{% elif stage.order == 3 %}Сохранить и перейти к CSI{% elif stage.order == 4 %}Сохранить и перейти к HADS{% elif stage.order == 5 %}Оценка уровня депрессии{% else %}Продолжить{% endif %}
+            {% if is_last_stage %}Сохранить и перейти к результатам{% elif stage.order == 2 %}Перейти к осмотру{% elif stage.order == 3 %}Сохранить и перейти к CSI{% elif stage.order == 4 %}Сохранить и перейти к HADS{% elif stage.order == 5 %}Оценка уровня депрессии{% else %}Продолжить{% endif %}
           </button>
         </div>
         {% endif %}

@@ -23,7 +23,7 @@ class QuestionInline(admin.StackedInline):
 class StageInline(admin.StackedInline):
     model = Stage
     extra = 1
-    fields = ['name', 'description', 'page_title', 'annotation', 'order', 'sidebar_step']
+    fields = ['name', 'description', 'page_title', 'annotation', 'annotation_doctor', 'annotation_patient', 'order', 'sidebar_step']
     ordering = ['order']
     show_change_link = True
 
@@ -75,7 +75,7 @@ class StageAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Сайдбар', {'fields': ('test', 'name', 'description', 'sidebar_step', 'order')}),
-        ('Страница', {'fields': ('page_title', 'annotation')}),
+        ('Страница', {'fields': ('page_title', 'annotation', 'annotation_doctor', 'annotation_patient')}),
     )
 
     def get_questions_count(self, obj):

@@ -55,6 +55,14 @@ class Stage(models.Model):
     description = models.CharField('Описание (сайдбар)', max_length=200)
     page_title = models.CharField('Заголовок страницы', max_length=200)
     annotation = models.TextField('Аннотация (синий баннер)', blank=True)
+    annotation_doctor = models.TextField(
+        'Аннотация для врача', blank=True,
+        help_text='Если заполнено — показывается врачу вместо общей аннотации'
+    )
+    annotation_patient = models.TextField(
+        'Аннотация для пациента', blank=True,
+        help_text='Если заполнено — показывается пациенту вместо общей аннотации'
+    )
     order = models.PositiveIntegerField('Порядок страниц', default=1)
     sidebar_step = models.PositiveIntegerField(
         'Шаг в сайдбаре', default=1,

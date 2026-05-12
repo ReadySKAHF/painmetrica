@@ -401,6 +401,8 @@ class PatientUpdateAPIView(LoginRequiredMixin, View):
         return JsonResponse({
             'success': True,
             'full_name': patient_user.get_full_name(),
+            'last_name': patient_user.last_name,
+            'first_name': patient_user.first_name,
             'date_of_birth': profile.date_of_birth.strftime('%d.%m.%Y') if profile.date_of_birth else '',
             'date_of_birth_iso': profile.date_of_birth.strftime('%Y-%m-%d') if profile.date_of_birth else '',
             'diagnosis': patient.medical_history,

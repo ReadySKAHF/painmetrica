@@ -13,6 +13,7 @@ from django.db import connection
 from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 
@@ -24,6 +25,15 @@ from tests.models import Answer, Question, QuestionOption, ScoreRange, Stage, Te
 # ─────────────────────────────────────────────
 # Вспомогательные функции
 # ─────────────────────────────────────────────
+
+def _get_banner_annotation(stage, user):
+    """Возвращает текст баннера с учётом роли пользователя."""
+    if user.user_type == 'doctor' and stage.annotation_doctor:
+        return stage.annotation_doctor
+    if user.user_type == 'patient' and stage.annotation_patient:
+        return stage.annotation_patient
+    return stage.annotation
+
 
 def _load_score_ranges(test):
     """Загружает все ScoreRange теста, кэширует на 1 час."""
@@ -346,6 +356,8 @@ class StageView(LoginRequiredMixin, View):
         if prev_stages_same_step:
             question_offset = Question.objects.filter(stage__in=prev_stages_same_step).count()
 
+        banner_annotation = _get_banner_annotation(stage, request.user)
+
         return render(request, 'tests/session_stage.html', {
             'session': session,
             'stage': stage,
@@ -357,6 +369,7 @@ class StageView(LoginRequiredMixin, View):
             'is_last_stage': is_last_stage,
             'patient': session.patient,
             'question_offset': question_offset,
+            'banner_annotation': banner_annotation,
         })
 
     def post(self, request, session_id, order):
@@ -396,6 +409,14 @@ class StageView(LoginRequiredMixin, View):
             session.completed_at = timezone.now()
             session.save()
             _finalize_session(session)
+
+            if request.user.user_type == 'patient':
+                from tests.services.email_service import notify_doctor_test_completed
+                result_url = request.build_absolute_uri(
+                    reverse('tests:result', kwargs={'session_id': session_id})
+                )
+                notify_doctor_test_completed(session, result_url)
+
             return redirect('tests:result', session_id=session_id)
 
 

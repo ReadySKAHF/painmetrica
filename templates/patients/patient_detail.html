@@ -1316,6 +1316,13 @@
         // Обновляем view-карточку без перезагрузки
         document.getElementById('view-name').textContent = data.full_name;
 
+        {% if not is_doctor %}
+        const headerName = document.querySelector('.header-right .user-name');
+        if (headerName) {
+          headerName.textContent = (data.last_name + ' ' + data.first_name).trim();
+        }
+        {% endif %}
+
         const dobEl = document.getElementById('view-dob');
         dobEl.textContent  = data.date_of_birth || '—';
         dobEl.className    = 'value' + (data.date_of_birth ? '' : ' empty');

@@ -371,7 +371,7 @@
 
 <h1 class="page-title">Новости неврологии</h1>
 
-{% if request.user.user_type == 'doctor' %}
+{% if is_news_manager %}
 <div class="toolbar">
   <span class="news-count">Всего статей: <strong>{{ total_articles|default:"0" }}</strong></span>
   <a href="{% url 'news:add' %}" class="btn-primary">Добавить статью</a>
@@ -392,7 +392,7 @@
     <div class="news-card-body">
       <div class="news-card-header">
         <span class="news-card-title">{{ article.title }}</span>
-        {% if request.user.user_type == 'doctor' %}
+        {% if is_news_manager %}
         <div class="news-card-actions">
 
           {% if article.status == 'draft' %}
@@ -447,7 +447,7 @@
   {% endfor %}
 </div>
 
-  {% if request.user.user_type == 'doctor' %}
+  {% if is_news_manager %}
   <!-- SHARED FORMS FOR MODALS -->
   <form id="deleteNewsForm" method="post" action="">
     {% csrf_token %}

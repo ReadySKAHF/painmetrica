@@ -51,6 +51,7 @@ class User(AbstractUser):
     last_name = models.CharField('Фамилия', max_length=150)
 
     is_email_verified = models.BooleanField('Email подтвержден', default=False)
+    can_manage_news = models.BooleanField('Управление новостями', default=False)
 
     objects = UserManager()
 

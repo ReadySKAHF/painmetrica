@@ -9,6 +9,7 @@ class Medication(models.Model):
     medication_type = models.CharField('Тип', max_length=100, blank=True)
     prescription_scheme = models.TextField('Схема назначения', blank=True)
     side_effects = models.TextField('Побочные эффекты', blank=True)
+    label = models.CharField('Метка', max_length=300, blank=True)
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

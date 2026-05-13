@@ -80,14 +80,13 @@ def _terminate_all_user_sessions(user):
     sessions.delete()
 
 
-def _send_security_alert(email):
+def _send_security_alert(email, text=None):
     alert_emails = getattr(settings, 'SECURITY_ALERT_EMAILS', [])
     if not alert_emails:
         return
     subject = 'Подозрительная активность Painmetrica'
-    text = (
-        f'Аккаунт с email: {email} совершил 5 или более неудачных попыток для входа'
-    )
+    if text is None:
+        text = f'Аккаунт с email: {email} совершил 5 или более неудачных попыток для входа'
     for admin_email in alert_emails:
         try:
             send_email(admin_email, subject, text)
@@ -309,6 +308,9 @@ class RegisterVerifyOTPView(View):
             )
 
             if success:
+                # Сбрасываем счётчик неудачных OTP при успешной регистрации
+                cache.delete(f'otp_fails:{user.pk}')
+
                 # Помечаем email как подтвержденный
                 user.is_email_verified = True
                 user.save()
@@ -326,6 +328,17 @@ class RegisterVerifyOTPView(View):
                 messages.success(request, 'Регистрация успешно завершена!')
                 return redirect('core:dashboard')
             else:
+                otp_fails_key = f'otp_fails:{user.pk}'
+                otp_fails = (cache.get(otp_fails_key) or 0) + 1
+                cache.set(otp_fails_key, otp_fails, 60 * 60)
+                if otp_fails == 5:
+                    _send_security_alert(
+                        user.email,
+                        text=(
+                            f'Аккаунт с email: {user.email} совершил 5 или более '
+                            f'неудачных попыток ввода OTP-кода при регистрации'
+                        ),
+                    )
                 messages.error(request, error)
 
         return render(request, self.template_name, {'form': form, 'user': user})
@@ -421,6 +434,9 @@ class LoginVerifyOTPView(View):
             )
 
             if success:
+                # Сбрасываем счётчик неудачных OTP при успешном входе
+                cache.delete(f'otp_fails:{otp_user.pk}')
+
                 # Очищаем сессию
                 request.session.pop('login_user_id', None)
 
@@ -446,6 +462,17 @@ class LoginVerifyOTPView(View):
                 messages.success(request, f'Добро пожаловать, {otp_user.first_name}!')
                 return redirect('core:dashboard')
             else:
+                otp_fails_key = f'otp_fails:{otp_user.pk}'
+                otp_fails = (cache.get(otp_fails_key) or 0) + 1
+                cache.set(otp_fails_key, otp_fails, 60 * 60)
+                if otp_fails == 5:
+                    _send_security_alert(
+                        otp_user.email,
+                        text=(
+                            f'Аккаунт с email: {otp_user.email} совершил 5 или более '
+                            f'неудачных попыток ввода OTP-кода при входе в систему'
+                        ),
+                    )
                 messages.error(request, error)
 
         return render(request, self.template_name, {'form': form, 'otp_user': otp_user})

@@ -43,7 +43,7 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Личная информация', {'fields': ('first_name', 'middle_name', 'last_name')}),
-        ('Тип пользователя', {'fields': ('user_type', 'is_email_verified')}),
+        ('Тип пользователя', {'fields': ('user_type', 'is_email_verified', 'can_manage_news')}),
         ('Права доступа', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Даты', {'fields': ('last_login', 'date_joined')}),
     )

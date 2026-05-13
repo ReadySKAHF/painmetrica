@@ -11,7 +11,7 @@ from django.views.generic import ListView
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from accounts.mixins import DoctorRequiredMixin
+from accounts.mixins import NewsManagerRequiredMixin
 from news.models import Article
 
 _DETAIL_TTL = 60 * 10  # 10 мин — статья меняется редко
@@ -37,24 +37,26 @@ class NewsListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # defer 'content' — крупное HTML-поле, в списке не нужно
         qs = super().get_queryset().defer('content', 'created_at', 'updated_at')
-        if self.request.user.user_type == 'patient':
+        if not self.request.user.can_manage_news:
             qs = qs.filter(status=Article.STATUS_PUBLISHED)
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        if self.request.user.user_type == 'patient':
+        is_news_manager = self.request.user.can_manage_news
+        ctx['is_news_manager'] = is_news_manager
+        if is_news_manager:
+            ctx['total_articles'] = Article.objects.count()
+        else:
             count = cache.get('news:published_count')
             if count is None:
                 count = Article.objects.filter(status=Article.STATUS_PUBLISHED).count()
                 cache.set('news:published_count', count, _COUNT_TTL)
             ctx['total_articles'] = count
-        else:
-            ctx['total_articles'] = Article.objects.count()
         return ctx
 
 
-class ArticleFormView(DoctorRequiredMixin, View):
+class ArticleFormView(NewsManagerRequiredMixin, View):
     template_name = 'news/article_form.html'
 
     def _render(self, request, article=None):
@@ -103,7 +105,7 @@ class ArticleDetailView(View):
         return render(request, 'news/article_detail.html', {'article': article})
 
 
-class ArticleInlineImageUploadView(DoctorRequiredMixin, View):
+class ArticleInlineImageUploadView(NewsManagerRequiredMixin, View):
     def post(self, request):
         image = request.FILES.get('image')
         if not image:
@@ -116,7 +118,7 @@ class ArticleInlineImageUploadView(DoctorRequiredMixin, View):
         return JsonResponse({'url': default_storage.url(path)})
 
 
-class ArticlePublishView(DoctorRequiredMixin, View):
+class ArticlePublishView(NewsManagerRequiredMixin, View):
     def post(self, request, pk):
         article = get_object_or_404(Article, pk=pk)
         if article.status == Article.STATUS_DRAFT:

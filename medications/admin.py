@@ -17,7 +17,7 @@ class MedicationAdmin(admin.ModelAdmin):
             'fields': ('name', 'medication_type')
         }),
         ('Подробности', {
-            'fields': ('prescription_scheme', 'side_effects')
+            'fields': ('prescription_scheme', 'side_effects', 'label')
         }),
         ('Метаданные', {
             'fields': ('created_by', 'created_at', 'updated_at'),

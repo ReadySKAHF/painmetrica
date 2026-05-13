@@ -364,6 +364,7 @@ body {
           <div class="med-info">
             <span class="med-type">{{ med.medication_type|default:"—" }}</span>
             <span class="med-name">{{ med.name }}</span>
+            {% if med.label %}<span style="font-size:14px;font-weight:400;color:red;display:block;">* {{ med.label }}</span>{% endif %}
           </div>
           <div class="custom-checkbox">
             <input type="checkbox" data-id="{{ med.pk }}" {% if med.pk in selected_ids %}checked{% endif %}>
@@ -406,6 +407,10 @@ body {
         <div class="scheme-block">
           <textarea class="scheme-edit" id="scheme-{{ med.pk }}" data-med-id="{{ med.pk }}">{{ med.prescription_scheme }}</textarea>
         </div>
+        {% endif %}
+
+        {% if med.label %}
+        <p style="font-size:14px;font-weight:400;color:red;margin-top:8px;">* {{ med.label }}</p>
         {% endif %}
       </div>
       {% endfor %}

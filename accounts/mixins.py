@@ -19,6 +19,22 @@ class DoctorRequiredMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
+class NewsManagerRequiredMixin(LoginRequiredMixin):
+    """
+    Mixin для проверки права управления новостями (флаг can_manage_news).
+    Использовать для class-based views.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        if not request.user.can_manage_news:
+            raise PermissionDenied('Нет прав на управление новостями')
+
+        return super().dispatch(request, *args, **kwargs)
+
+
 class PatientRequiredMixin(LoginRequiredMixin):
     """
     Mixin для проверки, что пользователь является пациентом

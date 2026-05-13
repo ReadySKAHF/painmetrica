@@ -46,29 +46,67 @@ def _load_score_ranges(test):
 
 
 def _get_pathotype_label(category, scores_by_step, total_score, conclusion_label):
-    """Возвращает строку патотипа по категории теста и баллам по шагам."""
+    """Возвращает кортеж (label, extra_text) по категории теста и баллам по шагам.
+
+    Для категории 'complex' extra_text содержит дополнительное сообщение:
+    при ВАШ=0 — интерпретацию HADS, для неопределённого подтипа — рекомендацию.
+    """
     if category == 'complex':
-        dn4  = scores_by_step.get(2, 0)
-        csi  = scores_by_step.get(3, 0)
-        hads = scores_by_step.get(4, 0)
+        vas             = scores_by_step.get(1, 0)
+        dn4             = scores_by_step.get(2, 0)
+        csi             = scores_by_step.get(3, 0)
+        hads_anxiety    = scores_by_step.get(4, 0)
+        hads_depression = scores_by_step.get(5, 0)
+
+        if vas == 0:
+            if hads_anxiety > 11 and hads_depression > 11:
+                extra = 'Клинически выраженная тревога и депрессия.'
+            elif hads_anxiety > 11:
+                extra = 'Клинически выраженная тревога.'
+            elif hads_depression > 11:
+                extra = 'Клинически выраженная депрессия.'
+            else:
+                extra = 'Лечение болевого синдрома не требуется.'
+            return 'Боль отсутствует', extra
+
+        # VAS > 0
         if dn4 >= 4 and csi >= 30:
-            return 'Смешанный вариант (нейропатический + дисфункциональный)'
-        if dn4 >= 4 and csi < 30:
-            return 'Преимущественно нейропатический вариант'
-        if dn4 < 4 and csi >= 40 and hads >= 8:
-            return 'Преимущественно дисфункциональный вариант'
-        return 'Преимущественно ноцицептивный вариант'
+            return 'Смешанный вариант (нейропатический + ноцицептивный)', ''
+        if dn4 >= 4:
+            return 'Преимущественно нейропатический вариант', ''
+        # dn4 < 4
+        if csi < 30:
+            return 'Преимущественно ноцицептивный вариант', ''
+        if 30 <= csi <= 39:
+            return (
+                'Неопределённый подтип болевого синдрома',
+                'Рекомендуется повторное тестирование или очная консультация невролога.',
+            )
+        # csi >= 40
+        if hads_anxiety >= 11 or hads_depression >= 11:
+            return 'Преимущественно дисфункциональный вариант', ''
+        return (
+            'Неопределённый подтип болевого синдрома',
+            'Рекомендуется повторное тестирование или очная консультация невролога.',
+        )
+
     if category == 'painad':
         if total_score > 2:
-            return 'Ноцицептивный вариант'
-        return conclusion_label or '—'
+            return 'Ноцицептивный вариант', ''
+        return conclusion_label or '—', ''
+
     if category == 'ncsr':
-        if total_score > 5:
-            return 'Выраженный ноцицептивный ответ.'
+        if total_score >= 5:
+            return (
+                'Выраженный ноцицептивный ответ.',
+                'Требуется немедленная коррекция обезболивающей терапии (болюсное введение анальгетика, '
+                'титрация инфузии) и диагностический поиск причины боли (новое повреждение, осложнение).',
+            )
         if total_score >= 3:
-            return 'Рекомендуется усилить текущую анальгезию'
-        return conclusion_label or '—'
-    return conclusion_label or '—'
+            return 'Рекомендуется усилить текущую анальгезию', ''
+        return conclusion_label or '—', ''
+
+    return conclusion_label or '—', ''
 
 
 def _match_score_range(ranges, sidebar_step, score):
@@ -536,17 +574,11 @@ class ResultView(LoginRequiredMixin, View):
 
         category = session.test.category if hasattr(session.test, 'category') else ''
         scores_by_step = {step: step_scores[step] for step in step_scores}
-        pathotype_label = _get_pathotype_label(
+        pathotype_label, pathotype_text = _get_pathotype_label(
             category, scores_by_step, result.total_score,
             sub_results[0]['label'] if sub_results else '',
         )
-        pathotype_text = ''
-        if category == 'ncsr':
-            if result.total_score > 5:
-                pathotype_text = 'Требуется немедленная коррекция обезболивающей терапии (болюсное введение анальгетика, титрация инфузии) и диагностический поиск причины боли (новое повреждение, осложнение).'
-            else:
-                pathotype_text = sub_results[0]['conclusion'] if sub_results else ''
-        elif sub_results:
+        if not pathotype_text and category in ('ncsr', 'painad') and sub_results:
             pathotype_text = sub_results[0]['conclusion']
 
         return render(request, 'tests/session_result.html', {

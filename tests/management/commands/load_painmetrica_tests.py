@@ -5,6 +5,7 @@ Management command: загружает стандартный набор тес�
     python manage.py load_painmetrica_tests
     python manage.py load_painmetrica_tests --force  # пересоздать, даже если уже есть
 """
+from django.core.cache import cache
 from django.core.management.base import BaseCommand
 
 from tests.models import Question, QuestionOption, ScoreRange, Stage, Test
@@ -277,14 +278,12 @@ SCORE_RANGES = [
     # VAS (sidebar_step=1)
     (1, 0,  0,   'Нет боли',
      'Болевой синдром отсутствует.'),
-    (1, 1,  3,   'Лёгкий болевой синдром',
+    (1, 1,  3,   'Слабый болевой синдром',
      'Боль слабой интенсивности, практически не влияет на повседневную активность.'),
     (1, 4,  6,   'Умеренный болевой синдром',
      'Боль умеренной интенсивности, частично ограничивает повседневную активность.'),
-    (1, 7,  9,   'Выраженный болевой синдром',
+    (1, 7,  10,  'Сильный болевой синдром',
      'Боль высокой интенсивности, существенно ограничивает повседневную активность.'),
-    (1, 10, 10,  'Нестерпимый болевой синдром',
-     'Максимально выраженная боль, полностью нарушает повседневную активность.'),
 
     # DN4 — суммарный балл обоих этапов (sidebar_step=2)
     (2, 0,  3,   'Ноцицептивная боль',
@@ -344,6 +343,7 @@ class Command(BaseCommand):
         if options['force']:
             deleted, _ = Test.objects.filter(title=TEST_TITLE).delete()
             if deleted:
+                cache.delete('active_tests')
                 self.stdout.write(self.style.WARNING(f'Удалён существующий тест и {deleted} связанных объектов.'))
 
         test, created = Test.objects.get_or_create(

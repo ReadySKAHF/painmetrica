@@ -230,10 +230,9 @@
         <div class="block-text">
           Используется для оценки субъективной интенсивности боли в момент осмотра.<br>
           0 баллов — боль отсутствует.<br>
-          1 - 3 балла — лёгкий болевой синдром.<br>
+          1 - 3 балла — слабый болевой синдром.<br>
           4 - 6 баллов — умеренный болевой синдром.<br>
-          7 - 9 баллов — выраженный болевой синдром.<br>
-          10 баллов — нестерпимая боль.<br><br>
+          7 - 10 баллов — сильный болевой синдром.<br>
           Также система предусматривает тестирование по специализированным шкалам PAINAD для пациентов с деменцией и NCS-R для пациентов в коме. В случае использования специализированных шкал система опирается только на результаты этих тестов и не требует проведения тестов DN4, CSI и HADS.
         </div>
       </div>
@@ -296,6 +295,13 @@
       </div>
     </div>
 
+    <!-- 4. HADS примечание -->
+    <div class="test-method">
+      <div class="block-text">
+        <span style="font-size: 14px; font-weight: 600;">Примечание.</span> <span style="font-size: 14px; font-weight: 400;">Система использует международный опросник HADS (7 + 7 вопросов, пороги 0 - 7 / 8 - 10 / ≥11) по согласованию с кафедрой неврологии ГомГМУ в качестве валидированного эквивалента опросника из Приложения 7 Клинического протокола МЗ РБ. В выходном заключении ссылка формулируется как «по шкале HADS» без отсылки к «опроснику согласно КП МЗ РБ».</span>
+      </div>
+    </div>
+
     <!-- 5. Подтип боли -->
     <div class="test-method">
       <div class="block">
@@ -316,23 +322,33 @@
             </div>
           </div>
           <div class="ht-data-row">
+            <div class="ht-row-left"><span class="ht-row-label">Боль отсутствует</span></div>
+            <div class="ht-row-right"><span class="ht-interpretation">ВАШ = 0 баллов. DN4 и CSI не проверяются. HADS анализируется отдельно.</span></div>
+          </div>
+          <div class="ht-data-row">
             <div class="ht-row-left"><span class="ht-row-label">Преимущественно ноцицептивный</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 &lt; 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
+            <div class="ht-row-right"><span class="ht-interpretation">ВАШ &gt; 0 баллов И DN4 &lt; 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
           </div>
           <div class="ht-data-row">
             <div class="ht-row-left"><span class="ht-row-label">Преимущественно нейропатический</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 ≥ 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
+            <div class="ht-row-right"><span class="ht-interpretation">ВАШ &gt; 0 баллов И DN4 ≥ 4 баллов И CSI &lt; 30 баллов. Тест HADS не используется.</span></div>
           </div>
           <div class="ht-data-row">
             <div class="ht-row-left"><span class="ht-row-label">Преимущественно дисфункциональный</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 &lt; 4 баллов И CSI ≥ 40 баллов И HADS ≥ 8 баллов</span></div>
+            <div class="ht-row-right"><span class="ht-interpretation">ВАШ &gt; 0 баллов ИDN4 &lt; 4 баллов И CSI ≥ 40 баллов И HADS ≥ 8 баллов</span></div>
           </div>
           <div class="ht-data-row">
             <div class="ht-row-left"><span class="ht-row-label">Смешанный вариант (нейропатический + ноцицептивный)</span></div>
-            <div class="ht-row-right"><span class="ht-interpretation">DN4 ≥ 4 баллов И CSI ≥ 30 баллов. Тест HADS не используется.</span></div>
+            <div class="ht-row-right"><span class="ht-interpretation">ВАШ &gt; 0 баллов И DN4 ≥ 4 баллов И CSI ≥ 30 баллов. Тест HADS не используется.</span></div>
+          </div>
+          <div class="ht-data-row">
+            <div class="ht-row-left"><span class="ht-row-label">Неопределённый подтип</span></div>
+            <div class="ht-row-right"><span class="ht-interpretation">ВАШ &gt; 0 баллов И условия выше не выполнены ни для одного варианта.</span></div>
           </div>
         </div>
       </div>
+
+      <p style="font-size: 14px; font-weight: 400; line-height: 1.9; color: var(--gray-950);">При неопределённом подтипе система выводит сообщение: «Неопределённый подтип болевого синдрома. Рекомендуется повторное тестирование или очная консультация невролога.» Рекомендации по лечению не формируются.</p>
     </div>
 
   </div>

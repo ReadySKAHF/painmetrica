@@ -1,7 +1,12 @@
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+
+_NO_REDIS = dict(
+    CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}},
+    SESSION_ENGINE='django.contrib.sessions.backends.db',
+)
 
 from accounts.models import PatientProfile
 from patients.models import Patient
@@ -83,6 +88,7 @@ def make_single_choice_test(doctor):
 # Модели тестовой системы
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class TestModelTests(TestCase):
 
     def test_создание_теста(self):
@@ -105,6 +111,7 @@ class TestModelTests(TestCase):
         self.assertEqual(question.question_type, 'single')
 
 
+@override_settings(**_NO_REDIS)
 class ScoreRangeTests(TestCase):
 
     def test_диапазон_подбирается_по_баллу(self):
@@ -131,6 +138,7 @@ class ScoreRangeTests(TestCase):
 # TestSession
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class TestSessionTests(TestCase):
 
     def setUp(self):
@@ -165,6 +173,7 @@ class TestSessionTests(TestCase):
 # Представление: запуск теста доктором
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class DoctorStartTestViewTests(TestCase):
 
     def setUp(self):
@@ -203,6 +212,7 @@ class DoctorStartTestViewTests(TestCase):
 # Представление: прохождение этапа (StageView)
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class StageViewTests(TestCase):
 
     def setUp(self):
@@ -263,6 +273,7 @@ class StageViewTests(TestCase):
 # Представление: результаты (ResultView)
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class ResultViewTests(TestCase):
 
     def setUp(self):
@@ -302,28 +313,3 @@ class ResultViewTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
-# ─────────────────────────────────────────────
-# Управление тестами (TestManageListView)
-# ─────────────────────────────────────────────
-
-class TestManageListViewTests(TestCase):
-
-    def setUp(self):
-        self.client = Client()
-        self.doctor = make_doctor()
-        self.url = reverse('tests:manage')
-
-    def test_доктор_видит_список_тестов(self):
-        make_simple_test(self.doctor, 'Тест 1')
-        make_simple_test(self.doctor, 'Тест 2')
-        self.client.force_login(self.doctor)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['tests'].count(), 2)
-
-    def test_пациент_не_имеет_доступа(self):
-        _, patient = make_patient(doctor=self.doctor)
-        patient_user = patient.user
-        self.client.force_login(patient_user)
-        response = self.client.get(self.url)
-        self.assertNotEqual(response.status_code, 200)

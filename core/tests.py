@@ -1,6 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+
+_NO_REDIS = dict(
+    CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}},
+    SESSION_ENGINE='django.contrib.sessions.backends.db',
+)
 
 from accounts.models import PatientProfile
 from patients.models import Patient
@@ -31,6 +36,7 @@ def make_patient(email='patient@test.com', doctor=None):
 # HomeView
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class HomeViewTests(TestCase):
 
     def setUp(self):
@@ -52,6 +58,7 @@ class HomeViewTests(TestCase):
 # DashboardView
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class DashboardViewTests(TestCase):
 
     def setUp(self):
@@ -69,12 +76,12 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['is_doctor'])
 
-    def test_пациент_видит_дашборд(self):
+    def test_пациент_редиректируется_с_дашборда(self):
         patient_user = make_patient()
         self.client.force_login(patient_user)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context['is_patient'])
+        # Пациент всегда перенаправляется — на welcome (первый вход) или свою карточку
+        self.assertEqual(response.status_code, 302)
 
     def test_дашборд_доктора_содержит_список_пациентов(self):
         doctor = make_doctor()
@@ -107,9 +114,14 @@ class DashboardViewTests(TestCase):
         response = self.client.get(self.url, {'q': 'Несуществующий'})
         self.assertEqual(len(list(response.context['patients'])), 0)
 
-    def test_пациент_видит_своего_врача(self):
+    def test_пациент_с_увиденным_приветствием_редиректируется_на_свою_карточку(self):
         doctor = make_doctor()
         patient_user = make_patient(doctor=doctor)
+        # Отмечаем что пациент видел приветствие
+        patient_user.patient_profile.has_seen_welcome = True
+        patient_user.patient_profile.save()
         self.client.force_login(patient_user)
         response = self.client.get(self.url)
-        self.assertEqual(response.context['assigned_doctor'], doctor)
+        self.assertEqual(response.status_code, 302)
+        patient = Patient.objects.get(user=patient_user)
+        self.assertIn(str(patient.pk), response['Location'])

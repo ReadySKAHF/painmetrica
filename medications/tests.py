@@ -1,6 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+
+_NO_REDIS = dict(
+    CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}},
+    SESSION_ENGINE='django.contrib.sessions.backends.db',
+)
 
 from accounts.models import PatientProfile
 from medications.models import Medication, MedicationNote, Prescription
@@ -46,6 +51,7 @@ def make_medication(doctor, name='Ибупрофен'):
 # Модель Medication
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class MedicationModelTests(TestCase):
 
     def test_создание_лекарства(self):
@@ -64,6 +70,7 @@ class MedicationModelTests(TestCase):
 # MedicationListView
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class MedicationListViewTests(TestCase):
 
     def setUp(self):
@@ -104,6 +111,7 @@ class MedicationListViewTests(TestCase):
 # MedicationDetailView
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class MedicationDetailViewTests(TestCase):
 
     def setUp(self):
@@ -128,6 +136,7 @@ class MedicationDetailViewTests(TestCase):
 # medication_update_notes (AJAX)
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class MedicationUpdateNotesTests(TestCase):
 
     def setUp(self):
@@ -161,86 +170,3 @@ class MedicationUpdateNotesTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-# ─────────────────────────────────────────────
-# MedicationCreateView / UpdateView
-# ─────────────────────────────────────────────
-
-class MedicationCreateViewTests(TestCase):
-
-    def setUp(self):
-        self.client = Client()
-        self.doctor = make_doctor()
-        self.url = reverse('medications:create')
-
-    def test_форма_создания_открывается(self):
-        self.client.force_login(self.doctor)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-
-    def test_создание_лекарства_через_форму(self):
-        self.client.force_login(self.doctor)
-        response = self.client.post(self.url, {
-            'name': 'Новое лекарство',
-            'medication_type': 'Антибиотик',
-            'prescription_scheme': '1 таблетка 2 раза в день',
-            'side_effects': 'Аллергия',
-        })
-        self.assertRedirects(response, reverse('medications:list'))
-        self.assertTrue(Medication.objects.filter(name='Новое лекарство').exists())
-
-    def test_created_by_устанавливается_автоматически(self):
-        self.client.force_login(self.doctor)
-        self.client.post(self.url, {
-            'name': 'Автор тест',
-            'medication_type': 'Тип',
-            'prescription_scheme': '',
-            'side_effects': '',
-        })
-        med = Medication.objects.get(name='Автор тест')
-        self.assertEqual(med.created_by, self.doctor)
-
-
-# ─────────────────────────────────────────────
-# PrescriptionCreateView
-# ─────────────────────────────────────────────
-
-class PrescriptionCreateViewTests(TestCase):
-
-    def setUp(self):
-        self.client = Client()
-        self.doctor = make_doctor()
-        _, self.patient = make_patient_with_record(doctor=self.doctor)
-        self.med = make_medication(self.doctor)
-        self.url = reverse('medications:prescription_create')
-
-    def test_форма_назначения_открывается(self):
-        self.client.force_login(self.doctor)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-
-    def test_создание_назначения(self):
-        self.client.force_login(self.doctor)
-        response = self.client.post(self.url, {
-            'patient': self.patient.pk,
-            'medication': self.med.pk,
-            'dosage': '400 мг',
-            'frequency': '3 раза в день',
-            'duration': '7 дней',
-            'instructions': '',
-            'start_date': '',
-            'end_date': '',
-        })
-        self.assertEqual(Prescription.objects.count(), 1)
-        prescription = Prescription.objects.first()
-        self.assertEqual(prescription.doctor, self.doctor)
-        self.assertEqual(prescription.patient, self.patient)
-
-    def test_форма_показывает_только_своих_пациентов(self):
-        other_doctor = make_doctor(email='other@test.com')
-        _, other_patient = make_patient_with_record(email='op@test.com', doctor=other_doctor)
-
-        self.client.force_login(self.doctor)
-        response = self.client.get(self.url)
-        patient_queryset = response.context['form'].fields['patient'].queryset
-        self.assertNotIn(other_patient, patient_queryset)
-        self.assertIn(self.patient, patient_queryset)

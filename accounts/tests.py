@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -10,6 +10,11 @@ from accounts.models import OTPCode, DoctorProfile, PatientProfile
 from accounts.services.otp_service import OTPService
 
 User = get_user_model()
+
+_NO_REDIS = dict(
+    CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}},
+    SESSION_ENGINE='django.contrib.sessions.backends.db',
+)
 
 
 # ─────────────────────────────────────────────
@@ -235,6 +240,7 @@ class EmailBackendTests(TestCase):
 # Представления аутентификации
 # ─────────────────────────────────────────────
 
+@override_settings(**_NO_REDIS)
 class LoginViewTests(TestCase):
 
     def setUp(self):
@@ -263,6 +269,7 @@ class LoginViewTests(TestCase):
         self.assertIn('login_user_id', self.client.session)
 
 
+@override_settings(**_NO_REDIS)
 class RegisterStepOneViewTests(TestCase):
 
     def setUp(self):
@@ -293,3 +300,195 @@ class RegisterStepOneViewTests(TestCase):
             'password': 'TestPass123!',
         })
         self.assertEqual(response.status_code, 200)
+
+
+# ─────────────────────────────────────────────
+# PatientInvitation
+# ─────────────────────────────────────────────
+
+class PatientInvitationModelTests(TestCase):
+
+    def setUp(self):
+        from accounts.models import PatientInvitation
+        self.PatientInvitation = PatientInvitation
+        self.doctor = make_doctor()
+
+    def test_создание_приглашения(self):
+        inv = self.PatientInvitation.objects.create(
+            doctor=self.doctor,
+            email='patient@clinic.com',
+        )
+        self.assertIsNotNone(inv.token)
+        self.assertEqual(inv.email, 'patient@clinic.com')
+        self.assertFalse(inv.is_used)
+
+    def test_expires_at_устанавливается_автоматически(self):
+        from django.utils import timezone
+        before = timezone.now()
+        inv = self.PatientInvitation.objects.create(doctor=self.doctor, email='p@test.com')
+        self.assertGreater(inv.expires_at, before)
+
+    def test_is_valid_для_нового_приглашения(self):
+        inv = self.PatientInvitation.objects.create(doctor=self.doctor, email='p@test.com')
+        self.assertTrue(inv.is_valid())
+
+    def test_is_valid_false_если_использовано(self):
+        inv = self.PatientInvitation.objects.create(doctor=self.doctor, email='p@test.com')
+        inv.is_used = True
+        inv.save()
+        self.assertFalse(inv.is_valid())
+
+    def test_is_valid_false_если_просрочено(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        inv = self.PatientInvitation.objects.create(doctor=self.doctor, email='p@test.com')
+        inv.expires_at = timezone.now() - timedelta(days=1)
+        inv.save()
+        self.assertFalse(inv.is_valid())
+
+    def test_строковое_представление(self):
+        inv = self.PatientInvitation.objects.create(doctor=self.doctor, email='p@test.com')
+        self.assertIn('p@test.com', str(inv))
+
+    def test_token_является_uuid_и_уникален(self):
+        import uuid
+        inv1 = self.PatientInvitation.objects.create(doctor=self.doctor, email='p1@test.com')
+        inv2 = self.PatientInvitation.objects.create(doctor=self.doctor, email='p2@test.com')
+        self.assertIsInstance(inv1.token, uuid.UUID)
+        self.assertNotEqual(inv1.token, inv2.token)
+
+
+# ─────────────────────────────────────────────
+# AccountDeletionService
+# ─────────────────────────────────────────────
+
+class AccountDeletionServiceTests(TestCase):
+
+    def setUp(self):
+        from accounts.models import DoctorProfile, PatientProfile
+        from patients.models import Patient
+        from accounts.services.account_deletion_service import deactivate_user_account
+        self.deactivate_user_account = deactivate_user_account
+        self.DoctorProfile = DoctorProfile
+        self.PatientProfile = PatientProfile
+        self.Patient = Patient
+
+    def _make_doctor_with_profile(self, email='doc@test.com'):
+        doctor = User.objects.create_user(
+            email=email, password='TestPass123!',
+            first_name='Иван', last_name='Иванов',
+            user_type='doctor', is_email_verified=True,
+        )
+        self.DoctorProfile.objects.create(
+            user=doctor,
+            specialty='Невролог',
+            position='Врач',
+            workplace='Клиника',
+            city='Москва',
+        )
+        return doctor
+
+    def _make_patient_with_profile(self, email='pat@test.com', doctor=None):
+        user = User.objects.create_user(
+            email=email, password='TestPass123!',
+            first_name='Пётр', last_name='Петров',
+            user_type='patient', is_email_verified=True,
+        )
+        self.PatientProfile.objects.create(user=user)
+        self.Patient.objects.create(user=user, assigned_doctor=doctor)
+        return user
+
+    def test_деактивация_доктора_очищает_персональные_данные(self):
+        from unittest.mock import patch
+        doctor = self._make_doctor_with_profile()
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(doctor)
+        doctor.refresh_from_db()
+        self.assertEqual(doctor.first_name, '')
+        self.assertEqual(doctor.last_name, '')
+        self.assertFalse(doctor.is_active)
+        self.assertFalse(doctor.is_email_verified)
+
+    def test_деактивация_доктора_меняет_email(self):
+        from unittest.mock import patch
+        doctor = self._make_doctor_with_profile()
+        pk = doctor.pk
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(doctor)
+        doctor.refresh_from_db()
+        self.assertEqual(doctor.email, f'deleted_{pk}@deleted.invalid')
+
+    def test_деактивация_доктора_делает_пароль_неиспользуемым(self):
+        from unittest.mock import patch
+        doctor = self._make_doctor_with_profile()
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(doctor)
+        doctor.refresh_from_db()
+        self.assertFalse(doctor.has_usable_password())
+
+    def test_деактивация_доктора_открепляет_пациентов(self):
+        from unittest.mock import patch
+        doctor = self._make_doctor_with_profile()
+        patient_user = self._make_patient_with_profile(doctor=doctor)
+        patient = self.Patient.objects.get(user=patient_user)
+        self.assertEqual(patient.assigned_doctor, doctor)
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(doctor)
+        patient.refresh_from_db()
+        self.assertIsNone(patient.assigned_doctor)
+
+    def test_деактивация_доктора_очищает_профиль(self):
+        from unittest.mock import patch
+        doctor = self._make_doctor_with_profile()
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(doctor)
+        profile = self.DoctorProfile.objects.get(user=doctor)
+        self.assertEqual(profile.specialty, '')
+        self.assertEqual(profile.position, '')
+        self.assertEqual(profile.workplace, '')
+
+    def test_деактивация_пациента_очищает_персональные_данные(self):
+        from unittest.mock import patch
+        patient_user = self._make_patient_with_profile()
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(patient_user)
+        patient_user.refresh_from_db()
+        self.assertEqual(patient_user.first_name, '')
+        self.assertFalse(patient_user.is_active)
+        self.assertFalse(patient_user.is_email_verified)
+
+    def test_деактивация_пациента_архивирует_запись(self):
+        from unittest.mock import patch
+        patient_user = self._make_patient_with_profile()
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(patient_user)
+        patient = self.Patient.objects.get(user=patient_user)
+        self.assertTrue(patient.is_archived)
+        self.assertIsNotNone(patient.archived_at)
+        self.assertIsNotNone(patient.scheduled_deletion_at)
+
+    def test_деактивация_пациента_открепляет_доктора(self):
+        from unittest.mock import patch
+        doctor = self._make_doctor_with_profile()
+        patient_user = self._make_patient_with_profile(doctor=doctor)
+        with patch('accounts.services.account_deletion_service.send_email'):
+            self.deactivate_user_account(patient_user)
+        patient = self.Patient.objects.get(user=patient_user)
+        self.assertIsNone(patient.assigned_doctor)
+
+    def test_неверный_тип_пользователя_вызывает_ошибку(self):
+        from unittest.mock import patch
+        user = User.objects.create_user(
+            email='admin2@test.com', password='pass',
+            first_name='А', last_name='Б', user_type='doctor',
+        )
+        user.user_type = 'unknown'
+        with self.assertRaises(ValueError):
+            self.deactivate_user_account(user)
+
+    def test_возвращает_email_до_деактивации(self):
+        from unittest.mock import patch
+        doctor = self._make_doctor_with_profile(email='original@test.com')
+        with patch('accounts.services.account_deletion_service.send_email'):
+            returned_email = self.deactivate_user_account(doctor)
+        self.assertEqual(returned_email, 'original@test.com')

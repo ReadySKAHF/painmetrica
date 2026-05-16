@@ -346,11 +346,17 @@ class Command(BaseCommand):
 
         test, created = Test.objects.get_or_create(
             title=TEST_TITLE,
-            defaults={'description': 'Батарея из четырёх тестов для оценки болевого синдрома: '
-                                     'VAS, DN4, CSI, HADS.'},
+            defaults={
+                'description': 'Батарея из четырёх тестов для оценки болевого синдрома: VAS, DN4, CSI, HADS.',
+                'category': 'complex',
+            },
         )
 
         if not created:
+            if test.category != 'complex':
+                test.category = 'complex'
+                test.save(update_fields=['category'])
+                self.stdout.write(self.style.SUCCESS('Обновлена категория существующего теста → complex.'))
             self.stdout.write(self.style.WARNING(
                 f'Тест «{TEST_TITLE}» уже существует. Используйте --force для пересоздания.'
             ))

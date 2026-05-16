@@ -91,6 +91,9 @@ class Command(BaseCommand):
 
         if Test.objects.filter(title=TEST_TITLE).exists():
             if not force:
+                updated = Test.objects.filter(title=TEST_TITLE).exclude(category='painad').update(category='painad')
+                if updated:
+                    self.stdout.write(self.style.SUCCESS('Обновлена категория существующего теста → painad.'))
                 self.stdout.write(self.style.WARNING(
                     f'Тест «{TEST_TITLE}» уже существует. Используйте --force для пересоздания.'
                 ))
@@ -102,6 +105,7 @@ class Command(BaseCommand):
         test = Test.objects.create(
             title=TEST_TITLE,
             description='Шкала для оценки боли у пациентов с деменцией и когнитивными нарушениями.',
+            category='painad',
             is_active=True,
             created_by=None,
         )

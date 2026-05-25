@@ -558,7 +558,7 @@ class PatientExportExcelView(LoginRequiredMixin, View):
                 step = stage.sidebar_step
                 step_scores[step] = step_scores.get(step, 0) + answer.score
 
-            pathotype = _get_pathotype_label(
+            pathotype, _ = _get_pathotype_label(
                 result.test.category,
                 step_scores,
                 result.total_score,

@@ -90,20 +90,6 @@ def _get_pathotype_label(category, scores_by_step, total_score, conclusion_label
             'Рекомендуется повторное тестирование или очная консультация невролога.',
         )
 
-    if category == 'painad':
-        return conclusion_label or '—', ''
-
-    if category == 'ncsr':
-        if total_score >= 5:
-            return (
-                'Выраженный ноцицептивный ответ.',
-                'Требуется немедленная коррекция обезболивающей терапии (болюсное введение анальгетика, '
-                'титрация инфузии) и диагностический поиск причины боли (новое повреждение, осложнение).',
-            )
-        if total_score >= 3:
-            return 'Рекомендуется усилить текущую анальгезию', ''
-        return conclusion_label or '—', ''
-
     return conclusion_label or '—', ''
 
 

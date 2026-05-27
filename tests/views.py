@@ -91,8 +91,6 @@ def _get_pathotype_label(category, scores_by_step, total_score, conclusion_label
         )
 
     if category == 'painad':
-        if total_score > 2:
-            return 'Ноцицептивный вариант', ''
         return conclusion_label or '—', ''
 
     if category == 'ncsr':

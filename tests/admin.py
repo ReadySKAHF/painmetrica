@@ -1,5 +1,5 @@
 from django.contrib import admin
-from tests.models import Answer, Question, QuestionOption, ScoreRange, Stage, Test, TestResult, TestSession
+from tests.models import Answer, Question, QuestionOption, RecommendationRule, ScoreRange, Stage, Test, TestResult, TestSession
 
 
 # ─── Инлайны ───────────────────────────────────────
@@ -168,3 +168,18 @@ class TestResultAdmin(admin.ModelAdmin):
     def get_patient_name(self, obj):
         return obj.patient.user.get_full_name()
     get_patient_name.short_description = 'Пациент'
+
+
+@admin.register(RecommendationRule)
+class RecommendationRuleAdmin(admin.ModelAdmin):
+    list_display = ['rule_key', 'description', 'get_med_count', 'get_therapy_count']
+    search_fields = ['rule_key', 'description']
+    filter_horizontal = ['medications', 'therapies']
+
+    def get_med_count(self, obj):
+        return obj.medications.count()
+    get_med_count.short_description = 'Лекарств'
+
+    def get_therapy_count(self, obj):
+        return obj.therapies.count()
+    get_therapy_count.short_description = 'Мероприятий'

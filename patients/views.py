@@ -16,6 +16,7 @@ from django.views.generic import DetailView
 from accounts.mixins import DoctorRequiredMixin
 from medications.models import Medication
 from patients.models import Conclusion, ConclusionMedication, ConclusionTherapy, Patient
+from patients.recommendation_service import get_recommendation_context
 from therapy.models import Therapy
 from tests.views import _load_score_ranges, _match_score_range, _get_pathotype_label
 
@@ -675,52 +676,104 @@ class ConclusionMedicineView(DoctorRequiredMixin, View):
             assigned_doctor=request.user,
         )
 
-    def get(self, request, pk):
+    def _get_last_result(self, patient):
         from tests.models import TestResult
-        patient = self._get_patient(request, pk)
-        med_types_filter = [t.strip() for t in request.GET.getlist('med_type') if t.strip()]
-        all_medications = Medication.objects.all().order_by('medication_type', 'name')
-        medications = all_medications.filter(medication_type__in=med_types_filter) if med_types_filter else all_medications
-
-        # Типы лекарств для фильтра
-        med_types = list(
-            Medication.objects.values_list('medication_type', flat=True)
-            .distinct().exclude(medication_type='').order_by('medication_type')
-        )
-
-        # Предварительно выбранные из сессии (при возврате назад)
-        selected_ids = request.session.get(f'conclusion_med_ids_{pk}', [])
-
-        last_result = (
+        return (
             TestResult.objects.filter(patient=patient, status='completed')
             .order_by('-completed_at')
             .first()
         )
 
+    def get(self, request, pk):
+        patient = self._get_patient(request, pk)
+        last_result = self._get_last_result(patient)
+        rec_ctx = get_recommendation_context(patient, last_result)
+
+        if not rec_ctx.show_meds_page:
+            if not rec_ctx.show_rehab_page:
+                # Пропускаем обе страницы — создаём пустое заключение сразу
+                conclusion = Conclusion.objects.create(
+                    patient=patient,
+                    doctor=request.user,
+                    last_test_result=last_result,
+                )
+                return redirect(
+                    reverse('patients:detail', kwargs={'pk': pk})
+                    + f'?download_conclusion={conclusion.pk}'
+                )
+            return redirect('patients:conclusion_rehabilitation', pk=pk)
+
+        med_types_filter = [t.strip() for t in request.GET.getlist('med_type') if t.strip()]
+
+        # Показываем только рекомендованные лекарства
+        rec_qs = Medication.objects.filter(
+            pk__in=rec_ctx.recommended_med_ids,
+        ).order_by('medication_type', 'name')
+
+        medications = rec_qs.filter(medication_type__in=med_types_filter) if med_types_filter else rec_qs
+
+        med_types = list(
+            rec_qs.values_list('medication_type', flat=True)
+            .distinct().exclude(medication_type='').order_by('medication_type')
+        )
+
+        # Предварительно выбранные: из сессии (при возврате назад), иначе пусто
+        selected_ids = request.session.get(f'conclusion_med_ids_{pk}', [])
+
         return render(request, 'patients/conclusion_medicine.html', {
             'patient': patient,
-            'medications': medications,          # отфильтрованные — для левой колонки
-            'all_medications': all_medications,  # все — для карточек справа
+            'medications': medications,
+            'all_medications': rec_qs,
             'med_types': med_types,
             'selected_ids': selected_ids,
             'current_med_types': med_types_filter,
             'last_result': last_result,
+            'show_rehab_page': rec_ctx.show_rehab_page,
         })
 
     def post(self, request, pk):
         patient = self._get_patient(request, pk)
+        last_result = self._get_last_result(patient)
+        rec_ctx = get_recommendation_context(patient, last_result)
+
         selected_ids = request.POST.getlist('medication_ids')
         med_ids = [int(i) for i in selected_ids if i.isdigit()]
         request.session[f'conclusion_med_ids_{pk}'] = med_ids
 
-        # Сохраняем отредактированные схемы {str(id): scheme}
         med_schemes = {}
         for med_id in med_ids:
             scheme = request.POST.get(f'scheme_{med_id}', '').strip()
             med_schemes[str(med_id)] = scheme
         request.session[f'conclusion_med_schemes_{pk}'] = med_schemes
 
+        if not rec_ctx.show_rehab_page:
+            # Реабилитация не нужна — сразу создаём заключение
+            conclusion = self._create_conclusion(request, patient, med_ids, med_schemes, last_result)
+            request.session.pop(f'conclusion_med_ids_{pk}', None)
+            request.session.pop(f'conclusion_med_schemes_{pk}', None)
+            return redirect(
+                reverse('patients:detail', kwargs={'pk': pk})
+                + f'?download_conclusion={conclusion.pk}'
+            )
+
         return redirect('patients:conclusion_rehabilitation', pk=pk)
+
+    @staticmethod
+    def _create_conclusion(request, patient, med_ids, med_schemes, last_result):
+        conclusion = Conclusion.objects.create(
+            patient=patient,
+            doctor=request.user,
+            last_test_result=last_result,
+        )
+        if med_ids:
+            meds = Medication.objects.filter(pk__in=med_ids)
+            for med in meds:
+                ConclusionMedication.objects.create(
+                    conclusion=conclusion,
+                    medication=med,
+                    custom_scheme=med_schemes.get(str(med.pk), ''),
+                )
+        return conclusion
 
 
 class ConclusionRehabilitationView(DoctorRequiredMixin, View):
@@ -733,19 +786,26 @@ class ConclusionRehabilitationView(DoctorRequiredMixin, View):
             assigned_doctor=request.user,
         )
 
-    def get(self, request, pk):
+    def _get_last_result(self, patient):
         from tests.models import TestResult
-        patient = self._get_patient(request, pk)
-        therapies = Therapy.objects.all().order_by('therapy_type', 'name')
-
-        # Предварительно выбранные из сессии (при возврате назад)
-        selected_ids = request.session.get(f'conclusion_therapy_ids_{pk}', [])
-
-        last_result = (
+        return (
             TestResult.objects.filter(patient=patient, status='completed')
             .order_by('-completed_at')
             .first()
         )
+
+    def get(self, request, pk):
+        patient = self._get_patient(request, pk)
+        last_result = self._get_last_result(patient)
+        rec_ctx = get_recommendation_context(patient, last_result)
+
+        # Показываем только рекомендованные мероприятия
+        therapies = Therapy.objects.filter(
+            pk__in=rec_ctx.recommended_therapy_ids,
+        ).order_by('therapy_type', 'name')
+
+        # Предварительно выбранные: из сессии (при возврате назад), иначе пусто
+        selected_ids = request.session.get(f'conclusion_therapy_ids_{pk}', [])
 
         return render(request, 'patients/conclusion_rehabilitation.html', {
             'patient': patient,

@@ -297,6 +297,32 @@ class TestResult(models.Model):
         return f'{self.test.title} — {self.patient.user.get_full_name()} ({self.total_score} б.)'
 
 
+class RecommendationRule(models.Model):
+    """Правило рекомендаций: slug-ключ → набор лекарств и/или мероприятий"""
+
+    rule_key = models.SlugField('Ключ правила', unique=True, max_length=60)
+    description = models.CharField('Описание', max_length=200, blank=True)
+    medications = models.ManyToManyField(
+        'medications.Medication',
+        blank=True,
+        related_name='recommendation_rules',
+        verbose_name='Лекарства',
+    )
+    therapies = models.ManyToManyField(
+        'therapy.Therapy',
+        blank=True,
+        related_name='recommendation_rules',
+        verbose_name='Мероприятия',
+    )
+
+    class Meta:
+        verbose_name = 'Правило рекомендаций'
+        verbose_name_plural = 'Правила рекомендаций'
+
+    def __str__(self):
+        return self.rule_key
+
+
 class Answer(models.Model):
     """Ответ на один вопрос в рамках TestResult"""
 

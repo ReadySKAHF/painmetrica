@@ -160,6 +160,7 @@ body {
   border-radius: 16px; padding: 32px; text-align: center; color: var(--gray-550); font-size: 14px; line-height: 1.6;
 }
 
+
 /* ── FOOTER ── */
 .site-footer {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
@@ -223,7 +224,7 @@ body {
         <div class="therapy-info">
           <span class="therapy-type-label">{{ therapy.therapy_type|default:"—" }}</span>
           <span class="therapy-name-label">{{ therapy.name }}</span>
-        </div>
+</div>
         <div class="custom-checkbox">
           <input type="checkbox" data-id="{{ therapy.pk }}" {% if therapy.pk in selected_ids %}checked{% endif %}>
           <span class="cb-box">

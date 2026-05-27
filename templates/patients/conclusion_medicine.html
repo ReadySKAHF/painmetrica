@@ -226,6 +226,7 @@ body {
   border-radius: 13px; color: var(--gray-550); font-size: 14px;
 }
 
+
 /* ── RIGHT COLUMN ── */
 .right-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
 
@@ -300,7 +301,7 @@ body {
   {% csrf_token %}
   <div id="hidden-inputs"></div>
   <footer class="footer">
-    <button type="submit" class="btn-save-main">Сохранить и перейти к назначению реабилитационных мероприятий</button>
+    <button type="submit" class="btn-save-main">{% if show_rehab_page %}Сохранить и перейти к назначению реабилитационных мероприятий{% else %}Сформировать заключение{% endif %}</button>
     <div class="footer-logo">
       <img src="/static/logo-header-nobg.svg" alt="Painmetrica" width="114" height="28" style="display:block;">
     </div>
@@ -364,7 +365,7 @@ body {
           <div class="med-info">
             <span class="med-type">{{ med.medication_type|default:"—" }}</span>
             <span class="med-name">{{ med.name }}</span>
-            {% if med.label %}<span style="font-size:14px;font-weight:400;color:red;display:block;">* {{ med.label }}</span>{% endif %}
+{% if med.label %}<span style="font-size:14px;font-weight:400;color:red;display:block;">* {{ med.label }}</span>{% endif %}
           </div>
           <div class="custom-checkbox">
             <input type="checkbox" data-id="{{ med.pk }}" {% if med.pk in selected_ids %}checked{% endif %}>

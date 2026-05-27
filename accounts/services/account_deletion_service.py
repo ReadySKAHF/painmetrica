@@ -100,6 +100,10 @@ def _deactivate_patient(user):
     _terminate_sessions(user)
     email = user.email
 
+    # Сохраняем ФИО до стирания — нужно для письма врачу
+    patient_full_name = ' '.join(filter(None, [user.last_name, user.first_name, user.middle_name]))
+    doctor_email = None
+
     user.email = f'deleted_{user.pk}@deleted.invalid'
     user.first_name = ''
     user.middle_name = ''
@@ -120,6 +124,9 @@ def _deactivate_patient(user):
 
     try:
         patient = user.patient_record
+        # Сохраняем email врача до открепления
+        if patient.assigned_doctor and patient.assigned_doctor.is_active:
+            doctor_email = patient.assigned_doctor.email or None
         # Наследуем учреждение от доктора, если у пациента не задано
         if not patient.organization and patient.assigned_doctor:
             try:
@@ -136,6 +143,20 @@ def _deactivate_patient(user):
         logger.warning('Patient record not found for user pk=%s', user.pk)
 
     _send_notification(email, _PATIENT_SUBJECT, _PATIENT_BODY)
+
+    if doctor_email:
+        _send_notification(
+            doctor_email,
+            f'Пациент {patient_full_name} удалил свой аккаунт',
+            (
+                'Обращаем ваше внимание, что пациент удалил аккаунт из системы.\n'
+                'Email, ФИО, пароль были стерты из базы данных.\n'
+                'Диагноз; локализация боли; длительность боли; результаты тестовых сессий; '
+                'сформированные вами заключения - архивированы. '
+                'Они будут храниться на серверах Painmetrica и будут физически удалены через 25 лет.'
+            ),
+        )
+
     return email
 
 

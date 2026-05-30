@@ -84,6 +84,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.support_email',
             ],
         },
     },
@@ -267,6 +268,7 @@ AUTHENTICATION_BACKENDS = [
 # Email настройки
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Painmetrica <noreply@painmetrica.by>')
+SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', '')
 
 # Адреса для оповещений о подозрительной активности (через запятую)
 SECURITY_ALERT_EMAILS = [

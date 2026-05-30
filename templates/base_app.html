@@ -187,6 +187,115 @@ body {
 @media (max-width: 768px)  { .header { padding: 20px 24px; height: auto; border-radius: 24px; flex-wrap: wrap; gap: 12px; } .main { padding-top: 180px; } }
 
 {% block extra_style %}{% endblock %}
+
+/* ── SUPPORT MODAL ── */
+.support-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(38,38,38,0.45);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.support-overlay.open { display: flex; }
+
+.support-modal {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 32px;
+  width: 480px; max-width: calc(100vw - 32px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+.support-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.support-modal-title {
+  font-size: 18px; font-weight: 700; color: var(--gray-950); line-height: 1.2;
+}
+.support-modal-close {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: var(--blue-500); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.18s, transform 0.15s;
+}
+.support-modal-close:hover { background: #1a52e0; transform: scale(1.07); }
+
+.support-field { display: flex; flex-direction: column; gap: 6px; }
+.support-label {
+  font-size: 13px; font-weight: 600; color: var(--gray-950);
+}
+
+/* custom select */
+.support-cs-wrap { position: relative; }
+.support-cs-trigger {
+  width: 100%; height: 46px; padding: 0 16px;
+  background: var(--gray-250); border: 1px solid transparent; border-radius: 12px;
+  font-family: 'Proxima Nova', sans-serif; font-size: 14px; font-weight: 400;
+  color: var(--gray-950); outline: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  text-align: left; transition: border-color 0.15s;
+}
+.support-cs-trigger:hover { border-color: var(--gray-300); }
+.support-cs-trigger.open { border-color: var(--blue-400); }
+.support-cs-trigger .support-cs-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.support-cs-arrow { flex-shrink: 0; color: var(--gray-550); transition: transform 0.2s; margin-left: 8px; }
+.support-cs-trigger.open .support-cs-arrow { transform: rotate(180deg); }
+
+.support-cs-dropdown {
+  display: none; position: absolute; left: 0; top: calc(100% + 6px); width: 100%;
+  background: var(--white); border: 1px solid var(--gray-300);
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.08); border-radius: 12px;
+  padding: 8px; z-index: 400;
+}
+.support-cs-dropdown.open { display: flex; flex-direction: column; gap: 2px; }
+.support-cs-option {
+  display: flex; align-items: center; padding: 10px 8px; border-radius: 8px;
+  cursor: pointer; font-size: 14px; color: var(--gray-950); font-weight: 400;
+  transition: background 0.12s; white-space: nowrap;
+}
+.support-cs-option:hover { background: var(--blue-100); }
+.support-cs-option.selected { background: var(--blue-100); color: var(--blue-400); font-weight: 600; }
+
+.support-textarea {
+  font-family: 'Proxima Nova', sans-serif;
+  font-size: 14px; color: var(--gray-950);
+  background: var(--gray-250);
+  border: 1.5px solid var(--gray-300);
+  border-radius: 10px;
+  padding: 10px 14px;
+  outline: none; width: 100%;
+  transition: border-color 0.15s;
+  resize: vertical; min-height: 120px; max-height: 280px;
+  line-height: 1.55;
+}
+.support-textarea:focus { border-color: var(--blue-400); }
+.support-textarea::placeholder { color: var(--gray-550); }
+
+.support-char-hint {
+  font-size: 11px; color: var(--gray-550); text-align: right; margin-top: 2px;
+}
+
+/* Шаг 1 — кнопки */
+.support-modal-actions {
+  display: flex; gap: 10px; justify-content: center;
+}
+.support-btn-cancel {
+  font-family: 'Proxima Nova', sans-serif; font-size: 13px; font-weight: 500;
+  color: var(--gray-950); background: none;
+  border: 1px solid var(--gray-950); border-radius: 40px;
+  padding: 9px 20px; cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.support-btn-cancel:hover { background: var(--gray-950); color: var(--white); }
+.support-btn-send {
+  font-family: 'Proxima Nova', sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--white); background: var(--blue-500);
+  border: none; border-radius: 40px;
+  padding: 9px 22px; cursor: pointer; transition: background 0.15s;
+}
+.support-btn-send:hover { background: var(--blue-400); }
+
 </style>
 </head>
 <body>
@@ -267,7 +376,7 @@ body {
         <div class="dropdown-items">
           <a href="{% url 'core:documents' %}" class="dropdown-item">Документы</a>
           <span class="dropdown-item disabled">Создатели</span>
-          <span class="dropdown-item disabled">Тех. поддержка</span>
+          <button type="button" class="dropdown-item" id="supportTrigger">Тех. поддержка</button>
           {% if user.user_type == 'patient' %}
           <a href="{% url 'news:list' %}" class="dropdown-item">Новости</a>
           {% endif %}
@@ -296,6 +405,56 @@ body {
 </footer>
 {% endblock %}
 
+<!-- Модалка технической поддержки -->
+<div class="support-overlay" id="supportOverlay" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
+  <div class="support-modal">
+    <div class="support-modal-header">
+      <span class="support-modal-title" id="supportTitle">Техническая поддержка</span>
+      <button type="button" class="support-modal-close" id="supportClose" aria-label="Закрыть">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="support-field">
+      <label class="support-label">Тема обращения</label>
+      <input type="hidden" id="supportTopicValue" value="Проблема со входом или регистрацией">
+      <div class="support-cs-wrap">
+        <button type="button" class="support-cs-trigger has-value" id="supportTopicTrigger" aria-haspopup="listbox">
+          <span class="support-cs-text" id="supportTopicText">Проблема со входом или регистрацией</span>
+          <svg class="support-cs-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="#919191" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="support-cs-dropdown" id="supportTopicDropdown" role="listbox">
+          <div class="support-cs-option selected" data-value="Проблема со входом или регистрацией">Проблема со входом или регистрацией</div>
+          <div class="support-cs-option" data-value="Ошибка при работе с системой">Ошибка при работе с системой</div>
+          <div class="support-cs-option" data-value="Вопрос по функционалу">Вопрос по функционалу</div>
+          <div class="support-cs-option" data-value="Предложение по улучшению">Предложение по улучшению</div>
+          <div class="support-cs-option" data-value="Другое">Другое</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="support-field">
+      <label class="support-label" for="supportMessage">Сообщение</label>
+      <textarea
+        class="support-textarea"
+        id="supportMessage"
+        placeholder="Опишите вашу проблему или вопрос..."
+        maxlength="2000"
+      ></textarea>
+      <span class="support-char-hint"><span id="supportCharCount">0</span> / 2000</span>
+    </div>
+
+    <div class="support-modal-actions">
+      <button type="button" class="support-btn-cancel" id="supportCancel">Отмена</button>
+      <button type="button" class="support-btn-send" id="supportSend">Открыть в почте</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   var dropdown = document.getElementById('userDropdown');
@@ -310,6 +469,117 @@ body {
   });
   dropdown.querySelector('.user-dropdown-menu').addEventListener('click', function (e) {
     e.stopPropagation();
+  });
+})();
+
+// ── Техническая поддержка ──
+(function () {
+  var SUPPORT_EMAIL = '{{ SUPPORT_EMAIL }}';
+
+  var overlay       = document.getElementById('supportOverlay');
+  var openBtn       = document.getElementById('supportTrigger');
+  var closeBtn      = document.getElementById('supportClose');
+  var cancel        = document.getElementById('supportCancel');
+  var sendBtn       = document.getElementById('supportSend');
+  var message       = document.getElementById('supportMessage');
+  var counter       = document.getElementById('supportCharCount');
+  var topicHidden   = document.getElementById('supportTopicValue');
+  var topicTrigger  = document.getElementById('supportTopicTrigger');
+  var topicText     = document.getElementById('supportTopicText');
+  var topicDropdown = document.getElementById('supportTopicDropdown');
+
+  // ── Кастомный селект темы ──
+  topicTrigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var isOpen = topicDropdown.classList.contains('open');
+    topicDropdown.classList.toggle('open', !isOpen);
+    topicTrigger.classList.toggle('open', !isOpen);
+  });
+
+  topicDropdown.querySelectorAll('.support-cs-option').forEach(function (opt) {
+    opt.addEventListener('click', function () {
+      topicHidden.value = opt.dataset.value;
+      topicText.textContent = opt.dataset.value;
+      topicDropdown.querySelectorAll('.support-cs-option').forEach(function (o) { o.classList.remove('selected'); });
+      opt.classList.add('selected');
+      topicDropdown.classList.remove('open');
+      topicTrigger.classList.remove('open');
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.support-cs-wrap')) {
+      topicDropdown.classList.remove('open');
+      topicTrigger.classList.remove('open');
+    }
+  });
+
+  // ── Открытие / закрытие модалки ──
+  function openModal() {
+    overlay.classList.add('open');
+    message.focus();
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    message.value = '';
+    counter.textContent = '0';
+    message.style.borderColor = '';
+    var first = topicDropdown.querySelector('.support-cs-option');
+    if (first) first.click();
+  }
+
+  if (openBtn)  openBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancel)   cancel.addEventListener('click', closeModal);
+
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+
+  message.addEventListener('input', function () {
+    counter.textContent = message.value.length;
+  });
+
+  // ── Определение сервиса по домену почты текущего пользователя ──
+  function buildComposeUrl(to, subject, body) {
+    var domain = '{{ user.email }}'.split('@')[1] || '';
+    var d = domain.toLowerCase();
+    var su = encodeURIComponent(subject);
+    var bo = encodeURIComponent(body);
+    var t  = encodeURIComponent(to);
+
+    if (d === 'gmail.com' || d === 'googlemail.com') {
+      return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + t + '&su=' + su + '&body=' + bo;
+    }
+    if (d === 'mail.ru' || d === 'bk.ru' || d === 'inbox.ru' || d === 'list.ru') {
+      return 'https://e.mail.ru/compose/?to=' + t + '&subject=' + su + '&body=' + bo;
+    }
+    if (d === 'yandex.ru' || d === 'ya.ru' || d === 'yandex.by' || d === 'yandex.ua' || d === 'yandex.kz') {
+      return 'https://mail.yandex.ru/compose?to=' + t + '&subject=' + su + '&body=' + bo;
+    }
+    if (d === 'outlook.com' || d === 'hotmail.com' || d === 'live.com' || d === 'msn.com') {
+      return 'https://outlook.live.com/mail/0/deeplink/compose?to=' + t + '&subject=' + su + '&body=' + bo;
+    }
+    // Fallback для любого другого домена
+    return 'mailto:' + t + '?subject=' + su + '&body=' + bo;
+  }
+
+  sendBtn.addEventListener('click', function () {
+    if (!message.value.trim()) {
+      message.focus();
+      message.style.borderColor = 'var(--red-400)';
+      setTimeout(function () { message.style.borderColor = ''; }, 1500);
+      return;
+    }
+    var subject = '[Painmetrica] ' + topicHidden.value.trim();
+    var url = buildComposeUrl(SUPPORT_EMAIL, subject, message.value.trim());
+    window.open(url, '_blank');
+    closeModal();
   });
 })();
 </script>

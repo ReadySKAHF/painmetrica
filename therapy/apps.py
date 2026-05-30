@@ -5,3 +5,6 @@ class TherapyConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'therapy'
     verbose_name = 'Реабилитационная терапия'
+
+    def ready(self):
+        import therapy.signals  # noqa

@@ -21,11 +21,11 @@ class MedicationListView(DoctorRequiredMixin, ListView):
         q = self.request.GET.get('q', '').strip()
         if q:
             return Medication.objects.filter(name__icontains=q)
-        cached = cache.get('medications_all')
-        if cached is None:
-            cached = list(Medication.objects.all())
-            cache.set('medications_all', cached, 1800)
-        return cached
+        med_ids = cache.get('medications_ids_all')
+        if med_ids is None:
+            med_ids = list(Medication.objects.values_list('pk', flat=True))
+            cache.set('medications_ids_all', med_ids, 1800)
+        return Medication.objects.filter(pk__in=med_ids)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -61,10 +61,12 @@ class MedicationDetailView(DoctorRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        try:
-            ctx['doctor_note'] = self.object.doctor_notes.get(doctor=self.request.user)
-        except MedicationNote.DoesNotExist:
-            ctx['doctor_note'] = None
+        note_key = f'med_note_{self.object.pk}_{self.request.user.pk}'
+        doctor_note = cache.get(note_key)
+        if doctor_note is None:
+            doctor_note = self.object.doctor_notes.filter(doctor=self.request.user).first()
+            cache.set(note_key, doctor_note or '', 3600)
+        ctx['doctor_note'] = doctor_note if doctor_note else None
         return ctx
 
 

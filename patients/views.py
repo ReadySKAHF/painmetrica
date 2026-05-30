@@ -7,11 +7,14 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.db.models import prefetch_related_objects
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView
+from django_ratelimit.decorators import ratelimit
 
 from accounts.mixins import DoctorRequiredMixin
 from medications.models import Medication
@@ -54,28 +57,33 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
             'chronic':  'Хроническая (более 3 месяцев)',
         }
 
-        # Один запрос: все результаты + все answers с вопросами и этапами
-        all_results = list(
-            self.object.test_results.filter(status='completed')
+        # Базовый QuerySet результатов (без prefetch — для счётчиков и фильтров)
+        base_results_qs = (
+            self.object.test_results
+            .filter(status='completed')
             .select_related('test', 'session')
+            .order_by('-completed_at')
+        )
+
+        # Текущий статус — первый результат с полным prefetch answers
+        current_result = (
+            base_results_qs
             .prefetch_related(
                 Prefetch(
                     'answers',
                     queryset=Answer.objects.select_related('question__stage'),
                 )
             )
-            .order_by('-completed_at')
+            .first()
         )
 
-        # Один запрос на все ScoreRange для всех тестов из результатов
-        test_ids = {r.test_id for r in all_results}
-        score_ranges_by_test = {}
-        if test_ids:
-            for sr in ScoreRange.objects.filter(test_id__in=test_ids):
-                score_ranges_by_test.setdefault(sr.test_id, []).append(sr)
+        # ScoreRange для current_result
+        score_ranges_for_current = {}
+        if current_result:
+            for sr in ScoreRange.objects.filter(test_id=current_result.test_id):
+                score_ranges_for_current.setdefault(sr.test_id, []).append(sr)
 
-        def build_sub_results(result):
-            # Использует prefetch-кэш для answers и кэш score_ranges — без запросов к БД
+        def build_sub_results(result, score_ranges_by_test):
             step_scores = {}
             step_stages = {}
             for answer in result.answers.all():
@@ -100,19 +108,15 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
                 })
             return sub_results
 
-        # Текущий статус — самый последний результат
-        current_result = all_results[0] if all_results else None
         if current_result:
             context['current_status'] = {
                 'result': current_result,
-                'sub_results': build_sub_results(current_result),
+                'sub_results': build_sub_results(current_result, score_ranges_for_current),
             }
-            history_list = all_results[1:]
         else:
             context['current_status'] = None
-            history_list = all_results
 
-        # Фильтр по датам (в памяти — без лишних запросов)
+        # Фильтр по датам
         date_from_str = self.request.GET.get('date_from', '').strip()
         date_to_str = self.request.GET.get('date_to', '').strip()
         date_from = date_to = None
@@ -129,36 +133,52 @@ class PatientDetailView(LoginRequiredMixin, DetailView):
         context['filter_date_from'] = date_from_str
         context['filter_date_to'] = date_to_str
 
-        history_filtered = history_list
+        # История — все результаты кроме первого (current_result), с БД-пагинацией
+        history_qs = base_results_qs
+        if current_result:
+            history_qs = history_qs.exclude(pk=current_result.pk)
         if date_from:
-            history_filtered = [r for r in history_filtered if r.completed_at.date() >= date_from]
+            history_qs = history_qs.filter(completed_at__date__gte=date_from)
         if date_to:
-            history_filtered = [r for r in history_filtered if r.completed_at.date() <= date_to]
+            history_qs = history_qs.filter(completed_at__date__lte=date_to)
 
         # Наличие результатов для кнопок скачивания
-        context['has_any_results'] = bool(all_results)
-        export_list = all_results
+        context['has_any_results'] = bool(current_result) or base_results_qs.exists()
+        export_qs = base_results_qs
         if date_from:
-            export_list = [r for r in export_list if r.completed_at.date() >= date_from]
+            export_qs = export_qs.filter(completed_at__date__gte=date_from)
         if date_to:
-            export_list = [r for r in export_list if r.completed_at.date() <= date_to]
-        context['export_has_results'] = bool(export_list)
+            export_qs = export_qs.filter(completed_at__date__lte=date_to)
+        context['export_has_results'] = export_qs.exists()
 
-        # Пагинация истории (3 на страницу) — paginator работает со списком
-        paginator = Paginator(history_filtered, 3)
-        history_page = paginator.get_page(self.request.GET.get('page', 1))
-        context['history_page'] = history_page
+        # Пагинация истории на уровне БД
+        history_paginator = Paginator(history_qs, 3)
+        history_page_obj = history_paginator.get_page(self.request.GET.get('page', 1))
+        page_results = list(history_page_obj)
+        prefetch_related_objects(page_results, Prefetch(
+            'answers',
+            queryset=Answer.objects.select_related('question__stage'),
+        ))
+
+        # ScoreRange для страницы истории
+        history_test_ids = {r.test_id for r in page_results}
+        score_ranges_for_history = {}
+        if history_test_ids:
+            for sr in ScoreRange.objects.filter(test_id__in=history_test_ids):
+                score_ranges_for_history.setdefault(sr.test_id, []).append(sr)
+
+        context['history_page'] = history_page_obj
         context['history_results'] = [
-            {'result': r, 'sub_results': build_sub_results(r)}
-            for r in history_page
+            {'result': r, 'sub_results': build_sub_results(r, score_ranges_for_history)}
+            for r in page_results
         ]
 
         # Проверяем возможность сравнения: ≥2 завершённых теста одной категории
         COMPARABLE = ['complex', 'painad', 'ncsr']
         category_counts = Counter(
-            r.test.category
-            for r in all_results
-            if r.test.category in COMPARABLE
+            r['test__category']
+            for r in base_results_qs.values('test__category')
+            if r['test__category'] in COMPARABLE
         )
         context['can_compare'] = any(cnt >= 2 for cnt in category_counts.values())
 
@@ -648,7 +668,10 @@ class ConclusionListView(DoctorRequiredMixin, View):
         if date_to_str and not date_to:
             date_to_str = ''
 
-        conclusions_qs = Conclusion.objects.filter(patient=patient).order_by('-created_at')
+        conclusions_qs = Conclusion.objects.filter(patient=patient).prefetch_related(
+            'conclusion_medications__medication',
+            'conclusion_therapies__therapy',
+        ).order_by('-created_at')
         if date_from:
             conclusions_qs = conclusions_qs.filter(created_at__date__gte=date_from)
         if date_to:
@@ -875,6 +898,7 @@ class ConclusionRehabilitationView(DoctorRequiredMixin, View):
         )
 
 
+@method_decorator(ratelimit(key='user', rate='10/h', method='GET', block=True), name='get')
 class ConclusionDownloadView(DoctorRequiredMixin, View):
     """Скачать заключение в формате DOCX по шаблону conclusion-template.docx"""
 

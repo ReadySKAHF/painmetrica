@@ -5,6 +5,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 
 
+def handler429(request, exception=None):
+    return render(request, '429.html', status=429)
+
+
 class HomeView(TemplateView):
     """Главная страница для неавторизованных пользователей"""
 

@@ -19,6 +19,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+handler429 = 'core.views.handler429'
+
 urlpatterns = [
     path('manage-W8eIswZeYOh1/', admin.site.urls),
     path('accounts/', include('accounts.urls')),

@@ -423,6 +423,7 @@ class Command(BaseCommand):
                 conclusion=conclusion,
             )
 
+        cache.delete_many(['active_tests', 'therapies_ids_all', 'medications_ids_all'])
         self.stdout.write(self.style.SUCCESS(
             f'\nТест «{TEST_TITLE}» успешно создан! ID={test.pk}'
         ))

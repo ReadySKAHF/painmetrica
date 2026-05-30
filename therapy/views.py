@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.decorators import login_required
@@ -20,7 +21,11 @@ class TherapyListView(DoctorRequiredMixin, ListView):
         q = self.request.GET.get('q', '').strip()
         if q:
             return Therapy.objects.filter(name__icontains=q)
-        return Therapy.objects.all()
+        therapy_ids = cache.get('therapies_ids_all')
+        if therapy_ids is None:
+            therapy_ids = list(Therapy.objects.values_list('pk', flat=True))
+            cache.set('therapies_ids_all', therapy_ids, 1800)
+        return Therapy.objects.filter(pk__in=therapy_ids)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

@@ -9,9 +9,9 @@ class _SessionCompleted(Exception):
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db import connection
+from django.db import transaction
 from django.db.models import Prefetch
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -336,7 +336,6 @@ class StageView(LoginRequiredMixin, View):
             cache.set(stages_key, all_stages, 3600)
         stage = next((s for s in all_stages if s.order == order), None)
         if stage is None:
-            from django.http import Http404
             raise Http404
         return session, stage, all_stages
 
@@ -449,8 +448,7 @@ class StageView(LoginRequiredMixin, View):
 class SaveProgressView(LoginRequiredMixin, View):
     """AJAX-endpoint: сохраняет текущие ответы без перехода на следующий этап.
 
-    На PostgreSQL: авторизация встроена в WHERE-условие UPDATE — 1 запрос вместо 2.
-    На SQLite: классический SELECT + UPDATE (jsonb-оператор недоступен).
+    select_for_update() предотвращает race condition при параллельных сохранениях.
     """
 
     def post(self, request, session_id):
@@ -463,38 +461,20 @@ class SaveProgressView(LoginRequiredMixin, View):
         if not isinstance(new_answers, dict):
             return JsonResponse({'ok': False, 'error': 'Неверный формат'}, status=400)
 
-        if connection.vendor == 'postgresql':
-            from django.db.models.expressions import RawSQL
-
-            user = request.user
-            if user.user_type == 'patient':
-                qs = TestSession.objects.filter(
-                    pk=session_id, status='in_progress', patient__user=user
+        try:
+            with transaction.atomic():
+                session = TestSession.objects.select_for_update().get(
+                    pk=session_id, status='in_progress'
                 )
-            elif user.user_type == 'doctor':
-                qs = TestSession.objects.filter(
-                    pk=session_id, status='in_progress', taken_by=user
-                )
-            else:
-                return JsonResponse({'ok': False, 'error': 'Нет доступа'}, status=403)
-
-            updated = qs.update(
-                answers_data=RawSQL('answers_data || %s::jsonb', [json.dumps(new_answers)])
-            )
-            if not updated:
-                return JsonResponse({'ok': False, 'error': 'Сессия не найдена'}, status=404)
-
-        else:
-            session = get_object_or_404(TestSession, pk=session_id, status='in_progress')
-            try:
                 _authorize_session(request, session)
-            except PermissionDenied:
-                return JsonResponse({'ok': False, 'error': 'Нет доступа'}, status=403)
-
-            answers = dict(session.answers_data)
-            answers.update(new_answers)
-            session.answers_data = answers
-            session.save(update_fields=['answers_data'])
+                existing = dict(session.answers_data or {})
+                existing.update(new_answers)
+                session.answers_data = existing
+                session.save(update_fields=['answers_data'])
+        except TestSession.DoesNotExist:
+            return JsonResponse({'ok': False, 'error': 'Сессия не найдена'}, status=404)
+        except PermissionDenied:
+            return JsonResponse({'ok': False, 'error': 'Нет доступа'}, status=403)
 
         return JsonResponse({'ok': True})
 

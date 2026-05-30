@@ -1,4 +1,5 @@
 import openpyxl
+from django.core.cache import cache
 from django.core.management.base import BaseCommand
 from therapy.models import Therapy
 
@@ -39,6 +40,7 @@ class Command(BaseCommand):
                 skipped += 1
                 self.stdout.write(f'  ~ уже существует: {name}')
 
+        cache.delete_many(['therapies_ids_all', 'active_tests', 'medications_ids_all'])
         self.stdout.write(self.style.SUCCESS(
             f'\nГотово: создано {created}, пропущено {skipped}.'
         ))

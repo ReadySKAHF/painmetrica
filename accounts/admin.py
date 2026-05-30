@@ -127,10 +127,10 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(OTPCode)
 class OTPCodeAdmin(admin.ModelAdmin):
-    list_display = ['user', 'code', 'purpose', 'is_used', 'expires_at', 'created_at']
+    list_display = ['user', 'purpose', 'is_used', 'expires_at', 'created_at']
     list_filter = ['purpose', 'is_used', 'created_at']
-    search_fields = ['user__email', 'code']
-    readonly_fields = ['user', 'code', 'purpose', 'is_used', 'expires_at', 'created_at']
+    search_fields = ['user__email']
+    readonly_fields = ['user', 'code_hash', 'purpose', 'is_used', 'expires_at', 'created_at']
     ordering = ['-created_at']
 
     def has_add_permission(self, request):

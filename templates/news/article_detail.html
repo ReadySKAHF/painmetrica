@@ -1,4 +1,4 @@
-{% load static %}
+{% load static bleach_tags %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -443,7 +443,7 @@
 
     <div class="article-content">
       <h1 class="article-title">{{ article.title }}</h1>
-      <div class="article-text">{{ article.content|safe }}</div>
+      <div class="article-text">{{ article.content|bleach }}</div>
       {% if article.date %}
       <span class="article-date">{{ article.date|date:"d.m.Y" }}</span>
       {% endif %}

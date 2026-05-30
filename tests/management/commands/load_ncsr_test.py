@@ -5,6 +5,7 @@ Management command: загружает тест NCS-R.
     python manage.py load_ncsr_test
     python manage.py load_ncsr_test --force  # пересоздать, даже если уже есть
 """
+from django.core.cache import cache
 from django.core.management.base import BaseCommand
 
 from tests.models import Question, QuestionOption, ScoreRange, Stage, Test
@@ -156,6 +157,7 @@ class Command(BaseCommand):
                 conclusion=conclusion,
             )
 
+        cache.delete_many(['active_tests', 'therapies_ids_all', 'medications_ids_all'])
         self.stdout.write(self.style.SUCCESS(
             f'Тест «{TEST_TITLE}» успешно создан (id={test.pk}): '
             f'1 этап, {len(QUESTIONS)} вопроса, {len(SCORE_RANGES)} диапазона баллов.'

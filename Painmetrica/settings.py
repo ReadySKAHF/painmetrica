@@ -55,7 +55,27 @@ INSTALLED_APPS = [
     'news',
     # Дополнительные
     'django_ratelimit',
+    'django_bleach',
 ]
+
+# ─── django-bleach: разрешённые теги и атрибуты для статей ───────────────────
+BLEACH_ALLOWED_TAGS = [
+    'p', 'br', 'b', 'strong', 'i', 'em', 'u', 's',
+    'h2', 'h3', 'h4',
+    'ul', 'ol', 'li',
+    'a', 'blockquote', 'pre', 'code',
+    'img', 'figure', 'figcaption',
+    'hr', 'div', 'span',
+]
+BLEACH_ALLOWED_ATTRIBUTES = {
+    'a':       ['href', 'rel'],
+    'img':     ['src', 'alt', 'width', 'height', 'class'],
+    'figure':  ['class'],
+    'figcaption': ['class'],
+    'div':     ['class'],
+    'span':    ['class'],
+}
+BLEACH_STRIP_TAGS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,6 +83,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'accounts.middleware.SessionTimeoutMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -155,6 +176,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'logo',
 ]
 
+
 # ─── Медиафайлы ──────────────────────────────────────────────────────────────
 # Если заданы переменные Supabase Storage — используем облако,
 # иначе файлы хранятся локально (для разработки без облака)
@@ -222,19 +244,27 @@ LOGGING = {
             'format': '{asctime} {levelname} {module} {message}',
             'style': '{',
         },
+        'security': {
+            'format': '{asctime} | {levelname} | {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'file': {
             'level': 'WARNING',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
+            'maxBytes': 10 * 1024 * 1024,
+            'backupCount': 5,
             'formatter': 'verbose',
         },
-        'security': {
+        'security_file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'logs' / 'security.log',
-            'formatter': 'verbose',
+            'maxBytes': 10 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'security',
         },
     },
     'loggers': {
@@ -244,7 +274,12 @@ LOGGING = {
             'propagate': True,
         },
         'django.security': {
-            'handlers': ['security'],
+            'handlers': ['security_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'painmetrica.security': {
+            'handlers': ['security_file'],
             'level': 'INFO',
             'propagate': False,
         },
@@ -280,7 +315,18 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'core:dashboard'
 LOGOUT_REDIRECT_URL = 'core:home'
 
-# ─── HTTPS / Cookie безопасность (только production) ──────────────────────────
+# ─── Cookie безопасность ──────────────────────────────────────────────────────
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Сессия истекает через 24 часа активности; SessionTimeoutMiddleware блокирует
+# при бездействии > 30 минут
+SESSION_COOKIE_AGE = 86400
+SESSION_SAVE_EVERY_REQUEST = True
+
+# ─── HTTPS (только production) ────────────────────────────────────────────────
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -289,3 +335,5 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'

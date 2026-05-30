@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
+import hashlib
+import hmac
 import secrets
 import uuid
 
@@ -149,7 +151,7 @@ class OTPCode(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_codes')
-    code = models.CharField('OTP код', max_length=4)
+    code_hash = models.CharField('Хеш OTP кода', max_length=64)
     purpose = models.CharField('Назначение', max_length=20, choices=PURPOSE_CHOICES)
     is_used = models.BooleanField('Использован', default=False)
     expires_at = models.DateTimeField('Истекает')
@@ -161,23 +163,40 @@ class OTPCode(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'OTP {self.code} для {self.user.email} ({self.purpose})'
+        return f'OTP для {self.user.email} ({self.purpose})'
 
     @classmethod
     def generate_code(cls):
         """Генерация 4-значного OTP кода"""
         return str(secrets.randbelow(9000) + 1000)
 
+    @classmethod
+    def create_for_user(cls, user, purpose):
+        """Создаёт OTPCode, сохраняя SHA-256 хеш кода. Возвращает (otp, plain_code)."""
+        code = cls.generate_code()
+        code_hash = hashlib.sha256(code.encode()).hexdigest()
+        obj = cls.objects.create(
+            user=user,
+            purpose=purpose,
+            code_hash=code_hash,
+            expires_at=timezone.now() + timedelta(minutes=5),
+        )
+        return obj, code
+
+    def check_code(self, code):
+        """Сравнение кода через HMAC — защита от timing attack."""
+        return hmac.compare_digest(
+            self.code_hash,
+            hashlib.sha256(code.encode()).hexdigest(),
+        )
+
     def is_valid(self):
         """Проверка действительности кода"""
         return not self.is_used and timezone.now() < self.expires_at
 
     def save(self, *args, **kwargs):
-        """Автоматическая установка времени истечения"""
         if not self.pk and not self.expires_at:
             self.expires_at = timezone.now() + timedelta(minutes=5)
-        if not self.code:
-            self.code = self.generate_code()
         super().save(*args, **kwargs)
 
 

@@ -25,3 +25,21 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if self.cover_image and hasattr(self.cover_image, 'file'):
+            try:
+                from PIL import Image
+                import io
+                from django.core.files.base import ContentFile
+                img = Image.open(self.cover_image)
+                img = img.convert('RGB')
+                img.thumbnail((1200, 800), Image.LANCZOS)
+                buffer = io.BytesIO()
+                img.save(buffer, format='WEBP', quality=85, optimize=True)
+                orig_name = self.cover_image.name or 'cover'
+                name = orig_name.rsplit('.', 1)[0] + '.webp'
+                self.cover_image = ContentFile(buffer.getvalue(), name=name)
+            except Exception:
+                pass
+        super().save(*args, **kwargs)

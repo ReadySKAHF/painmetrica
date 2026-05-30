@@ -1,4 +1,5 @@
 import datetime
+import io
 import uuid
 
 from django.core.cache import cache
@@ -8,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import ListView
+from PIL import Image
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -106,15 +108,32 @@ class ArticleDetailView(View):
 
 
 class ArticleInlineImageUploadView(NewsManagerRequiredMixin, View):
+    MAX_SIZE_BYTES = 5 * 1024 * 1024  # 5 МБ
+    ALLOWED_FORMATS = {'JPEG', 'PNG', 'GIF', 'WEBP'}
+
     def post(self, request):
-        image = request.FILES.get('image')
-        if not image:
-            return JsonResponse({'error': 'No image'}, status=400)
-        ext = image.name.rsplit('.', 1)[-1].lower() if '.' in image.name else 'jpg'
-        path = default_storage.save(
-            f'news/inline/{uuid.uuid4().hex}.{ext}',
-            ContentFile(image.read()),
-        )
+        image_file = request.FILES.get('image')
+        if not image_file:
+            return JsonResponse({'error': 'Файл не передан'}, status=400)
+
+        if image_file.size > self.MAX_SIZE_BYTES:
+            return JsonResponse({'error': 'Файл слишком большой (макс. 5 МБ)'}, status=400)
+
+        try:
+            img = Image.open(image_file)
+            fmt = img.format
+            if fmt not in self.ALLOWED_FORMATS:
+                return JsonResponse({'error': 'Недопустимый формат файла'}, status=400)
+            img.verify()
+            image_file.seek(0)
+            img = Image.open(image_file)
+        except Exception:
+            return JsonResponse({'error': 'Недопустимый или повреждённый файл изображения'}, status=400)
+
+        buffer = io.BytesIO()
+        img.convert('RGB').save(buffer, format='WEBP', quality=85)
+        safe_name = f'news/inline/{uuid.uuid4().hex}.webp'
+        path = default_storage.save(safe_name, ContentFile(buffer.getvalue()))
         return JsonResponse({'url': default_storage.url(path)})
 
 

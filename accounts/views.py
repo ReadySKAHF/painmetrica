@@ -260,6 +260,7 @@ class RegisterStepFourView(View):
         return redirect('accounts:register_verify')
 
 
+@method_decorator(ratelimit(key='user_or_ip', rate='5/10m', method='POST', block=True), name='post')
 class RegisterVerifyOTPView(View):
     """Шаг 3: Верификация OTP кода при регистрации"""
 
@@ -344,6 +345,7 @@ class RegisterVerifyOTPView(View):
         return render(request, self.template_name, {'form': form, 'user': user})
 
 
+@method_decorator(ratelimit(key='ip', rate='10/m', method='POST', block=True), name='post')
 class LoginView(View):
     """Экран 1: Вход - email и пароль"""
 
@@ -391,6 +393,7 @@ class LoginView(View):
         return render(request, self.template_name, {'form': form})
 
 
+@method_decorator(ratelimit(key='user_or_ip', rate='5/10m', method='POST', block=True), name='post')
 class LoginVerifyOTPView(View):
     """Экран 2: Вход - проверка OTP кода"""
 
@@ -526,7 +529,7 @@ class ResendOTPView(View):
             return JsonResponse({'success': False, 'message': 'Пользователь не найден.'}, status=404)
 
 
-@method_decorator(ratelimit(key='ip', rate='10/m', method='GET', block=True), name='get')
+@method_decorator(ratelimit(key='ip', rate='3/m', method='GET', block=True), name='get')
 class CheckEmailView(View):
     """AJAX: проверка существования email в системе"""
 
@@ -1000,6 +1003,9 @@ class PasswordResetSetView(View):
         if form.is_valid():
             user.set_password(form.cleaned_data['new_password'])
             user.save()
+
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, user)
 
             token_obj.is_used = True
             token_obj.save()

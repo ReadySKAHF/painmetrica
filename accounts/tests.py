@@ -102,29 +102,30 @@ class OTPCodeModelTests(TestCase):
         self.user = make_doctor()
 
     def test_код_генерируется_автоматически(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
-        self.assertTrue(otp.code.isdigit())
-        self.assertEqual(len(otp.code), 4)
+        otp, code = OTPCode.create_for_user(self.user, 'login')
+        self.assertTrue(code.isdigit())
+        self.assertEqual(len(code), 4)
+        self.assertEqual(len(otp.code_hash), 64)
 
     def test_expires_at_устанавливается_автоматически(self):
         before = timezone.now()
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
+        otp, _ = OTPCode.create_for_user(self.user, 'login')
         after = timezone.now()
         self.assertGreater(otp.expires_at, before + timedelta(minutes=4))
         self.assertLess(otp.expires_at, after + timedelta(minutes=6))
 
     def test_is_valid_возвращает_true_для_нового_кода(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
+        otp, _ = OTPCode.create_for_user(self.user, 'login')
         self.assertTrue(otp.is_valid())
 
     def test_is_valid_возвращает_false_для_использованного(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
+        otp, _ = OTPCode.create_for_user(self.user, 'login')
         otp.is_used = True
         otp.save()
         self.assertFalse(otp.is_valid())
 
     def test_is_valid_возвращает_false_для_просроченного(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
+        otp, _ = OTPCode.create_for_user(self.user, 'login')
         otp.expires_at = timezone.now() - timedelta(minutes=1)
         otp.save()
         self.assertFalse(otp.is_valid())
@@ -147,45 +148,45 @@ class OTPServiceTests(TestCase):
         self.user = make_doctor()
 
     def test_verify_otp_успешная_верификация(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
-        success, error = OTPService.verify_otp(self.user, otp.code, purpose='login')
+        otp, code = OTPCode.create_for_user(self.user, 'login')
+        success, error = OTPService.verify_otp(self.user, code, purpose='login')
         self.assertTrue(success)
         self.assertIsNone(error)
 
     def test_verify_otp_помечает_код_использованным(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
-        OTPService.verify_otp(self.user, otp.code, purpose='login')
+        otp, code = OTPCode.create_for_user(self.user, 'login')
+        OTPService.verify_otp(self.user, code, purpose='login')
         otp.refresh_from_db()
         self.assertTrue(otp.is_used)
 
     def test_verify_otp_неверный_код(self):
-        OTPCode.objects.create(user=self.user, purpose='login')
-        success, error = OTPService.verify_otp(self.user, '0000', purpose='login')
+        OTPCode.create_for_user(self.user, 'login')
+        success, error = OTPService.verify_otp(self.user, '000000', purpose='login')
         self.assertFalse(success)
         self.assertIsNotNone(error)
 
     def test_verify_otp_просроченный_код(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
+        otp, code = OTPCode.create_for_user(self.user, 'login')
         otp.expires_at = timezone.now() - timedelta(minutes=1)
         otp.save()
-        success, error = OTPService.verify_otp(self.user, otp.code, purpose='login')
+        success, error = OTPService.verify_otp(self.user, code, purpose='login')
         self.assertFalse(success)
 
     def test_verify_otp_повторное_использование_запрещено(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
-        OTPService.verify_otp(self.user, otp.code, purpose='login')
-        success, error = OTPService.verify_otp(self.user, otp.code, purpose='login')
+        otp, code = OTPCode.create_for_user(self.user, 'login')
+        OTPService.verify_otp(self.user, code, purpose='login')
+        success, error = OTPService.verify_otp(self.user, code, purpose='login')
         self.assertFalse(success)
 
     def test_has_valid_otp_true_для_действующего(self):
-        OTPCode.objects.create(user=self.user, purpose='login')
+        OTPCode.create_for_user(self.user, 'login')
         self.assertTrue(OTPService.has_valid_otp(self.user, purpose='login'))
 
     def test_has_valid_otp_false_если_нет_кодов(self):
         self.assertFalse(OTPService.has_valid_otp(self.user, purpose='login'))
 
     def test_has_valid_otp_false_для_просроченного(self):
-        otp = OTPCode.objects.create(user=self.user, purpose='login')
+        otp, _ = OTPCode.create_for_user(self.user, 'login')
         otp.expires_at = timezone.now() - timedelta(minutes=1)
         otp.save()
         self.assertFalse(OTPService.has_valid_otp(self.user, purpose='login'))

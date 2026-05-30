@@ -15,16 +15,25 @@ def get_recommendation_context(patient, last_result) -> RecommendationContext:
     if last_result is None:
         return RecommendationContext()
 
+    from django.core.cache import cache
+    cache_key = f'rec_ctx_{last_result.pk}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     category = getattr(last_result.test, 'category', '')
 
     if category == 'complex':
-        return _context_for_complex(patient, last_result)
-    if category == 'painad':
-        return _context_for_painad(last_result)
-    if category == 'ncsr':
-        return _context_for_ncsr(last_result)
+        result = _context_for_complex(patient, last_result)
+    elif category == 'painad':
+        result = _context_for_painad(last_result)
+    elif category == 'ncsr':
+        result = _context_for_ncsr(last_result)
+    else:
+        result = RecommendationContext()
 
-    return RecommendationContext()
+    cache.set(cache_key, result, 3600)
+    return result
 
 
 # ─────────────────────────────────────────────────────────────────────────────

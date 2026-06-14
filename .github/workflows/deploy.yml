@@ -14,15 +14,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup SSH
+      - name: Debug SSH key
         env:
           SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_KEY" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "cd /var/www/painmetrica && bash deploy/deploy.sh"
+          echo "=== First line ==="
+          head -1 ~/.ssh/deploy_key
+          echo "=== Last line ==="
+          tail -1 ~/.ssh/deploy_key
+          echo "=== Line count ==="
+          wc -l ~/.ssh/deploy_key
+          echo "=== ssh-keygen check ==="
+          ssh-keygen -l -f ~/.ssh/deploy_key || echo "INVALID KEY"

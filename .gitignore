@@ -97,9 +97,8 @@ NGINX_PLAN.md
 logs/
 *.log
 
-# Конфиги деплоя (содержат локальные пути, не нужны в репо)
+# Локальные конфиги (содержат пути Windows, не нужны в репо)
 deploy/nginx/local.conf
-deploy/nginx/proxy_params
 
 SECURITY_AUDIT.md
 SETUP.md

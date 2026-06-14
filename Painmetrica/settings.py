@@ -118,6 +118,11 @@ WSGI_APPLICATION = 'Painmetrica.wsgi.application'
 # Для Supabase: установите SUPABASE_DB_URL или SUPABASE_DB_PASSWORD
 # Без переменной используется SQLite (локальная разработка)
 
+_db_options = {}
+_db_sslmode = os.environ.get('DB_SSLMODE', '')
+if _db_sslmode:
+    _db_options['sslmode'] = _db_sslmode
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -126,9 +131,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
-        'OPTIONS': {'sslmode': 'require'},
-        # Transaction Pooler не поддерживает server-side cursors
-        'DISABLE_SERVER_SIDE_CURSORS': True,
+        'OPTIONS': _db_options,
     }
 }
 

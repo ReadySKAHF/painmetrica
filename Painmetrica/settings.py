@@ -58,6 +58,9 @@ INSTALLED_APPS = [
     'django_bleach',
 ]
 
+# ─── django-ratelimit: использовать X-Real-IP от nginx (unix socket) ─────────
+RATELIMIT_IP_META_KEY = 'HTTP_X_REAL_IP'
+
 # ─── django-bleach: разрешённые теги и атрибуты для статей ───────────────────
 BLEACH_ALLOWED_TAGS = [
     'p', 'br', 'b', 'strong', 'i', 'em', 'u', 's',

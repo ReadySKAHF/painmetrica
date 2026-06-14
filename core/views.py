@@ -88,6 +88,10 @@ class DashboardView(LoginRequiredMixin, View):
             patients_page = paginator.get_page(page)
 
             context['is_doctor'] = True
+            try:
+                context['doctor_is_verified'] = bool(user.doctor_profile.organization_id)
+            except Exception:
+                context['doctor_is_verified'] = False
             context['patients'] = patients_page
             context['total_patients'] = total_patients
             context['search_query'] = search_query

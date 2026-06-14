@@ -326,6 +326,9 @@ class RegisterVerifyOTPView(View):
                 # Авторизуем пользователя
                 login(request, user)
 
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'redirect': reverse('core:dashboard')})
+
                 messages.success(request, 'Регистрация успешно завершена!')
                 return redirect('core:dashboard')
             else:
@@ -340,8 +343,12 @@ class RegisterVerifyOTPView(View):
                             f'неудачных попыток ввода OTP-кода при регистрации'
                         ),
                     )
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'error': error}, status=400)
                 messages.error(request, error)
 
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'Неверный код.'}, status=400)
         return render(request, self.template_name, {'form': form, 'user': user})
 
 

@@ -342,12 +342,6 @@
     font-weight: 600;
     color: var(--gray-950);
     line-height: 1;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .adv-input-wrap:has(.input-simple:not(:placeholder-shown)) .adv-label,
-  .adv-label.visible {
-    opacity: 1;
   }
 
   /* Error block inside advanced search */
@@ -734,6 +728,22 @@
     animation: mPopIn .25s cubic-bezier(.22,.68,0,1.3);
   }
   .m3-title { font-weight: 700; font-size: 18px; color: var(--gray-950); text-align: center; line-height: 1.45; }
+
+  /* Modal — верификация */
+  .m-verify {
+    padding: 40px 40px 36px;
+    display: flex; flex-direction: column; align-items: center; gap: 20px;
+    width: min(600px, calc(100vw - 48px));
+    max-height: 90vh; overflow-y: auto;
+    animation: mSlideUp .28s cubic-bezier(.22,.68,0,1.2);
+  }
+  .m-verify-title { font-weight: 700; font-size: 20px; color: var(--gray-950); text-align: center; }
+  .m-verify-body { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+  .m-verify-subtitle { font-weight: 700; font-size: 14px; color: var(--gray-950); }
+  .m-verify-text { font-size: 14px; color: var(--gray-950); line-height: 1.6; }
+  .m-verify-text a { color: var(--blue-500); }
+  .m-verify-list { font-size: 14px; color: var(--gray-950); line-height: 1.8; padding-left: 20px; }
+  .m-verify-footnote { font-size: 12px; color: var(--gray-550); line-height: 1.6; }
 
   /* Modal 4 — ручная регистрация */
   .m4 {
@@ -1360,6 +1370,33 @@
 <!-- ═══ OVERLAY ═══ -->
 <div class="modal-overlay hidden" id="modalOverlay">
 
+  <!-- Modal: верификация аккаунта -->
+  <div class="modal-box m-verify hidden" id="modalVerification">
+    <button class="modal-close" onclick="closeAllModals()">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+    <p class="m-verify-title">Ваш аккаунт ожидает верификации</p>
+    <div class="m-verify-body">
+      <p class="m-verify-text">Для начала работы с пациентами необходимо подтвердить вашу принадлежность к учреждению здравоохранения*. Это занимает 1&nbsp;–&nbsp;2 рабочих дня.</p>
+      <p class="m-verify-subtitle">Что нужно сделать:</p>
+      <p class="m-verify-text">Напишите на почту заведующей кафедрой неврологии и нейрохирургии ГомГМУ Усовой Н.Н. – <a href="mailto:stroke.by@gmail.com">stroke.by@gmail.com</a><br>
+      Укажите:</p>
+      <ul class="m-verify-list">
+        <li>Ваше ФИО</li>
+        <li>Место работы</li>
+        <li>Ваш номер телефона</li>
+      </ul>
+      <p class="m-verify-text">Также будем признательны, если вы укажете, каким образом вы узнали о проекте Painmetrica.</p>
+      <p class="m-verify-text">После подтверждения вы получите уведомление на почту</p>
+      <p class="m-verify-footnote">* Подтверждение делается исходя из статей закона:<br>
+      Статья 4, пункт 2 Закона Республики Беларусь № 99-З «О защите персональных данных»<br>
+      Статья 8, пункт 2 Закона Республики Беларусь № 99-З «О защите персональных данных»<br>
+      Статья 17, пункт 3 Закона Республики Беларусь № 99-З «О защите персональных данных»<br>
+      Статья 46 Закона Республики Беларусь № 2435-XII «О здравоохранении»</p>
+    </div>
+    <button class="m-btn" onclick="closeAllModals()">Хорошо</button>
+  </div>
+
   <!-- Modal 1: выбор способа -->
   <div class="modal-box m1" id="modal1">
     <button class="modal-close" onclick="closeAllModals()">
@@ -1557,7 +1594,8 @@
 
 <script>
   const overlay   = document.getElementById('modalOverlay');
-  const allModals = ['modal1','modal2','modal3','formA','formB','formSuccess'];
+  const allModals = ['modalVerification','modal1','modal2','modal3','formA','formB','formSuccess'];
+  const doctorIsVerified = {{ doctor_is_verified|lower|default:"false" }};
 
   function getCsrf() {
     return document.querySelector('#csrfForm [name=csrfmiddlewaretoken]').value;
@@ -1565,7 +1603,11 @@
 
   function openAddPatientModal() {
     overlay.classList.remove('hidden');
-    showModal('modal1');
+    if (!doctorIsVerified) {
+      showModal('modalVerification');
+    } else {
+      showModal('modal1');
+    }
   }
 
   function showModal(id) {

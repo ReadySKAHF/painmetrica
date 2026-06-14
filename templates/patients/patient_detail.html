@@ -1166,12 +1166,8 @@
 {% block extra_script %}
 <script>
   function getCsrfToken() {
-    const name = 'csrftoken';
-    for (const c of document.cookie.split(';')) {
-      const t = c.trim();
-      if (t.startsWith(name + '=')) return decodeURIComponent(t.slice(name.length + 1));
-    }
-    return '';
+    const el = document.querySelector('[name=csrfmiddlewaretoken]');
+    return el ? el.value : '';
   }
 
   const BAD_NAME_EDIT = /[^a-zA-Zа-яёА-ЯЁ\s\-]/;

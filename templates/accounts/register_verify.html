@@ -236,6 +236,38 @@
     line-height: 1.4;
   }
 
+  /* ── SUCCESS MODAL ──────────────────────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(30, 40, 70, 0.18);
+    align-items: center; justify-content: center;
+    z-index: 300;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    position: relative;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 18px;
+    padding: 44px 40px 36px;
+    width: min(480px, calc(100vw - 48px));
+    display: flex; flex-direction: column; align-items: center; gap: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    animation: mSlideUp .28s cubic-bezier(.22,.68,0,1.2);
+  }
+  @keyframes mSlideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  .modal-title { font-size: 22px; font-weight: 700; color: var(--gray-950); text-align: center; }
+  .modal-text { font-size: 14px; color: var(--gray-950); line-height: 1.65; text-align: center; }
+  .modal-btn {
+    height: 46px; padding: 0 32px;
+    background: var(--blue-500); color: var(--white);
+    border: none; border-radius: 33px;
+    font-family: var(--font); font-size: 14px; font-weight: 400;
+    cursor: pointer; transition: opacity .15s; min-width: 160px;
+  }
+  .modal-btn:hover { opacity: .9; }
+
   /* ── FOOTER ──────────────────────────────────────────────────────── */
   .footer {
     width: 1320px;
@@ -368,6 +400,15 @@
 
   </section>
 </main>
+
+<!-- Модальное окно — уведомление после регистрации -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal-box">
+    <p class="modal-title">Внимание!</p>
+    <p class="modal-text">После регистрации ваш аккаунт будет активирован в течение 1&nbsp;–&nbsp;2 рабочих дней после подтверждения вашей принадлежности к учреждению здравоохранения. Это требование установлено для защиты данных пациентов.</p>
+    <button class="modal-btn" id="modalOkBtn">Хорошо</button>
+  </div>
+</div>
 
 <footer class="footer">
   <div class="footer-logo">
@@ -547,6 +588,52 @@ if (_stored) {
 
 // Auto-focus first input
 otpInputs[0].focus();
+
+// ── AJAX отправка формы ──────────────────────────────────────────────────
+const otpForm = document.getElementById('otp-form');
+const successModal = document.getElementById('successModal');
+const modalOkBtn = document.getElementById('modalOkBtn');
+const dashboardUrl = '{% url "core:dashboard" %}';
+
+otpForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  btnVerify.disabled = true;
+  btnVerify.textContent = 'Проверка...';
+  errBanner.classList.remove('visible');
+  otpInputs.forEach(o => o.classList.remove('error'));
+
+  const formData = new FormData(otpForm);
+
+  try {
+    const resp = await fetch(otpForm.action || window.location.href, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: formData,
+    });
+    const data = await resp.json();
+
+    if (data.success) {
+      successModal.classList.add('visible');
+    } else {
+      errText.textContent = data.error || 'Неверный код.';
+      errBanner.classList.add('visible');
+      otpInputs.forEach(o => o.classList.add('error'));
+      btnVerify.disabled = false;
+      btnVerify.textContent = 'Завершить регистрацию';
+    }
+  } catch {
+    errText.textContent = 'Ошибка соединения с сервером';
+    errBanner.classList.add('visible');
+    btnVerify.disabled = false;
+    btnVerify.textContent = 'Завершить регистрацию';
+  }
+});
+
+modalOkBtn.addEventListener('click', function() {
+  window.location.href = dashboardUrl;
+});
 </script>
 </body>
 </html>

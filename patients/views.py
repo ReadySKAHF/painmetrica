@@ -936,8 +936,12 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
         # ── Результаты тестирования из last_test_result ────────────────────
         # Показываем только шаги, для которых есть совпадение в ScoreRange
         test_results_data = []
+        step_scores_for_conclusion = {}
+        step_labels_for_conclusion = {}
+        test_category = ''
         if conclusion.last_test_result:
             result = conclusion.last_test_result
+            test_category = result.test.category or ''
             score_ranges = list(ScoreRange.objects.filter(test=result.test))
             step_scores = {}
             step_stages = {}
@@ -961,6 +965,8 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
                     'label': score_range.label,
                     'score': score,
                 })
+                step_labels_for_conclusion[step] = score_range.label
+            step_scores_for_conclusion = step_scores
 
         # ── Данные пациента ────────────────────────────────────────────────
         patient_user = patient.user
@@ -984,12 +990,14 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
         created_date = conclusion.created_at.strftime('%d.%m.%Y')
         duration_text = self.DURATION_LABELS.get(patient.pain_duration, patient.pain_duration or '–')
 
-        # ── Заключение: список результатов через запятую ───────────────────
-        if test_results_data:
-            conclusion_parts = [r['label'][0].lower() + r['label'][1:] if r['label'] else '' for r in test_results_data]
-            conclusion_text = f"Заключение: у пациента имеется {', '.join(conclusion_parts)}."
-        else:
-            conclusion_text = 'Заключение: –'
+        # ── Заключение ────────────────────────────────────────────────────
+        from patients.conclusion_service import build_conclusion_text
+        conclusion_text, show_recommendations = build_conclusion_text(
+            category=test_category,
+            step_scores=step_scores_for_conclusion,
+            step_labels=step_labels_for_conclusion,
+            pain_duration=patient.pain_duration or '',
+        )
 
         # ── Врач: Фамилия И.О. ─────────────────────────────────────────────
         doctor = conclusion.doctor
@@ -1135,13 +1143,13 @@ class ConclusionDownloadView(DoctorRequiredMixin, View):
 
         _add('')
 
-        _add('Рекомендации по лечению и реабилитации:', bold=True)
-        for name, scheme in medications:
-            _add(f'- {name}: {scheme}', bold=True)
-        for name, scheme in therapies:
-            _add(f'- {name}: {scheme}', bold=True)
-
-        _add('')
+        if show_recommendations:
+            _add('Рекомендации по лечению и реабилитации:', bold=True)
+            for name, scheme in medications:
+                _add(f'- {name}: {scheme}', bold=True)
+            for name, scheme in therapies:
+                _add(f'- {name}: {scheme}', bold=True)
+            _add('')
 
         _add(f'Врач:                      {doctor_short}', bold=True,
              align=WD_ALIGN_PARAGRAPH.RIGHT)
